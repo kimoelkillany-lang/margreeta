@@ -89,9 +89,9 @@ function GenZHome({ onNav }) {
           <SectionEyebrow accent="gold">Explore the flavors of each country</SectionEyebrow>
           <div className="gz-section-heading" style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 32, color: 'var(--text-on-red)' }}>Same dough. Every stamp a different country.</div>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 28, maxWidth: 1080, margin: '0 auto', alignItems: 'stretch' }}>
+        <div className="gz-worldtour-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 28, maxWidth: 1080, margin: '0 auto', alignItems: 'stretch' }}>
           {STOPS.map((s, i) => (
-            <GenZReveal key={s.key} delay={i * 0.08}>
+            <GenZReveal key={s.key} delay={i * 0.08} className="gz-worldtour-item">
               <GenZStopCard s={s} onNav={onNav} />
             </GenZReveal>
           ))}
