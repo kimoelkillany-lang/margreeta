@@ -86,7 +86,7 @@ function GenZHome({ onNav }) {
 
       <section id="world-tour-section" className="gz-worldtour-section" style={{ background: 'var(--surface-cream)', padding: '80px 48px' }}>
         <div style={{ maxWidth: 720, margin: '0 auto 56px' }}>
-          <SectionEyebrow accent="gold">Let's explore the flavors of each country</SectionEyebrow>
+          <SectionEyebrow accent="gold">Explore the flavors of each country</SectionEyebrow>
           <div className="gz-section-heading" style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 32, color: 'var(--text-on-red)' }}>Same dough. Every stamp a different country.</div>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 28, maxWidth: 1080, margin: '0 auto', alignItems: 'stretch' }}>
