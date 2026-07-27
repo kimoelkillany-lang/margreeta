@@ -87,18 +87,26 @@ function Tag({ children, tone = 'outline' }) {
   );
 }
 
-const ORDER_NOW_COUNTRIES = [['italy', 'Italy'], ['america', 'America'], ['egypt', 'Egypt'], ['dessert', 'Dessert']];
+const ORDER_NOW_COUNTRIES = [
+  ['italy', 'Italy', 'var(--accent-italy)'],
+  ['america', 'America', 'var(--accent-america)'],
+  ['egypt', 'Egypt', 'var(--accent-egypt)'],
+  ['dessert', 'Dessert', 'var(--accent-dessert)']
+];
 function OrderNowMenu({ onNav, variant = 'primary', size = 'md', label = 'Order now', align = 'center' }) {
   const [open, setOpen] = React.useState(false);
   const ref = React.useRef(null);
   React.useEffect(() => {
     if (!open) return;
     const onDocPointer = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    const onKey = (e) => { if (e.key === 'Escape') setOpen(false); };
     document.addEventListener('mousedown', onDocPointer);
     document.addEventListener('touchstart', onDocPointer);
+    document.addEventListener('keydown', onKey);
     return () => {
       document.removeEventListener('mousedown', onDocPointer);
       document.removeEventListener('touchstart', onDocPointer);
+      document.removeEventListener('keydown', onKey);
     };
   }, [open]);
   const menuPos = align === 'right' ? { right: 0 } : { left: '50%', transform: 'translateX(-50%)' };
@@ -106,15 +114,34 @@ function OrderNowMenu({ onNav, variant = 'primary', size = 'md', label = 'Order 
     <div ref={ref} style={{ position: 'relative', display: 'inline-block' }}>
       <Button variant={variant} size={size} onClick={() => setOpen(o => !o)}>{label}</Button>
       {open && (
-        <div style={{ position: 'absolute', top: 'calc(100% + 8px)', ...menuPos, background: 'var(--paper-white)', border: '1px solid var(--border-hairline)', borderRadius: 'var(--radius-sm)', boxShadow: 'var(--shadow-card)', minWidth: 160, overflow: 'hidden', zIndex: 30 }}>
-          {ORDER_NOW_COUNTRIES.map(([key, text]) => (
-            <div key={key} onClick={() => { setOpen(false); onNav(key); }}
-              style={{ padding: '12px 18px', fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 14, color: 'var(--ink-black)', cursor: 'pointer', whiteSpace: 'nowrap', transition: 'background .15s ease' }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'var(--gold-highlight)'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
-            >{text}</div>
-          ))}
-        </div>
+        <React.Fragment>
+          <div onClick={() => setOpen(false)} className="gz-ordernow-scrim" style={{ position: 'fixed', inset: 0, background: 'rgba(10,4,20,.5)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)', zIndex: 35 }}></div>
+          <div className="gz-ordernow-panel" style={{
+            position: 'absolute', top: 'calc(100% + 16px)', ...menuPos, zIndex: 40,
+            display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12,
+            padding: 16, borderRadius: 24,
+            background: 'linear-gradient(160deg, rgba(26,19,51,.94), rgba(26,19,51,.82))',
+            border: '1px solid rgba(255,224,102,.4)',
+            boxShadow: '0 0 0 1px rgba(255,177,0,.15), 0 24px 60px rgba(0,0,0,.55), 0 0 46px -10px rgba(255,177,0,.4)'
+          }}>
+            {ORDER_NOW_COUNTRIES.map(([key, text, accent], i) => (
+              <button key={key} onClick={() => { setOpen(false); onNav(key); }}
+                className="gz-ordernow-chip"
+                style={{
+                  width: 76, height: 76, margin: 0, borderRadius: '50%', border: `1.5px solid ${accent}`,
+                  background: 'rgba(255,255,255,.05)', color: '#fff',
+                  fontFamily: 'var(--font-stamp)', fontVariant: 'small-caps', letterSpacing: '0.04em', fontSize: 13,
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center',
+                  animation: 'gzChipIn .5s var(--ease-bounce) both', animationDelay: `${i * 0.05}s`,
+                  boxShadow: `0 0 18px -3px ${accent}`,
+                  transition: 'transform .2s var(--ease-bounce), box-shadow .2s ease'
+                }}
+                onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.08)'; e.currentTarget.style.boxShadow = `0 0 26px 0px ${accent}`; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = `0 0 18px -3px ${accent}`; }}
+              >{text}</button>
+            ))}
+          </div>
+        </React.Fragment>
       )}
     </div>
   );

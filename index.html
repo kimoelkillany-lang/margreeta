@@ -40,6 +40,16 @@
 100%{transform:scale(1) rotate(0deg)}
 }
 .gz-cart-fab-bump{animation:gzCartBump .6s var(--ease-bounce)}
+@keyframes gzChipIn{
+0%{opacity:0;transform:scale(.3) translateY(-8px)}
+60%{opacity:1}
+100%{opacity:1;transform:scale(1) translateY(0)}
+}
+@keyframes gzScrimIn{
+0%{opacity:0}
+100%{opacity:1}
+}
+.gz-ordernow-scrim{animation:gzScrimIn .25s ease both}
 @media (max-width:800px){
 .gz-nav-links{display:none!important}
 .gz-nav-burger{display:flex!important}
