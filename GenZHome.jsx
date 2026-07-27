@@ -42,10 +42,6 @@ function GenZStopCard({ s, onNav }) {
               border: '1px solid rgba(255,177,0,.4)',
               fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, letterSpacing: '0.02em', color: 'var(--brand-red)'
             }}>
-              <svg className="gz-cue-arrow" width="16" height="16" viewBox="0 0 20 20" fill="none">
-                <path d="M3 16C3 8 10 4 15.5 3" stroke="var(--gold-foil)" strokeWidth="2" strokeLinecap="round"/>
-                <path d="M9.5 2.3L15.8 2.8L14.3 8.8" stroke="var(--gold-foil)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
               {canHover ? `Click to explore ${s.hintTarget}` : `Tap to explore ${s.hintTarget}`}
             </div>
           </Postcard>
@@ -59,7 +55,7 @@ function GenZStopCard({ s, onNav }) {
               <JourneyStamp country={s.key} number={s.number} size={backStampSize} />
               <div className="gz-stopcard-country" style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 20, color: '#fff', textTransform: 'capitalize' }}>{s.key}</div>
             </div>
-            {!canHover && <div className="gz-stopcard-hint" style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'rgba(255,255,255,.85)', letterSpacing: '0.02em' }}>Tap again to explore →</div>}
+            {!canHover && <div className="gz-stopcard-hint" style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'rgba(255,255,255,.85)', letterSpacing: '0.02em' }}>One more click if you're hungry</div>}
           </div>
         </div>
       </div>
