@@ -115,30 +115,29 @@ function OrderNowMenu({ onNav, variant = 'primary', size = 'md', label = 'Order 
       <Button variant={variant} size={size} onClick={() => setOpen(o => !o)}>{label}</Button>
       {open && (
         <React.Fragment>
-          <div onClick={() => setOpen(false)} className="gz-ordernow-scrim" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.55)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)', zIndex: 35 }}></div>
+          <div onClick={() => setOpen(false)} className="gz-ordernow-scrim" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', backdropFilter: 'blur(5px)', WebkitBackdropFilter: 'blur(5px)', zIndex: 35 }}></div>
           <div className="gz-ordernow-panel" style={{
             position: 'absolute', top: 'calc(100% + 16px)', ...menuPos, zIndex: 40,
-            display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12,
-            padding: 16, borderRadius: 24,
-            background: 'linear-gradient(160deg, rgba(12,12,12,.95), rgba(4,4,4,.9))',
-            border: '1px solid rgba(255,224,102,.4)',
-            boxShadow: '0 0 0 1px rgba(255,177,0,.15), 0 24px 60px rgba(0,0,0,.55), 0 0 46px -10px rgba(255,177,0,.4)'
+            display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 18,
+            padding: 8, background: 'transparent', border: 'none', boxShadow: 'none'
           }}>
             {ORDER_NOW_COUNTRIES.map(([key, text], i) => (
-              <button key={key} onClick={() => { setOpen(false); onNav(key); }}
-                className="gz-ordernow-chip"
-                style={{
-                  width: 76, height: 76, margin: 0, borderRadius: '50%', border: '1.5px solid var(--gold-foil)',
-                  background: 'rgba(255,255,255,.05)', color: '#fff',
-                  fontFamily: 'var(--font-stamp)', fontVariant: 'small-caps', letterSpacing: '0.03em', fontSize: 11,
-                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center',
-                  animation: 'gzChipIn .5s var(--ease-bounce) both', animationDelay: `${i * 0.05}s`,
-                  boxShadow: '0 0 18px -3px var(--gold-foil)',
-                  transition: 'transform .2s var(--ease-bounce), box-shadow .2s ease'
-                }}
-                onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.08)'; e.currentTarget.style.boxShadow = '0 0 26px 0px var(--gold-foil)'; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = '0 0 18px -3px var(--gold-foil)'; }}
-              >{text}</button>
+              <div key={key} className="gz-ordernow-chip-in" style={{ animation: 'gzChipIn .5s var(--ease-bounce) both', animationDelay: `${i * 0.06}s` }}>
+                <button onClick={() => { setOpen(false); onNav(key); }}
+                  className="gz-ordernow-chip"
+                  style={{
+                    width: 76, height: 76, margin: 0, borderRadius: '50%', border: '1.5px solid var(--gold-foil)',
+                    background: 'rgba(255,255,255,.04)', backdropFilter: 'blur(2px)', WebkitBackdropFilter: 'blur(2px)', color: '#fff',
+                    fontFamily: 'var(--font-stamp)', fontVariant: 'small-caps', letterSpacing: '0.03em', fontSize: 11,
+                    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center',
+                    animation: 'gzChipFloat 3.4s ease-in-out infinite', animationDelay: `${i * 0.2}s`,
+                    boxShadow: '0 0 18px -3px var(--gold-foil)',
+                    transition: 'box-shadow .2s ease'
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 0 28px 2px var(--gold-foil)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 0 18px -3px var(--gold-foil)'; }}
+                >{text}</button>
+              </div>
             ))}
           </div>
         </React.Fragment>
