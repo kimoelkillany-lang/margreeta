@@ -45,7 +45,7 @@ function GenZHome({ onNav }) {
   return (
     <div>
       <section style={{ background: 'var(--surface-cream)', padding: '96px 48px 120px', textAlign: 'center' }}>
-        <img src="assets/logo-lockup-transparent.png" alt="Margreeta" style={{ width: 340, marginBottom: 8 }} />
+        <img src="assets/logo-lockup-transparent.png" alt="Margreeta" style={{ width: 340, maxWidth: '100%', height: 'auto', marginBottom: 8 }} />
         <div style={{ maxWidth: 640, margin: '40px auto 0', fontFamily: 'var(--font-display)', fontWeight: 400, fontSize: 36, color: 'var(--text-on-red)', lineHeight: 1.25 }}>
           The dough stays in Naples. The toppings go on a world tour.
         </div>
@@ -84,7 +84,7 @@ function GenZHome({ onNav }) {
           <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 32, color: 'var(--text-on-red)' }}>Four ingredients. Zero compromise.</div>
           <div style={{ fontFamily: 'var(--font-script)', fontStyle: 'italic', fontSize: 17, color: 'var(--gold-highlight)', marginTop: 14 }}>That's the anchor. Everything else is a postcard.</div>
         </div>
-        <div style={{ maxWidth: 1040, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(440px, 1fr))', gap: 24 }}>
+        <div style={{ maxWidth: 1040, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(440px, 100%), 1fr))', gap: 24 }}>
           {[
             { key: 'dough', num: '01', title: 'The dough', image: 'ingredient-dough.jpg', copy: '48-hour fermented, hand-stretched the Neapolitan way — blistered crust, open crumb, never rushed.' },
             { key: 'tomato', num: '02', title: 'The tomato sauce', image: 'ingredient-tomato.jpg', copy: 'Fresh organic tomatoes, simmered simple. No shortcuts, no concentrate, no preservatives, no added sugar.' },

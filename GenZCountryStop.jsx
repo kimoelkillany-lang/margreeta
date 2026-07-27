@@ -37,7 +37,7 @@ function GenZCountryStop({ country, onNav }) {
       <section style={{ background: 'var(--surface-cream)', padding: '64px 48px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 320px))', gap: 28, maxWidth: 1080, margin: '0 auto', justifyContent: 'center' }}>
         {d.dishes.map((dish, i) => (
           <GenZReveal key={dish.slot} delay={i * 0.08}
-            style={country === 'egypt' && dish.name === 'Pastrami' ? { width: 336 } : undefined}
+            style={country === 'egypt' && dish.name === 'Pastrami' ? { width: 'min(336px, calc(100vw - 40px))' } : undefined}
           >
           <div
             onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-6px)'; e.currentTarget.style.boxShadow = dish.recommended ? '0 0 0 2px var(--gold-foil), var(--shadow-card)' : 'var(--shadow-card)'; }}
@@ -50,8 +50,8 @@ function GenZCountryStop({ country, onNav }) {
               Recommended
             </div>
           )}
-          <Postcard tone="white" style={country === 'egypt' && dish.name === 'Pastrami' ? { width: 336, height: 541 } : undefined}>
-            <image-slot id={dish.slot} src={`uploads/${dish.image}`} placeholder={`Photo of ${dish.name}`} shape="rounded" style={country === 'egypt' && dish.name === 'Pastrami' ? { width: 287, height: 241, display: 'block', marginBottom: 16 } : { width: '100%', height: 220, display: 'block', marginBottom: 16 }}></image-slot>
+          <Postcard tone="white" style={country === 'egypt' && dish.name === 'Pastrami' ? { width: 'min(336px, calc(100vw - 40px))' } : undefined}>
+            <image-slot id={dish.slot} src={`uploads/${dish.image}`} placeholder={`Photo of ${dish.name}`} shape="rounded" style={country === 'egypt' && dish.name === 'Pastrami' ? { width: 'min(287px, calc(100vw - 104px))', aspectRatio: '287 / 241', height: 'auto', display: 'block', marginBottom: 16 } : { width: '100%', height: 220, display: 'block', marginBottom: 16 }}></image-slot>
             <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 20, color: 'var(--ink-black)', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12 }}>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
                 {dish.spicy && (
