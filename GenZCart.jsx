@@ -92,10 +92,10 @@ function GenZCart(){
       {open && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', justifyContent: 'flex-end' }}>
           <div onClick={resetAndClose} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.5)' }}></div>
-          <div style={{ position: 'relative', width: 420, maxWidth: '100vw', height: '100%', background: '#fff', overflowY: 'auto', padding: 28, boxShadow: '-8px 0 30px rgba(0,0,0,.25)' }}>
+          <div className="gz-cart-panel" style={{ position: 'relative', width: 420, maxWidth: '100vw', height: '100%', background: '#fff', overflowY: 'auto', padding: 28, boxShadow: '-8px 0 30px rgba(0,0,0,.25)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-              <div style={{ fontFamily: 'var(--font-display)', fontSize: 26, color: 'var(--ink-black)' }}>{step === 'confirmed' ? 'Order placed!' : 'Your order'}</div>
-              <button onClick={resetAndClose} style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: 'var(--ink-black)' }}>&times;</button>
+              <div className="gz-cart-title" style={{ fontFamily: 'var(--font-display)', fontSize: 26, color: 'var(--ink-black)' }}>{step === 'confirmed' ? 'Order placed!' : 'Your order'}</div>
+              <button onClick={resetAndClose} className="gz-cart-close" style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: 'var(--ink-black)' }}>&times;</button>
             </div>
             {step === 'cart' && (
               <div>
@@ -103,8 +103,8 @@ function GenZCart(){
                 {items.map(item => (
                   <div key={item.slot} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '14px 0', borderBottom: '1px solid var(--border-hairline-soft)' }}>
                     <div>
-                      <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 15, color: 'var(--ink-black)', textTransform: 'capitalize' }}>{item.name}</div>
-                      <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--text-muted-on-light)' }}>{item.price} EGP</div>
+                      <div className="gz-cart-item-name" style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 15, color: 'var(--ink-black)', textTransform: 'capitalize' }}>{item.name}</div>
+                      <div className="gz-cart-item-price" style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--text-muted-on-light)' }}>{item.price} EGP</div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <button onClick={() => Store.setQty(item.slot, item.qty - 1)} style={{ width: 26, height: 26, borderRadius: '50%', border: '1px solid var(--border-hairline-soft)', background: '#fff', color: 'var(--ink-black)', cursor: 'pointer' }}>−</button>
@@ -115,7 +115,7 @@ function GenZCart(){
                 ))}
                 {items.length > 0 && (
                   <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '18px 0', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 17, color: 'var(--ink-black)' }}>
+                    <div className="gz-cart-total" style={{ display: 'flex', justifyContent: 'space-between', padding: '18px 0', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 17, color: 'var(--ink-black)' }}>
                       <span>Total</span><span>{total} EGP</span>
                     </div>
                     <button onClick={() => setStep('details')} style={{ width: '100%', padding: '14px', borderRadius: 10, border: 'none', background: 'var(--gold-foil)', color: 'var(--ink-bordeaux-900)', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Continue</button>
@@ -163,7 +163,7 @@ function GenZCart(){
                     </div>
                   </React.Fragment>
                 )}
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 16, color: 'var(--ink-black)' }}>
+                <div className="gz-cart-total" style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 16, color: 'var(--ink-black)' }}>
                   <span>Total</span><span>{total} EGP</span>
                 </div>
                 <div style={{ display: 'flex', gap: 10 }}>
@@ -174,11 +174,11 @@ function GenZCart(){
             )}
             {step === 'confirmed' && (
               <div style={{ textAlign: 'center', padding: '30px 0' }}>
-                <div style={{ fontSize: 44 }}>📲</div>
-                <div style={{ fontFamily: 'var(--font-body)', fontSize: 16, color: 'var(--ink-black)', marginTop: 12 }}>Almost there{form.name ? ', ' + form.name : ''}! We've opened WhatsApp with order <strong>{orderRef}</strong> filled in.</div>
-                <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--text-muted-on-light)', marginTop: 8 }}>Just hit <strong>Send</strong> in WhatsApp to confirm with Margreeta — {fulfillment === 'delivery' ? "we'll deliver it to " + (form.address || 'your address') : 'ready for pickup at ' + (form.pickupLocation || 'your chosen stop')}.</div>
+                <div className="gz-cart-emoji" style={{ fontSize: 44 }}>📲</div>
+                <div className="gz-cart-confirm-main" style={{ fontFamily: 'var(--font-body)', fontSize: 16, color: 'var(--ink-black)', marginTop: 12 }}>Almost there{form.name ? ', ' + form.name : ''}! We've opened WhatsApp with order <strong>{orderRef}</strong> filled in.</div>
+                <div className="gz-cart-confirm-sub" style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--text-muted-on-light)', marginTop: 8 }}>Just hit <strong>Send</strong> in WhatsApp to confirm with Margreeta — {fulfillment === 'delivery' ? "we'll deliver it to " + (form.address || 'your address') : 'ready for pickup at ' + (form.pickupLocation || 'your chosen stop')}.</div>
                 {whatsappUrl && (
-                  <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--text-muted-on-light)', marginTop: 14 }}>
+                  <div className="gz-cart-confirm-sub" style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--text-muted-on-light)', marginTop: 14 }}>
                     Didn't open? <a href={whatsappUrl} target="_blank" rel="noopener" style={{ color: 'var(--brand-red)', fontWeight: 700 }}>Open WhatsApp</a>
                   </div>
                 )}
