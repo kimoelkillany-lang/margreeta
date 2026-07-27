@@ -169,7 +169,10 @@ function GenZCart(){
             )}
             {step === 'confirmed' && (
               <div style={{ textAlign: 'center', padding: '30px 0' }}>
-                <div className="gz-cart-emoji" style={{ fontSize: 44 }}>📲</div>
+                <div style={{ position: 'relative', display: 'inline-block' }}>
+                  <span className="gz-confirm-glow"></span>
+                  <div className="gz-cart-emoji" style={{ fontSize: 44, position: 'relative', animation: 'gzChipIn .5s var(--ease-bounce) both' }}>📲</div>
+                </div>
                 <div className="gz-cart-confirm-main" style={{ fontFamily: 'var(--font-body)', fontSize: 16, color: 'var(--ink-black)', marginTop: 12 }}>Almost there{form.name ? ', ' + form.name : ''}! We've opened WhatsApp with order <strong>{orderRef}</strong> filled in.</div>
                 <div className="gz-cart-confirm-sub" style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--text-muted-on-light)', marginTop: 8 }}>Just hit <strong>Send</strong> in WhatsApp to confirm with Margreeta — {fulfillment === 'delivery' ? "we'll deliver it to " + (form.address || 'your address') : 'ready for pickup at ' + (form.pickupLocation || 'your chosen stop')}.</div>
                 {whatsappUrl && (
