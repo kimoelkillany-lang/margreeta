@@ -9,7 +9,45 @@ function GenZCart(){
   const [form, setForm] = React.useState({ name: '', phone: '', address: '', pickupLocation: '', pickupTime: '', payment: 'card', notes: '' });
   const [orderRef, setOrderRef] = React.useState(null);
   const [whatsappUrl, setWhatsappUrl] = React.useState(null);
-  React.useEffect(() => Store.subscribe(setItems), []);
+  const fabRef = React.useRef(null);
+  const audioCtxRef = React.useRef(null);
+  const prevCountRef = React.useRef(Store.getItems().reduce((s, i) => s + i.qty, 0));
+  const playAddSound = () => {
+    try {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return;
+      if (!audioCtxRef.current) audioCtxRef.current = new Ctx();
+      const ctx = audioCtxRef.current;
+      if (ctx.state === 'suspended') ctx.resume();
+      const now = ctx.currentTime;
+      [[880, 0, 0.1], [1318.5, 0.07, 0.14]].forEach(([freq, delay, dur]) => {
+        const start = now + delay;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.0001, start);
+        gain.gain.exponentialRampToValueAtTime(0.28, start + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.0001, start + dur);
+        osc.connect(gain).connect(ctx.destination);
+        osc.start(start);
+        osc.stop(start + dur + 0.02);
+      });
+    } catch (e) {}
+  };
+  const bumpFab = () => {
+    const el = fabRef.current;
+    if (!el) return;
+    el.classList.remove('gz-cart-fab-bump');
+    void el.offsetWidth;
+    el.classList.add('gz-cart-fab-bump');
+  };
+  React.useEffect(() => Store.subscribe((newItems) => {
+    setItems(newItems);
+    const newCount = newItems.reduce((s, i) => s + i.qty, 0);
+    if (newCount > prevCountRef.current) { bumpFab(); playAddSound(); }
+    prevCountRef.current = newCount;
+  }), []);
   React.useEffect(() => {
     const openHandler = () => setOpen(true);
     window.addEventListener('margreeta:open-cart', openHandler);
@@ -46,9 +84,7 @@ function GenZCart(){
   const resetAndClose = () => { setOpen(false); setStep('cart'); setOrderRef(null); setWhatsappUrl(null); setForm({ name: '', phone: '', address: '', pickupLocation: '', pickupTime: '', payment: 'card', notes: '' }); };
   return (
     <div>
-      <button onClick={() => setOpen(true)} aria-label="Open cart" style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 40, width: 62, height: 62, borderRadius: '50%', background: 'var(--gold-foil)', border: 'none', boxShadow: 'var(--shadow-card)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'transform .2s var(--ease-bounce)' }}
-        onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.08)'; }}
-        onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; }}
+      <button ref={fabRef} onClick={() => setOpen(true)} onAnimationEnd={() => fabRef.current && fabRef.current.classList.remove('gz-cart-fab-bump')} aria-label="Open cart" className="gz-cart-fab" style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 40, width: 62, height: 62, borderRadius: '50%', background: 'var(--gold-foil)', border: 'none', boxShadow: 'var(--shadow-card)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
       >
         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--ink-bordeaux-900)" strokeWidth="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
         {count > 0 && <span style={{ position: 'absolute', top: -4, right: -4, background: 'var(--brand-red)', color: '#fff', fontSize: 12, fontWeight: 700, borderRadius: '50%', width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{count}</span>}
