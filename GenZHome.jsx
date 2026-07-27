@@ -1,8 +1,8 @@
 const STOPS = [
-  { key: 'italy', number: '01', title: 'The classics, done properly.', line: "Cause we're as authentic as we are." },
-  { key: 'america', number: '02', title: 'Bold, indulgent, done right.', line: 'Subtlety was never the American way.' },
-  { key: 'egypt', number: '03', title: 'The local-favorite flavors.', line: 'Home turf, done right.' },
-  { key: 'dessert', number: '04', title: 'Restraint has its limits.', line: "And Nutella is one of them." }
+  { key: 'italy', number: '01', title: 'The classics, done properly.', line: "Cause we're as authentic as we are.", hintTarget: 'the Italian pizzas' },
+  { key: 'america', number: '02', title: 'Bold, indulgent, done right.', line: 'Subtlety was never the American way.', hintTarget: 'the American pizzas' },
+  { key: 'egypt', number: '03', title: 'The local-favorite flavors.', line: 'Home turf, done right.', hintTarget: 'the Egyptian pizzas' },
+  { key: 'dessert', number: '04', title: 'Restraint has its limits.', line: "And Nutella is one of them.", hintTarget: 'something sweet' }
 ];
 const STOP_BG = { italy: 'assets/italy-bg.jpg', america: 'assets/america-bg-nyc.webp', egypt: 'assets/egypt-bg.jpg', dessert: 'uploads/nutella-8a0b5573.jpg' };
 function GenZStopCard({ s, onNav }) {
@@ -34,6 +34,9 @@ function GenZStopCard({ s, onNav }) {
                 <span style={{ position: 'absolute', inset: -16, borderRadius: '50%', background: 'var(--gold-highlight)', transform: flipped ? 'scale(1)' : 'scale(0)', opacity: flipped ? 0.4 : 0, transition: 'transform .5s var(--ease-bounce), opacity .4s var(--ease-smooth)' }}></span>
                 <JourneyStamp country={s.key} number={s.number} size={frontStampSize} />
               </div>
+            </div>
+            <div className="gz-stopcard-frontcue" style={{ marginTop: 14, fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 12, color: 'var(--brand-red)', letterSpacing: '0.01em' }}>
+              {canHover ? `Hover the stamp to explore ${s.hintTarget} →` : `Tap the stamp to explore ${s.hintTarget} →`}
             </div>
           </Postcard>
         </div>
