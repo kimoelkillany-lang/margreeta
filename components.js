@@ -88,12 +88,16 @@ function Tag({ children, tone = 'outline' }) {
 }
 
 function useIsMobile(breakpoint = 720) {
-  const [isMobile, setIsMobile] = React.useState(() => typeof window !== 'undefined' && window.innerWidth <= breakpoint);
+  const query = `(max-width:${breakpoint}px) and (orientation: portrait)`;
+  const [isMobile, setIsMobile] = React.useState(() => typeof window !== 'undefined' && window.matchMedia && window.matchMedia(query).matches);
   React.useEffect(() => {
-    const onResize = () => setIsMobile(window.innerWidth <= breakpoint);
-    window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
-  }, [breakpoint]);
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    const mql = window.matchMedia(query);
+    const onChange = () => setIsMobile(mql.matches);
+    onChange();
+    mql.addEventListener ? mql.addEventListener('change', onChange) : mql.addListener(onChange);
+    return () => (mql.removeEventListener ? mql.removeEventListener('change', onChange) : mql.removeListener(onChange));
+  }, [query]);
   return isMobile;
 }
 
