@@ -39,7 +39,7 @@ function Wordmark({ color, tagline = true, size = 'md' }) {
   );
 }
 
-const BUTTON_SIZES = { sm: { pad: '10px 18px', fs: 13 }, md: { pad: '14px 28px', fs: 15 }, lg: { pad: '18px 36px', fs: 16 } };
+const BUTTON_SIZES = { sm: { pad: 'var(--btn-pad-sm)', fs: 'var(--btn-fs-sm)' }, md: { pad: 'var(--btn-pad-md)', fs: 'var(--btn-fs-md)' }, lg: { pad: 'var(--btn-pad-lg)', fs: 'var(--btn-fs-lg)' } };
 function Button({ children, variant = 'primary', size = 'md', disabled = false, onClick }) {
   const s = BUTTON_SIZES[size] || BUTTON_SIZES.md;
   const base = { fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: s.fs, padding: s.pad, borderRadius: 'var(--radius-sm)', letterSpacing: '0.02em', cursor: disabled ? 'default' : 'pointer', opacity: disabled ? 0.45 : 1, transition: 'transform .15s ease, background .2s ease, border-color .2s ease', border: '1px solid transparent', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8 };
@@ -83,8 +83,22 @@ function Tag({ children, tone = 'outline' }) {
     filled: { border: '1px solid transparent', color: 'var(--ink-bordeaux-900)', background: 'var(--gold-highlight)' }
   };
   return (
-    <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--text-body-sm)', fontWeight: 500, padding: '6px 14px', borderRadius: 'var(--radius-sm)', display: 'inline-block', letterSpacing: '0.01em', ...styles[tone] }}>{children}</span>
+    <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--text-body-sm)', fontWeight: 500, padding: 'var(--tag-pad)', borderRadius: 'var(--radius-sm)', display: 'inline-block', letterSpacing: '0.01em', ...styles[tone] }}>{children}</span>
   );
 }
 
-window.MargreetaDesignSystem_35c101 = { JourneyStamp, Postcard, Wordmark, Button, Input, SectionEyebrow, Tag };
+function useIsMobile(breakpoint = 720) {
+  const query = `(max-width:${breakpoint}px) and (orientation: portrait)`;
+  const [isMobile, setIsMobile] = React.useState(() => typeof window !== 'undefined' && window.matchMedia && window.matchMedia(query).matches);
+  React.useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    const mql = window.matchMedia(query);
+    const onChange = () => setIsMobile(mql.matches);
+    onChange();
+    mql.addEventListener ? mql.addEventListener('change', onChange) : mql.addListener(onChange);
+    return () => (mql.removeEventListener ? mql.removeEventListener('change', onChange) : mql.removeListener(onChange));
+  }, [query]);
+  return isMobile;
+}
+
+window.MargreetaDesignSystem_35c101 = { JourneyStamp, Postcard, Wordmark, Button, Input, SectionEyebrow, Tag, useIsMobile };

@@ -18,26 +18,27 @@ const DATA = {
   ]}
 };
 function GenZCountryStop({ country, onNav }) {
-  const { JourneyStamp, Postcard, Tag, SectionEyebrow, Button } = window.MargreetaDesignSystem_35c101;
+  const { JourneyStamp, Postcard, Tag, SectionEyebrow, Button, useIsMobile } = window.MargreetaDesignSystem_35c101;
   const d = DATA[country] || DATA.italy;
+  const isMobile = useIsMobile();
   return (
     <div>
-      <section style={{ background: 'var(--surface-cream)', padding: '80px 48px', display: 'flex', alignItems: 'center', gap: 32, flexWrap: 'wrap', justifyContent: 'center', borderBottom: '1px solid var(--border-hairline-soft)' }}>
+      <section className="gz-country-hero" style={{ background: 'var(--surface-cream)', padding: '80px 48px', display: 'flex', alignItems: 'center', gap: 32, flexWrap: 'wrap', justifyContent: 'center', borderBottom: '1px solid var(--border-hairline-soft)' }}>
         <div style={{ transition: 'transform .3s ease' }} onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.06) rotate(-2deg)'; }} onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1) rotate(0)'; }}>
-          <JourneyStamp country={d.accent} number={d.number} size={120} />
+          <JourneyStamp country={d.accent} number={d.number} size={isMobile ? 64 : 120} />
         </div>
         <GenZReveal>
         <div style={{ maxWidth: 480 }}>
           <SectionEyebrow accent={d.accent}>Stop No. {d.number}</SectionEyebrow>
-          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 44, color: 'var(--text-on-red)' }}>{d.title}</div>
-          <div style={{ fontFamily: 'var(--font-script)', fontStyle: 'italic', fontSize: 18, color: 'var(--gold-highlight)', marginTop: 12 }}>{d.line}</div>
+          <div className="gz-country-heading" style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 44, color: 'var(--text-on-red)' }}>{d.title}</div>
+          <div className="gz-country-line" style={{ fontFamily: 'var(--font-script)', fontStyle: 'italic', fontSize: 18, color: 'var(--gold-highlight)', marginTop: 12 }}>{d.line}</div>
         </div>
         </GenZReveal>
       </section>
-      <section style={{ background: 'var(--surface-cream)', padding: '64px 48px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 320px))', gap: 28, maxWidth: 1080, margin: '0 auto', justifyContent: 'center' }}>
+      <section className="gz-dish-grid-section" style={{ background: 'var(--surface-cream)', padding: '64px 48px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 320px))', gap: 28, maxWidth: 1080, margin: '0 auto', justifyContent: 'center' }}>
         {d.dishes.map((dish, i) => (
           <GenZReveal key={dish.slot} delay={i * 0.08}
-            style={country === 'egypt' && dish.name === 'Pastrami' ? { width: 336 } : undefined}
+            style={country === 'egypt' && dish.name === 'Pastrami' ? { width: 'min(336px, calc(100vw - 40px))' } : undefined}
           >
           <div
             onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-6px)'; e.currentTarget.style.boxShadow = dish.recommended ? '0 0 0 2px var(--gold-foil), var(--shadow-card)' : 'var(--shadow-card)'; }}
@@ -50,9 +51,9 @@ function GenZCountryStop({ country, onNav }) {
               Recommended
             </div>
           )}
-          <Postcard tone="white" style={country === 'egypt' && dish.name === 'Pastrami' ? { width: 336, height: 541 } : undefined}>
-            <image-slot id={dish.slot} src={`uploads/${dish.image}`} placeholder={`Photo of ${dish.name}`} shape="rounded" style={country === 'egypt' && dish.name === 'Pastrami' ? { width: 287, height: 241, display: 'block', marginBottom: 16 } : { width: '100%', height: 220, display: 'block', marginBottom: 16 }}></image-slot>
-            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 20, color: 'var(--ink-black)', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12 }}>
+          <Postcard tone="white" style={country === 'egypt' && dish.name === 'Pastrami' ? { width: 'min(336px, calc(100vw - 40px))' } : undefined}>
+            <image-slot id={dish.slot} src={`uploads/${dish.image}`} placeholder={`Photo of ${dish.name}`} shape="rounded" style={country === 'egypt' && dish.name === 'Pastrami' ? { width: 'min(287px, calc(100vw - 104px))', aspectRatio: '287 / 241', height: 'auto', display: 'block', marginBottom: 16 } : { width: '100%', height: 220, display: 'block', marginBottom: 16 }}></image-slot>
+            <div className="gz-dish-name" style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 20, color: 'var(--ink-black)', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12 }}>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
                 {dish.spicy && (
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-label="Spicy" style={{ flexShrink: 0 }}>
@@ -61,12 +62,12 @@ function GenZCountryStop({ country, onNav }) {
                 )}
                 {dish.name}
               </span>
-              <span style={{ color: 'var(--brand-red)', fontSize: 17, whiteSpace: 'nowrap' }}>{dish.price} EGP</span>
+              <span className="gz-dish-price" style={{ color: 'var(--brand-red)', fontSize: 17, whiteSpace: 'nowrap' }}>{dish.price} EGP</span>
             </div>
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 12 }}>
               {dish.tags.map(t => <Tag key={t}>{t}</Tag>)}
             </div>
-            <button onClick={() => window.GenZCartStore.add(dish, country)} style={{ marginTop: 14, width: '100%', padding: '11px', borderRadius: 10, border: 'none', background: 'var(--gold-foil)', color: 'var(--ink-bordeaux-900)', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 14, cursor: 'pointer', transition: 'transform .15s ease' }}
+            <button className="gz-dish-addbtn" onClick={() => window.GenZCartStore.add(dish, country)} style={{ marginTop: 14, width: '100%', padding: '11px', borderRadius: 10, border: 'none', background: 'var(--gold-foil)', color: 'var(--ink-bordeaux-900)', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 14, cursor: 'pointer', transition: 'transform .15s ease' }}
               onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.02)'; }}
               onMouseLeave={e => { e.currentTarget.style.transform = ''; }}
             >Add to order</button>
