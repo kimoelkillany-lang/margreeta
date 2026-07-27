@@ -35,8 +35,16 @@ function GenZStopCard({ s, onNav }) {
                 <JourneyStamp country={s.key} number={s.number} size={frontStampSize} />
               </div>
             </div>
-            <div className="gz-stopcard-frontcue" style={{ marginTop: 14, fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 12, color: 'var(--brand-red)', letterSpacing: '0.01em' }}>
-              {canHover ? `Hover the stamp to explore ${s.hintTarget} →` : `Tap the stamp to explore ${s.hintTarget} →`}
+            <div className="gz-stopcard-frontcue" style={{
+              marginTop: 14, display: 'inline-flex', alignItems: 'center', gap: 7, alignSelf: 'flex-start',
+              padding: '6px 12px', borderRadius: 999,
+              background: 'linear-gradient(90deg, rgba(255,177,0,.14), rgba(255,61,110,.1))',
+              border: '1px solid rgba(255,177,0,.4)',
+              fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, letterSpacing: '0.02em', color: 'var(--brand-red)'
+            }}>
+              <span className="gz-cue-dot"></span>
+              {canHover ? `Hover the stamp to explore ${s.hintTarget}` : `Tap the stamp to explore ${s.hintTarget}`}
+              <span className="gz-cue-arrow">→</span>
             </div>
           </Postcard>
         </div>
