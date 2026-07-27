@@ -87,6 +87,39 @@ function Tag({ children, tone = 'outline' }) {
   );
 }
 
+const ORDER_NOW_COUNTRIES = [['italy', 'Italy'], ['america', 'America'], ['egypt', 'Egypt'], ['dessert', 'Dessert']];
+function OrderNowMenu({ onNav, variant = 'primary', size = 'md', label = 'Order now', align = 'center' }) {
+  const [open, setOpen] = React.useState(false);
+  const ref = React.useRef(null);
+  React.useEffect(() => {
+    if (!open) return;
+    const onDocPointer = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', onDocPointer);
+    document.addEventListener('touchstart', onDocPointer);
+    return () => {
+      document.removeEventListener('mousedown', onDocPointer);
+      document.removeEventListener('touchstart', onDocPointer);
+    };
+  }, [open]);
+  const menuPos = align === 'right' ? { right: 0 } : { left: '50%', transform: 'translateX(-50%)' };
+  return (
+    <div ref={ref} style={{ position: 'relative', display: 'inline-block' }}>
+      <Button variant={variant} size={size} onClick={() => setOpen(o => !o)}>{label}</Button>
+      {open && (
+        <div style={{ position: 'absolute', top: 'calc(100% + 8px)', ...menuPos, background: 'var(--paper-white)', border: '1px solid var(--border-hairline)', borderRadius: 'var(--radius-sm)', boxShadow: 'var(--shadow-card)', minWidth: 160, overflow: 'hidden', zIndex: 30 }}>
+          {ORDER_NOW_COUNTRIES.map(([key, text]) => (
+            <div key={key} onClick={() => { setOpen(false); onNav(key); }}
+              style={{ padding: '12px 18px', fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 14, color: 'var(--ink-black)', cursor: 'pointer', whiteSpace: 'nowrap', transition: 'background .15s ease' }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'var(--gold-highlight)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+            >{text}</div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function useIsMobile(breakpoint = 720) {
   const query = `(max-width:${breakpoint}px) and (orientation: portrait)`;
   const [isMobile, setIsMobile] = React.useState(() => typeof window !== 'undefined' && window.matchMedia && window.matchMedia(query).matches);
@@ -101,4 +134,4 @@ function useIsMobile(breakpoint = 720) {
   return isMobile;
 }
 
-window.MargreetaDesignSystem_35c101 = { JourneyStamp, Postcard, Wordmark, Button, Input, SectionEyebrow, Tag, useIsMobile };
+window.MargreetaDesignSystem_35c101 = { JourneyStamp, Postcard, Wordmark, Button, Input, SectionEyebrow, Tag, useIsMobile, OrderNowMenu };

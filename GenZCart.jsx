@@ -48,11 +48,6 @@ function GenZCart(){
     if (newCount > prevCountRef.current) { bumpFab(); playAddSound(); }
     prevCountRef.current = newCount;
   }), []);
-  React.useEffect(() => {
-    const openHandler = () => setOpen(true);
-    window.addEventListener('margreeta:open-cart', openHandler);
-    return () => window.removeEventListener('margreeta:open-cart', openHandler);
-  }, []);
   const total = items.reduce((s,i) => s + i.price * i.qty, 0);
   const count = items.reduce((s,i) => s + i.qty, 0);
   const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));

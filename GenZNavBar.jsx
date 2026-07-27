@@ -11,7 +11,7 @@ function GenZNavCountry({ c, current, onNav }) {
   );
 }
 function GenZNavBar({ current, onNav }) {
-  const { Button } = window.MargreetaDesignSystem_35c101;
+  const { OrderNowMenu } = window.MargreetaDesignSystem_35c101;
   const [open, setOpen] = React.useState(false);
   const go = (target) => { setOpen(false); onNav(target); };
   return (
@@ -24,7 +24,7 @@ function GenZNavBar({ current, onNav }) {
         ))}
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <Button variant="dark" size="sm" onClick={() => window.dispatchEvent(new CustomEvent('margreeta:open-cart'))}>Order now</Button>
+        <OrderNowMenu onNav={onNav} variant="dark" size="sm" align="right" />
         <button className="gz-nav-burger" onClick={() => setOpen(o => !o)} aria-label="Menu" style={{ display: 'none', width: 40, height: 40, borderRadius: 999, border: '1px solid var(--border-hairline-soft)', background: 'transparent', cursor: 'pointer', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
           <span style={{ width: 18, height: 2, background: 'var(--text-on-red)', borderRadius: 2, transition: 'transform .25s ease', transform: open ? 'translateY(6px) rotate(45deg)' : 'none' }}></span>
           <span style={{ width: 18, height: 2, background: 'var(--text-on-red)', borderRadius: 2, opacity: open ? 0 : 1, transition: 'opacity .2s ease' }}></span>
