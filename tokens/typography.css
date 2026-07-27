@@ -1,0 +1,19 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;0,700;1,500&family=Cormorant+SC:wght@500;600&family=Playfair+Display:ital@1&family=Inter:wght@400;500;600;700&display=swap');
+:root{
+--font-display:'Fraunces',serif;
+--font-stamp:'Cormorant SC','Marcellus',serif;
+--font-script:'Playfair Display',serif;
+--font-body:'Inter','Public Sans',sans-serif;
+--text-display-xl:clamp(48px,7vw,96px);
+--text-display-lg:56px;
+--text-display-md:40px;
+--text-display-sm:28px;
+--text-body-lg:19px;
+--text-body-md:16px;
+--text-body-sm:14px;
+--text-eyebrow:13px;
+--lh-display:1.05;
+--lh-body:1.6;
+--ls-eyebrow:0.16em;
+--ls-stamp:0.08em;
+}
