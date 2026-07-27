@@ -60,12 +60,10 @@ function GenZHome({ onNav }) {
       <section className="gz-hero-section" style={{ background: 'var(--surface-cream)', padding: '96px 48px 120px', textAlign: 'center' }}>
         <img className="gz-hero-logo" src="assets/logo-lockup-transparent.png" alt="Margreeta" style={{ width: 340, maxWidth: '100%', height: 'auto', marginBottom: 8 }} />
         <div className="gz-hero-headline" style={{ maxWidth: 640, margin: '40px auto 0', fontFamily: 'var(--font-display)', fontWeight: 400, fontSize: 36, color: 'var(--text-on-red)', lineHeight: 1.25 }}>
-          The dough stays in Naples. The toppings go on a world tour.
+          The dough honors Naples — pizza's original home. The toppings explore the globe.
         </div>
         <div className="gz-hero-copy" style={{ maxWidth: 640, margin: '32px auto 0', textAlign: 'left', fontFamily: 'var(--font-body)', fontSize: 16, color: 'var(--text-on-red-muted)', lineHeight: 'var(--lh-body)' }}>
-          <p>Every pizza starts with authentic Neapolitan dough, 48-hour fermented for a light, airy crust. Then it's premium ingredients only — rich tomato sauce, fresh mozzarella, quality cured meats and cheeses. No shortcuts, just honest flavor.</p>
-          <p className="gz-hero-subhead" style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 22, color: 'var(--text-on-red)', marginTop: 24 }}>The World Tour Concept</p>
-          <p style={{ marginTop: 12 }}>Naples-inspired, but never staying in one place. The dough stays authentically Neapolitan — the toppings travel, each pizza a passport to a different destination, from Italy's classics to Egypt, America and beyond.</p>
+          <p>Authentic 48-hour fermented Neapolitan dough, topped with premium ingredients. No shortcuts. Just honest flavor.</p>
           <p className="gz-script-accent" style={{ fontFamily: 'var(--font-script)', fontStyle: 'italic', fontSize: 19, color: 'var(--gold-highlight)', marginTop: 20 }}>One dough. Endless destinations.</p>
         </div>
         <div style={{ marginTop: 32, display: 'flex', gap: 16, justifyContent: 'center' }}>
@@ -79,7 +77,7 @@ function GenZHome({ onNav }) {
 
       <section id="world-tour-section" className="gz-worldtour-section" style={{ background: 'var(--surface-cream)', padding: '80px 48px' }}>
         <div style={{ maxWidth: 720, margin: '0 auto 56px' }}>
-          <SectionEyebrow accent="gold">The Margreeta World Tour</SectionEyebrow>
+          <SectionEyebrow accent="gold">Let's explore the flavors of each country</SectionEyebrow>
           <div className="gz-section-heading" style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 32, color: 'var(--text-on-red)' }}>Same dough. Every stamp a different country.</div>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 28, maxWidth: 1080, margin: '0 auto', alignItems: 'stretch' }}>
