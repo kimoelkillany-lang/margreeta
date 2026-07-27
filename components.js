@@ -87,4 +87,14 @@ function Tag({ children, tone = 'outline' }) {
   );
 }
 
-window.MargreetaDesignSystem_35c101 = { JourneyStamp, Postcard, Wordmark, Button, Input, SectionEyebrow, Tag };
+function useIsMobile(breakpoint = 720) {
+  const [isMobile, setIsMobile] = React.useState(() => typeof window !== 'undefined' && window.innerWidth <= breakpoint);
+  React.useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth <= breakpoint);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [breakpoint]);
+  return isMobile;
+}
+
+window.MargreetaDesignSystem_35c101 = { JourneyStamp, Postcard, Wordmark, Button, Input, SectionEyebrow, Tag, useIsMobile };

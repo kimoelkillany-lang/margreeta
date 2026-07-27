@@ -18,18 +18,19 @@ const DATA = {
   ]}
 };
 function GenZCountryStop({ country, onNav }) {
-  const { JourneyStamp, Postcard, Tag, SectionEyebrow, Button } = window.MargreetaDesignSystem_35c101;
+  const { JourneyStamp, Postcard, Tag, SectionEyebrow, Button, useIsMobile } = window.MargreetaDesignSystem_35c101;
   const d = DATA[country] || DATA.italy;
+  const isMobile = useIsMobile();
   return (
     <div>
-      <section style={{ background: 'var(--surface-cream)', padding: '80px 48px', display: 'flex', alignItems: 'center', gap: 32, flexWrap: 'wrap', justifyContent: 'center', borderBottom: '1px solid var(--border-hairline-soft)' }}>
+      <section className="gz-country-hero" style={{ background: 'var(--surface-cream)', padding: '80px 48px', display: 'flex', alignItems: 'center', gap: 32, flexWrap: 'wrap', justifyContent: 'center', borderBottom: '1px solid var(--border-hairline-soft)' }}>
         <div style={{ transition: 'transform .3s ease' }} onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.06) rotate(-2deg)'; }} onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1) rotate(0)'; }}>
-          <JourneyStamp country={d.accent} number={d.number} size={120} />
+          <JourneyStamp country={d.accent} number={d.number} size={isMobile ? 84 : 120} />
         </div>
         <GenZReveal>
         <div style={{ maxWidth: 480 }}>
           <SectionEyebrow accent={d.accent}>Stop No. {d.number}</SectionEyebrow>
-          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 44, color: 'var(--text-on-red)' }}>{d.title}</div>
+          <div className="gz-country-heading" style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 44, color: 'var(--text-on-red)' }}>{d.title}</div>
           <div style={{ fontFamily: 'var(--font-script)', fontStyle: 'italic', fontSize: 18, color: 'var(--gold-highlight)', marginTop: 12 }}>{d.line}</div>
         </div>
         </GenZReveal>
