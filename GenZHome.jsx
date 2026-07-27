@@ -80,7 +80,7 @@ function GenZHome({ onNav }) {
           <Button variant="dark" onClick={() => {
             const el = document.getElementById('world-tour-section');
             if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 88, behavior: 'smooth' });
-          }}>See the World Tour</Button>
+          }}>World Tour Menu</Button>
         </div>
       </section>
 
