@@ -54,7 +54,7 @@ function GenZStopCard({ s, onNav }) {
   );
 }
 function GenZHome({ onNav }) {
-  const { JourneyStamp, Postcard, Button, SectionEyebrow } = window.MargreetaDesignSystem_35c101;
+  const { JourneyStamp, Postcard, Button, SectionEyebrow, OrderNowMenu } = window.MargreetaDesignSystem_35c101;
   return (
     <div>
       <section className="gz-hero-section" style={{ background: 'var(--surface-cream)', padding: '96px 48px 120px', textAlign: 'center' }}>
@@ -69,7 +69,7 @@ function GenZHome({ onNav }) {
           <p className="gz-script-accent" style={{ fontFamily: 'var(--font-script)', fontStyle: 'italic', fontSize: 19, color: 'var(--gold-highlight)', marginTop: 20 }}>One dough. Endless destinations.</p>
         </div>
         <div style={{ marginTop: 32, display: 'flex', gap: 16, justifyContent: 'center' }}>
-          <Button variant="primary" onClick={() => window.dispatchEvent(new CustomEvent('margreeta:open-cart'))}>Order now</Button>
+          <OrderNowMenu onNav={onNav} variant="primary" />
           <Button variant="dark" onClick={() => {
             const el = document.getElementById('world-tour-section');
             if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 88, behavior: 'smooth' });
