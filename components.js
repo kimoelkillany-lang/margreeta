@@ -2,8 +2,19 @@ const ACCENTS_STAMP = { italy: 'var(--accent-italy)', america: 'var(--accent-ame
 function JourneyStamp({ country = 'italy', label, number = '01', size = 96 }) {
   const accent = ACCENTS_STAMP[country] || 'var(--gold-foil)';
   const displayLabel = label || country.charAt(0).toUpperCase() + country.slice(1);
+  const ref = React.useRef(null);
+  const [visible, setVisible] = React.useState(false);
+  React.useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) { setVisible(true); io.disconnect(); }
+    }, { threshold: 0.4 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
   return (
-    <div style={{ width: size, height: size, borderRadius: '50%', border: `1.5px solid ${accent}`, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+    <div ref={ref} className={visible ? 'gz-stamp-thud' : ''} style={{ width: size, height: size, borderRadius: '50%', border: `1.5px solid ${accent}`, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, opacity: visible ? 1 : 0 }}>
       <div style={{ position: 'absolute', inset: 6, borderRadius: '50%', border: `1px solid ${accent}`, opacity: 0.6 }}></div>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
         <span style={{ fontFamily: 'var(--font-stamp)', fontVariant: 'small-caps', letterSpacing: 'var(--ls-stamp)', fontSize: size * 0.14, color: accent, textTransform: 'uppercase' }}>Stop No.</span>

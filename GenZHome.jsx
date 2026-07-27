@@ -1,8 +1,8 @@
 const STOPS = [
-  { key: 'italy', number: '01', title: 'The classics, done properly.', line: "Cause we're as authentic as we are." },
-  { key: 'america', number: '02', title: 'Bold, indulgent, done right.', line: 'Subtlety was never the American way.' },
-  { key: 'egypt', number: '03', title: 'The local-favorite flavors.', line: 'Home turf, done right.' },
-  { key: 'dessert', number: '04', title: 'Restraint has its limits.', line: "And Nutella is one of them." }
+  { key: 'italy', number: '01', title: 'The classics, done properly.', line: "Cause we're as authentic as we are.", hintTarget: 'the Italian pizzas' },
+  { key: 'america', number: '02', title: 'Bold, indulgent, done right.', line: 'Subtlety was never the American way.', hintTarget: 'the American pizzas' },
+  { key: 'egypt', number: '03', title: 'The local-favorite flavors.', line: 'Home turf, done right.', hintTarget: 'the Egyptian pizzas' },
+  { key: 'dessert', number: '04', title: 'Restraint has its limits.', line: "And Nutella is one of them.", hintTarget: 'something sweet' }
 ];
 const STOP_BG = { italy: 'assets/italy-bg.jpg', america: 'assets/america-bg-nyc.webp', egypt: 'assets/egypt-bg.jpg', dessert: 'uploads/nutella-8a0b5573.jpg' };
 function GenZStopCard({ s, onNav }) {
@@ -35,6 +35,15 @@ function GenZStopCard({ s, onNav }) {
                 <JourneyStamp country={s.key} number={s.number} size={frontStampSize} />
               </div>
             </div>
+            <div className="gz-stopcard-frontcue" style={{
+              marginTop: 14, display: 'inline-flex', alignItems: 'center', gap: 7, alignSelf: 'flex-start',
+              padding: '6px 12px', borderRadius: 999,
+              background: 'linear-gradient(90deg, rgba(255,177,0,.14), rgba(255,61,110,.1))',
+              border: '1px solid rgba(255,177,0,.4)',
+              fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 11, letterSpacing: '0.02em', color: 'var(--brand-red)'
+            }}>
+              {canHover ? `Click to explore ${s.hintTarget}` : `Tap to explore ${s.hintTarget}`}
+            </div>
           </Postcard>
         </div>
         <div style={{ position: 'absolute', inset: 0, backfaceVisibility: 'hidden', transform: 'rotateY(180deg)', borderRadius: 'var(--radius-md)', overflow: 'hidden', boxShadow: 'var(--shadow-card)' }}>
@@ -46,7 +55,7 @@ function GenZStopCard({ s, onNav }) {
               <JourneyStamp country={s.key} number={s.number} size={backStampSize} />
               <div className="gz-stopcard-country" style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 20, color: '#fff', textTransform: 'capitalize' }}>{s.key}</div>
             </div>
-            {!canHover && <div className="gz-stopcard-hint" style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'rgba(255,255,255,.85)', letterSpacing: '0.02em' }}>Tap again to explore →</div>}
+            {!canHover && <div className="gz-stopcard-hint" style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'rgba(255,255,255,.85)', letterSpacing: '0.02em' }}>One more click if you're hungry</div>}
           </div>
         </div>
       </div>
