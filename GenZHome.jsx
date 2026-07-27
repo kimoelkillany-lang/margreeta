@@ -1,5 +1,5 @@
 const STOPS = [
-  { key: 'italy', number: '01', title: 'The classics, done properly.', line: "Cause we're as authentic as we are.", hintTarget: 'the Italian pizzas' },
+  { key: 'italy', number: '01', title: 'The classics, done properly.', line: "Cause we're as authentic as you are.", hintTarget: 'the Italian pizzas' },
   { key: 'america', number: '02', title: 'Bold, indulgent, done right.', line: 'Subtlety was never the American way.', hintTarget: 'the American pizzas' },
   { key: 'egypt', number: '03', title: 'The local-favorite flavors.', line: 'Home turf, done right.', hintTarget: 'the Egyptian pizzas' },
   { key: 'dessert', number: '04', title: 'Restraint has its limits.', line: "And Nutella is one of them.", hintTarget: 'something sweet' }

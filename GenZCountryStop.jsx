@@ -1,5 +1,5 @@
 const DATA = {
-  italy: { number: '01', title: 'Italy', line: "The classics, done properly, cause we're as authentic as we are.", accent: 'italy', dishes: [
+  italy: { number: '01', title: 'Italy', line: "The classics, done properly, cause we're as authentic as you are.", accent: 'italy', dishes: [
     { slot: 'italy-1', image: 'italy-1.png', name: 'Margherita', price: 250, tags: ['Tomato sauce', 'Parmesan', 'Buffalo mozzarella', 'Fresh basil', 'Extra virgin olive oil'] },
     { slot: 'italy-2', image: 'italy-2.jpg', name: 'Diavola', price: 350, tags: ['Tomato sauce', 'Parmesan', 'Buffalo mozzarella', 'Spicy salami', 'Olive oil'] },
     { slot: 'italy-3', image: 'italy-3.jpg', name: 'Veggi', price: 280, tags: ['Tomato sauce', 'Parmesan', 'Buffalo mozzarella', 'Fresh basil', 'Extra virgin olive oil', 'Fresh onion', 'Green pepper', 'Fresh arugula'] },
