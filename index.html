@@ -27,27 +27,7 @@
 --font-script:'Caveat',cursive;
 --font-body:'Space Grotesk',sans-serif;
 }
-*{box-sizing:border-box}html,body{overflow-x:hidden}body{margin:0;font-family:var(--font-body)}
-#gz-scroll-bg{position:fixed;inset:0;z-index:-3;background:#FC0000}
-#gz-scroll-bg-green{position:fixed;inset:0;z-index:-2;background:#009246;opacity:0;transition:opacity .5s ease-out;will-change:opacity}
-#gz-scroll-bg-white{position:fixed;inset:0;z-index:-1;background:#FFFFFF;opacity:0;transition:opacity .5s ease-out;will-change:opacity}
-#gz-scroll-bg-green.gz-scrolling{animation:gzCycleGreen 3s linear infinite}
-#gz-scroll-bg-white.gz-scrolling{animation:gzCycleWhite 3s linear infinite}
-@keyframes gzCycleGreen{
-0%{opacity:0}
-4%{opacity:1}
-25%{opacity:1}
-29%{opacity:0}
-100%{opacity:0}
-}
-@keyframes gzCycleWhite{
-0%{opacity:0}
-33%{opacity:0}
-37%{opacity:1}
-58%{opacity:1}
-62%{opacity:0}
-100%{opacity:0}
-}
+*{box-sizing:border-box}html,body{overflow-x:hidden}body{margin:0;font-family:var(--font-body);background:var(--surface-cream)}
 .gz-cart-fab{transition:transform .2s var(--ease-bounce)}
 .gz-cart-fab:hover{transform:scale(1.08)}
 @keyframes gzCartBump{
@@ -170,24 +150,6 @@ footer{padding:24px 16px!important}
 </style>
 </head>
 <body>
-<div id="gz-scroll-bg" aria-hidden="true"></div>
-<div id="gz-scroll-bg-green" aria-hidden="true"></div>
-<div id="gz-scroll-bg-white" aria-hidden="true"></div>
-<script>
-(function(){
-  var layers = [document.getElementById('gz-scroll-bg-green'), document.getElementById('gz-scroll-bg-white')];
-  var stopTimer = null;
-  window.addEventListener('scroll', function(){
-    if (!layers[0].classList.contains('gz-scrolling')) {
-      layers.forEach(function(el){ el.classList.add('gz-scrolling'); });
-    }
-    clearTimeout(stopTimer);
-    stopTimer = setTimeout(function(){
-      layers.forEach(function(el){ el.classList.remove('gz-scrolling'); });
-    }, 200);
-  }, { passive: true });
-})();
-</script>
 <div id="root"></div>
 <script type="text/babel" src="components.js?v=2"></script>
 <script type="text/babel" src="GenZNavBar.jsx?v=3"></script>
