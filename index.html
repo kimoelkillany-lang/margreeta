@@ -28,8 +28,9 @@
 --font-body:'Space Grotesk',sans-serif;
 }
 *{box-sizing:border-box}html,body{overflow-x:hidden}body{margin:0;font-family:var(--font-body)}
-#gz-scroll-bg{position:fixed;inset:0;z-index:-1;background-color:#FC0000;background-image:linear-gradient(to right, #009246 0%, #009246 33%, #FFFFFF 33%, #FFFFFF 66%, #FC0000 66%, #FC0000 100%);background-size:300% 100%;background-position:100% 0%;transition:background-position .4s ease-out;will-change:background-position}
-#gz-scroll-bg.gz-scrolling{background-position:0% 0%}
+#gz-scroll-bg{position:fixed;inset:0;z-index:-2;background:#FC0000}
+#gz-scroll-bg-flag{position:fixed;inset:0;z-index:-1;background-image:linear-gradient(to right, #009246 0%, #009246 33%, #FFFFFF 33%, #FFFFFF 66%, #FC0000 66%, #FC0000 100%);opacity:0;transition:opacity .5s ease-out;will-change:opacity}
+#gz-scroll-bg-flag.gz-scrolling{opacity:1}
 .gz-cart-fab{transition:transform .2s var(--ease-bounce)}
 .gz-cart-fab:hover{transform:scale(1.08)}
 @keyframes gzCartBump{
@@ -153,9 +154,10 @@ footer{padding:24px 16px!important}
 </head>
 <body>
 <div id="gz-scroll-bg" aria-hidden="true"></div>
+<div id="gz-scroll-bg-flag" aria-hidden="true"></div>
 <script>
 (function(){
-  var bg = document.getElementById('gz-scroll-bg');
+  var bg = document.getElementById('gz-scroll-bg-flag');
   var stopTimer = null;
   window.addEventListener('scroll', function(){
     if (!bg.classList.contains('gz-scrolling')) bg.classList.add('gz-scrolling');
