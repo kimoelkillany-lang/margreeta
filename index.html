@@ -27,7 +27,9 @@
 --font-script:'Caveat',cursive;
 --font-body:'Space Grotesk',sans-serif;
 }
-*{box-sizing:border-box}html,body{overflow-x:hidden}body{margin:0;font-family:var(--font-body);background:var(--surface-cream)}
+*{box-sizing:border-box}html,body{overflow-x:hidden}body{margin:0;font-family:var(--font-body)}
+#gz-scroll-bg{position:fixed;inset:0;z-index:-1;background-color:#FC0000;background-image:linear-gradient(to right, #009246 0%, #009246 33%, #FFFFFF 33%, #FFFFFF 66%, #FC0000 66%, #FC0000 100%);background-size:300% 100%;background-position:100% 0%;transition:background-position .4s ease-out;will-change:background-position}
+#gz-scroll-bg.gz-scrolling{background-position:0% 0%}
 .gz-cart-fab{transition:transform .2s var(--ease-bounce)}
 .gz-cart-fab:hover{transform:scale(1.08)}
 @keyframes gzCartBump{
@@ -150,6 +152,20 @@ footer{padding:24px 16px!important}
 </style>
 </head>
 <body>
+<div id="gz-scroll-bg" aria-hidden="true"></div>
+<script>
+(function(){
+  var bg = document.getElementById('gz-scroll-bg');
+  var stopTimer = null;
+  window.addEventListener('scroll', function(){
+    if (!bg.classList.contains('gz-scrolling')) bg.classList.add('gz-scrolling');
+    clearTimeout(stopTimer);
+    stopTimer = setTimeout(function(){
+      bg.classList.remove('gz-scrolling');
+    }, 200);
+  }, { passive: true });
+})();
+</script>
 <div id="root"></div>
 <script type="text/babel" src="components.js?v=2"></script>
 <script type="text/babel" src="GenZNavBar.jsx?v=3"></script>
