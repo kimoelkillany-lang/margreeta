@@ -12,9 +12,6 @@ const DATA = {
   ]},
   egypt: { number: '03', title: 'Egypt', line: 'The local-favorite flavors, home turf done right.', accent: 'egypt', dishes: [
     { slot: 'egypt-1', image: 'egypt-1.jpeg', name: 'Pastrami', price: 355, recommended: true, tags: ['Tomato sauce', 'Buffalo mozzarella', 'Premium pastrami', 'Red onion', 'Fresh parsley', 'Extra virgin olive oil'] }
-  ]},
-  dessert: { number: '04', title: 'Dessert', line: "Restraint has its limits, and Nutella is one of them.", accent: 'dessert', dishes: [
-    { slot: 'dessert-1', image: 'dessert-1.jpg', name: 'Nutella bites', price: 180, tags: ['Neapolitan dough', 'Fresh cream', 'Nutella chocolate'] }
   ]}
 };
 function GenZDishCard({ dish, country, isEgyptPastrami }) {

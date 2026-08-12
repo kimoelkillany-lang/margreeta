@@ -101,8 +101,7 @@ function Tag({ children, tone = 'outline' }) {
 const ORDER_NOW_COUNTRIES = [
   ['italy', 'Italy'],
   ['america', 'America'],
-  ['egypt', 'Egypt'],
-  ['dessert', 'Dessert']
+  ['egypt', 'Egypt']
 ];
 function OrderNowMenu({ onNav, variant = 'primary', size = 'md', label = 'Order now', align = 'center' }) {
   const [open, setOpen] = React.useState(false);
@@ -129,7 +128,7 @@ function OrderNowMenu({ onNav, variant = 'primary', size = 'md', label = 'Order 
           <div onClick={() => setOpen(false)} className="gz-ordernow-scrim" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', backdropFilter: 'blur(5px)', WebkitBackdropFilter: 'blur(5px)', zIndex: 35 }}></div>
           <div className="gz-ordernow-panel" style={{
             position: 'absolute', top: 'calc(100% + 16px)', ...menuPos, zIndex: 40,
-            display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 18,
+            display: 'grid', gridTemplateColumns: `repeat(${ORDER_NOW_COUNTRIES.length}, 1fr)`, gap: 18,
             padding: 8, background: 'transparent', border: 'none', boxShadow: 'none'
           }}>
             {ORDER_NOW_COUNTRIES.map(([key, text], i) => (

@@ -1,10 +1,9 @@
 const STOPS = [
   { key: 'italy', number: '01', title: 'The classics, done properly.', line: "Cause we're as authentic as you are.", hintTarget: 'the Italian pizzas' },
   { key: 'america', number: '02', title: 'Bold, indulgent, done right.', line: 'Subtlety was never the American way.', hintTarget: 'the American pizzas' },
-  { key: 'egypt', number: '03', title: 'The local-favorite flavors.', line: 'Home turf, done right.', hintTarget: 'the Egyptian pizzas' },
-  { key: 'dessert', number: '04', title: 'Restraint has its limits.', line: "And Nutella is one of them.", hintTarget: 'something sweet' }
+  { key: 'egypt', number: '03', title: 'The local-favorite flavors.', line: 'Home turf, done right.', hintTarget: 'the Egyptian pizzas' }
 ];
-const STOP_BG = { italy: 'assets/italy-bg.jpg', america: 'assets/america-bg-nyc.webp', egypt: 'assets/egypt-bg.jpg', dessert: 'uploads/nutella-8a0b5573.jpg' };
+const STOP_BG = { italy: 'assets/italy-bg.jpg', america: 'assets/america-bg-nyc.webp', egypt: 'assets/egypt-bg.jpg' };
 function GenZStopCard({ s, onNav }) {
   const { JourneyStamp, Postcard, useIsMobile } = window.MargreetaDesignSystem_35c101;
   const [flipped, setFlipped] = React.useState(false);
