@@ -8,7 +8,7 @@ const DATA = {
   ]},
   america: { number: '02', title: 'America', line: 'Bolder, because subtlety was never the American way.', accent: 'america', dishes: [
     { slot: 'america-1', image: 'america-1.jpg', name: 'hot honey pepperoni', price: 380, spicy: true, recommended: true, tags: ['Tomato sauce', 'Parmesan cheese', 'Buffalo mozzarella', 'Pepperoni', 'Hot honey sauce'] },
-    { slot: 'america-2', image: 'america-2.jpg', name: 'cheese lovers', price: 340, tags: ['Four cheeses', 'Mozzarella', 'Parmesan', 'Blue cheese', 'Provolone'] }
+    { slot: 'america-2', image: 'america-2.jpg', name: 'cheese lovers', price: 340, tags: ['Tomato sauce', 'Mozzarella', 'Parmesan', 'Blue cheese', 'Provolone'] }
   ]},
   egypt: { number: '03', title: 'Egypt', line: 'The local-favorite flavors, home turf done right.', accent: 'egypt', dishes: [
     { slot: 'egypt-1', image: 'egypt-1.jpeg', name: 'Pastrami', price: 355, recommended: true, tags: ['Tomato sauce', 'Buffalo mozzarella', 'Premium pastrami', 'Red onion', 'Fresh parsley', 'Extra virgin olive oil'] }
