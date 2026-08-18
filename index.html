@@ -169,15 +169,28 @@ footer{padding:24px 16px!important}
 <script type="text/babel">
 function App(){
   const [page, setPage] = React.useState('home');
+  React.useEffect(() => {
+    history.replaceState({ page: 'home' }, '', location.pathname + location.search);
+    const onPopState = (e) => {
+      setPage((e.state && e.state.page) || 'home');
+      window.scrollTo({ top: 0 });
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, []);
+  const navigateTo = (target) => {
+    setPage(target);
+    history.pushState({ page: target }, '', location.pathname + location.search);
+  };
   const handleNav = (target) => {
     if (target === 'concept') {
-      setPage('home');
+      navigateTo('home');
       requestAnimationFrame(() => setTimeout(() => {
         const el = document.getElementById('concept-section');
         if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 88, behavior: 'smooth' });
       }, 50));
     } else {
-      setPage(target);
+      navigateTo(target);
       window.scrollTo({ top: 0 });
     }
   };
