@@ -88,13 +88,28 @@ function SectionEyebrow({ children, accent = 'gold' }) {
   );
 }
 
+const INGREDIENT_ICONS = [
+  ['pepperoni', '🥓'], ['pastrami', '🥩'], ['salami', '🌶️'], ['mushroom', '🍄'],
+  ['tomato', '🍅'], ['basil', '🌿'], ['parsley', '🌿'], ['arugula', '🥬'],
+  ['olive', '🫒'], ['onion', '🧅'], ['pepper', '🫑'], ['honey', '🍯'],
+  ['cheese', '🧀'], ['mozzarella', '🧀'], ['parmesan', '🧀'], ['provolone', '🧀']
+];
+function getIngredientIcon(text) {
+  const lower = String(text).toLowerCase();
+  const match = INGREDIENT_ICONS.find(([kw]) => lower.includes(kw));
+  return match ? match[1] : null;
+}
 function Tag({ children, tone = 'outline' }) {
   const styles = {
     outline: { border: '1px solid var(--border-hairline-soft)', color: 'var(--ink-bordeaux-900)', background: 'transparent' },
     filled: { border: '1px solid transparent', color: 'var(--ink-bordeaux-900)', background: 'var(--gold-highlight)' }
   };
+  const icon = getIngredientIcon(children);
   return (
-    <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--text-body-sm)', fontWeight: 500, padding: 'var(--tag-pad)', borderRadius: 'var(--radius-sm)', display: 'inline-block', letterSpacing: '0.01em', ...styles[tone] }}>{children}</span>
+    <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--text-body-sm)', fontWeight: 500, padding: 'var(--tag-pad)', borderRadius: 'var(--radius-sm)', display: 'inline-flex', alignItems: 'center', gap: 5, letterSpacing: '0.01em', ...styles[tone] }}>
+      {icon && <span aria-hidden="true" style={{ fontSize: '1.05em', lineHeight: 1 }}>{icon}</span>}
+      {children}
+    </span>
   );
 }
 
