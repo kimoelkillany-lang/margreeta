@@ -93,6 +93,7 @@ const INGREDIENT_ICONS = [
   ['tomato', '🍅'], ['basil', '🌿'], ['parsley', '🌿'], ['arugula', '🥬'],
   ['olive', '🫒'], ['onion', '🧅'], ['pepper', '🫑'], ['honey', '🍯'],
   ['mozzarella', { img: 'assets/icon-mozzarella.png' }],
+  ['blue cheese', { img: 'assets/icon-bluecheese.png' }],
   ['cheese', '🧀'], ['parmesan', '🧀'], ['provolone', '🧀']
 ];
 function getIngredientIcon(text) {
