@@ -117,15 +117,14 @@ function GenZHome({ onNav }) {
       <section id="concept-section" className="gz-concept-section" style={{ background: 'var(--surface-deep-red)', padding: '64px 48px', boxShadow: 'inset 0 12px 24px -12px rgba(0,0,0,.45), inset 0 -12px 24px -12px rgba(0,0,0,.45)', borderTop: '1px solid rgba(0,0,0,.35)', borderBottom: '1px solid rgba(0,0,0,.35)' }}>
         <div style={{ maxWidth: 720, margin: '0 auto 40px' }}>
           <SectionEyebrow accent="gold">The anchor</SectionEyebrow>
-          <div className="gz-section-heading" style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 32, color: 'var(--text-on-red)' }}>Four ingredients. Zero compromise.</div>
+          <div className="gz-section-heading" style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 32, color: 'var(--text-on-red)' }}>Three ingredients. Zero compromise.</div>
           <div className="gz-script-accent" style={{ fontFamily: 'var(--font-script)', fontStyle: 'italic', fontSize: 17, color: 'var(--gold-highlight)', marginTop: 14 }}>That's the anchor. Everything else is a postcard.</div>
         </div>
         <div style={{ maxWidth: 1040, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(440px, 100%), 1fr))', gap: 24 }}>
           {[
             { key: 'dough', num: '01', title: 'The dough', image: 'ingredient-dough.jpg', copy: '48-hour fermented, hand-stretched the Neapolitan way — blistered crust, open crumb, never rushed.' },
             { key: 'tomato', num: '02', title: 'The tomato sauce', image: 'ingredient-tomato.jpg', copy: 'Fresh organic tomatoes, simmered simple. No shortcuts, no concentrate, no preservatives, no added sugar.' },
-            { key: 'cheese', num: '03', title: 'Fresh bufflo mozzarella', image: 'ingredient-cheese.jpg', copy: "Mozzarella made fresh daily — milky, elastic, gone before it's a day old." },
-            { key: 'toppings', num: '04', title: 'The toppings', image: 'ingredient-toppings.webp', copy: 'Premium, sourced ingredients — the only thing that changes from one stop to the next.' }
+            { key: 'cheese', num: '03', title: 'Fresh bufflo mozzarella', image: 'ingredient-cheese.jpg', copy: "Mozzarella made fresh daily — milky, elastic, gone before it's a day old." }
           ].map((item, i) => (
             <GenZReveal key={item.key} delay={i * 0.06} className="gz-ingredient-row" style={{
               display: 'flex', gap: 20, alignItems: 'center', padding: 20, borderRadius: 'var(--radius-md)',
