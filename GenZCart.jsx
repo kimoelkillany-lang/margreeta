@@ -1,4 +1,5 @@
 const WHATSAPP_NUMBER = '201055788000';
+const PICKUP_LOCATION = 'E1-4B Mountain View Chillout Park';
 
 function GenZCart(){
   const Store = window.GenZCartStore;
@@ -6,7 +7,7 @@ function GenZCart(){
   const [open, setOpen] = React.useState(false);
   const [step, setStep] = React.useState('cart');
   const [fulfillment, setFulfillment] = React.useState('delivery');
-  const [form, setForm] = React.useState({ name: '', phone: '', address: '', pickupLocation: '', pickupTime: '', payment: 'card', notes: '' });
+  const [form, setForm] = React.useState({ name: '', phone: '', address: '', pickupLocation: PICKUP_LOCATION, pickupTime: '', notes: '' });
   const [orderRef, setOrderRef] = React.useState(null);
   const [whatsappUrl, setWhatsappUrl] = React.useState(null);
   const fabRef = React.useRef(null);
@@ -61,7 +62,7 @@ function GenZCart(){
     lines.push(`Phone: ${form.phone}`);
     if (fulfillment === 'delivery') lines.push(`Delivery to: ${form.address}`);
     else { lines.push(`Pickup at: ${form.pickupLocation}`); lines.push(`Pickup time: ${form.pickupTime}`); }
-    lines.push(`Payment: ${form.payment === 'card' ? 'Card' : 'Cash on delivery'}`);
+    lines.push(`Payment: ${fulfillment === 'delivery' ? 'Cash on delivery' : 'Cash on pickup'}`);
     if (form.notes) lines.push(`Notes: ${form.notes}`);
     return lines.join('\n');
   };
@@ -76,7 +77,7 @@ function GenZCart(){
     setStep('confirmed');
     Store.clear();
   };
-  const resetAndClose = () => { setOpen(false); setStep('cart'); setOrderRef(null); setWhatsappUrl(null); setForm({ name: '', phone: '', address: '', pickupLocation: '', pickupTime: '', payment: 'card', notes: '' }); };
+  const resetAndClose = () => { setOpen(false); setStep('cart'); setOrderRef(null); setWhatsappUrl(null); setForm({ name: '', phone: '', address: '', pickupLocation: PICKUP_LOCATION, pickupTime: '', notes: '' }); };
   return (
     <div>
       <button ref={fabRef} onClick={() => setOpen(true)} onAnimationEnd={() => fabRef.current && fabRef.current.classList.remove('gz-cart-fab-bump')} aria-label="Open cart" className="gz-cart-fab" style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 40, width: 62, height: 62, borderRadius: '50%', background: 'var(--gold-foil)', border: 'none', boxShadow: 'var(--shadow-card)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
@@ -131,7 +132,10 @@ function GenZCart(){
                   <label style={labelStyle}>Delivery address<input style={inputStyle} value={form.address} onChange={set('address')} placeholder="Street, building, city" /></label>
                 ) : (
                   <React.Fragment>
-                    <label style={labelStyle}>Pickup location<input style={inputStyle} value={form.pickupLocation} onChange={set('pickupLocation')} placeholder="Nearest Margreeta stop" /></label>
+                    <div>
+                      <div style={labelStyle}>Pickup location</div>
+                      <div style={{ ...inputStyle, background: 'var(--gold-highlight)', color: 'var(--ink-black)', fontWeight: 700 }}>{PICKUP_LOCATION}</div>
+                    </div>
                     <label style={labelStyle}>Pickup time<input style={inputStyle} value={form.pickupTime} onChange={set('pickupTime')} placeholder="e.g. Today, 7:30 PM" /></label>
                   </React.Fragment>
                 )}
@@ -144,20 +148,10 @@ function GenZCart(){
             )}
             {step === 'payment' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                <div style={{ display: 'flex', gap: 8 }}>
-                  {[['card','Card'],['cash','Cash on delivery']].map(([v,l]) => (
-                    <button key={v} onClick={() => setForm(f => ({ ...f, payment: v }))} style={{ flex: 1, padding: '10px', borderRadius: 10, border: form.payment === v ? '2px solid var(--gold-foil)' : '1px solid var(--border-hairline-soft)', background: form.payment === v ? 'var(--gold-highlight)' : '#fff', color: 'var(--ink-black)', fontFamily: 'var(--font-body)', fontWeight: 700, cursor: 'pointer' }}>{l}</button>
-                  ))}
+                <div>
+                  <div style={labelStyle}>Payment method</div>
+                  <div style={{ ...inputStyle, background: 'var(--gold-highlight)', color: 'var(--ink-black)', fontWeight: 700 }}>{fulfillment === 'delivery' ? 'Cash on delivery' : 'Cash on pickup'}</div>
                 </div>
-                {form.payment === 'card' && (
-                  <React.Fragment>
-                    <label style={labelStyle}>Card number<input style={inputStyle} placeholder="4242 4242 4242 4242" /></label>
-                    <div style={{ display: 'flex', gap: 10 }}>
-                      <label style={{ ...labelStyle, flex: 1 }}>Expiry<input style={inputStyle} placeholder="MM/YY" /></label>
-                      <label style={{ ...labelStyle, flex: 1 }}>CVC<input style={inputStyle} placeholder="123" /></label>
-                    </div>
-                  </React.Fragment>
-                )}
                 <div className="gz-cart-total" style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 16, color: 'var(--ink-black)' }}>
                   <span>Total</span><span>{total} EGP</span>
                 </div>
