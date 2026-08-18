@@ -80,11 +80,11 @@ function GenZCountryStop({ country, onNav }) {
       <button onClick={() => onNav('home')} aria-label="Back to home" className="gz-back-fab" style={{ position: 'fixed', left: 20, top: '50%', transform: 'translateY(-50%)', zIndex: 30, width: 48, height: 48, borderRadius: '50%', background: 'var(--gold-foil)', border: 'none', boxShadow: 'var(--shadow-card)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink-bordeaux-900)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
       </button>
-      <section className="gz-country-hero" style={{ background: 'var(--surface-cream)', padding: '80px 48px', display: 'flex', alignItems: 'center', gap: 32, flexWrap: 'wrap', justifyContent: 'center', borderBottom: '1px solid var(--border-hairline-soft)' }}>
-        <div style={{ transition: 'transform .3s ease' }} onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.06) rotate(-2deg)'; }} onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1) rotate(0)'; }}>
+      <section className="gz-country-hero" style={{ background: 'var(--surface-cream)', padding: '80px 48px', display: 'flex', alignItems: 'center', gap: 32, flexWrap: 'nowrap', justifyContent: 'center', borderBottom: '1px solid var(--border-hairline-soft)' }}>
+        <div style={{ transition: 'transform .3s ease', flexShrink: 0 }} onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.06) rotate(-2deg)'; }} onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1) rotate(0)'; }}>
           <JourneyStamp country={d.accent} number={d.number} size={isMobile ? 64 : 120} />
         </div>
-        <GenZReveal>
+        <GenZReveal style={{ minWidth: 0 }}>
         <div style={{ maxWidth: 480 }}>
           <SectionEyebrow accent={d.accent}>Stop No. {d.number}</SectionEyebrow>
           <div className="gz-country-heading" style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 44, color: 'var(--text-on-red)' }}>{d.title}</div>
