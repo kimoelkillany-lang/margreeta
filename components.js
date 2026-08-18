@@ -92,7 +92,7 @@ const INGREDIENT_ICONS = [
   ['pepperoni', '🥓'], ['pastrami', '🥩'], ['salami', '🌶️'], ['mushroom', '🍄'],
   ['tomato', '🍅'], ['basil', '🌿'], ['parsley', '🌿'], ['arugula', '🥬'],
   ['olive', '🫒'], ['onion', '🧅'], ['pepper', '🫑'], ['honey', '🍯'],
-  ['cheese', '🧀'], ['mozzarella', '🧀'], ['parmesan', '🧀'], ['provolone', '🧀']
+  ['mozzarella', '🥛'], ['cheese', '🧀'], ['parmesan', '🧀'], ['provolone', '🧀']
 ];
 function getIngredientIcon(text) {
   const lower = String(text).toLowerCase();
