@@ -54,6 +54,8 @@ function GenZCart(){
   const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
   const inputStyle = { width: '100%', padding: '12px 14px', borderRadius: 10, border: '1px solid var(--border-hairline-soft)', fontFamily: 'var(--font-body)', fontSize: 15, background: '#fff', color: 'var(--ink-black)', marginTop: 6 };
   const labelStyle = { fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 13, color: 'var(--text-muted-on-light)', display: 'block' };
+  const isPhoneValid = /^[0-9]{11}$/.test(form.phone.trim());
+  const phoneInputStyle = { ...inputStyle, ...(form.phone && !isPhoneValid ? { border: '1px solid var(--brand-red)', outlineColor: 'var(--brand-red)' } : {}) };
   const buildOrderMessage = (ref) => {
     const lines = [`New order ${ref}`, ''];
     items.forEach(i => lines.push(`${i.qty}x ${i.name} — ${i.price * i.qty} EGP`));
@@ -127,7 +129,9 @@ function GenZCart(){
                   ))}
                 </div>
                 <label style={labelStyle}>Name<input style={inputStyle} value={form.name} onChange={set('name')} placeholder="Your name" /></label>
-                <label style={labelStyle}>Phone<input style={inputStyle} value={form.phone} onChange={set('phone')} placeholder="01xxxxxxxxx" /></label>
+                <label style={labelStyle}>Phone<input style={phoneInputStyle} value={form.phone} onChange={set('phone')} placeholder="01xxxxxxxxx" inputMode="numeric" maxLength={11} />
+                  {form.phone && !isPhoneValid && <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--brand-red)', marginTop: 4 }}>Phone number must be exactly 11 digits.</div>}
+                </label>
                 {fulfillment === 'delivery' ? (
                   <label style={labelStyle}>Delivery address<input style={inputStyle} value={form.address} onChange={set('address')} placeholder="Street, building, city" /></label>
                 ) : (
@@ -142,7 +146,7 @@ function GenZCart(){
                 <label style={labelStyle}>Order notes<input style={inputStyle} value={form.notes} onChange={set('notes')} placeholder="Extra spicy, no onions..." /></label>
                 <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
                   <button onClick={() => setStep('cart')} style={{ flex: 1, padding: '12px', borderRadius: 10, border: '1px solid var(--border-hairline-soft)', background: '#fff', color: 'var(--ink-black)', fontFamily: 'var(--font-body)', fontWeight: 700, cursor: 'pointer' }}>Back</button>
-                  <button disabled={!form.name || !form.phone} onClick={goToPayment} style={{ flex: 2, padding: '12px', borderRadius: 10, border: 'none', background: (!form.name || !form.phone) ? '#ddd' : 'var(--gold-foil)', color: 'var(--ink-bordeaux-900)', fontFamily: 'var(--font-body)', fontWeight: 700, cursor: (!form.name || !form.phone) ? 'not-allowed' : 'pointer' }}>Continue to payment</button>
+                  <button disabled={!form.name || !isPhoneValid} onClick={goToPayment} style={{ flex: 2, padding: '12px', borderRadius: 10, border: 'none', background: (!form.name || !isPhoneValid) ? '#ddd' : 'var(--gold-foil)', color: 'var(--ink-bordeaux-900)', fontFamily: 'var(--font-body)', fontWeight: 700, cursor: (!form.name || !isPhoneValid) ? 'not-allowed' : 'pointer' }}>Continue to payment</button>
                 </div>
               </div>
             )}
