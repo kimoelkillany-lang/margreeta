@@ -90,8 +90,8 @@ function SectionEyebrow({ children, accent = 'gold' }) {
 
 const INGREDIENT_ICONS = [
   ['pepperoni', { img: 'assets/icon-pepperoni.png' }], ['pastrami', '🥩'], ['salami', { img: 'assets/icon-pepperoni.png' }], ['mushroom', '🍄'],
-  ['tomato', '🍅'], ['basil', '🌿'], ['parsley', '🌿'], ['arugula', '🥬'],
-  ['olive', '🫒'], ['onion', '🧅'], ['pepper', '🫑'], ['honey', '🍯'],
+  ['tomato', '🍅'], ['basil', { img: 'assets/icon-basil.png' }], ['parsley', '🌿'], ['arugula', { img: 'assets/icon-arugula.png' }],
+  ['olive', { img: 'assets/icon-oliveoil.png' }], ['onion', '🧅'], ['pepper', '🫑'], ['honey', '🍯'],
   ['mozzarella', { img: 'assets/icon-mozzarella.png' }],
   ['blue cheese', { img: 'assets/icon-bluecheese.png' }],
   ['provolone', { img: 'assets/icon-provolone.png' }],
