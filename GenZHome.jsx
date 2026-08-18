@@ -4,9 +4,10 @@ const STOPS = [
   { key: 'egypt', number: '03', title: 'The local-favorite flavors.', line: 'Home turf, done right.', hintTarget: 'the Egyptian pizzas' }
 ];
 const STOP_BG = { italy: 'assets/italy-bg.jpg', america: 'assets/america-bg-nyc.webp', egypt: 'assets/egypt-bg.jpg' };
-function GenZStopCard({ s, onNav }) {
+function GenZStopCard({ s, onNav, autoFlipped }) {
   const { JourneyStamp, Postcard, useIsMobile } = window.MargreetaDesignSystem_35c101;
-  const [flipped, setFlipped] = React.useState(false);
+  const [manualFlipped, setManualFlipped] = React.useState(false);
+  const flipped = autoFlipped || manualFlipped;
   const canHoverRef = React.useRef(typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches);
   const canHover = canHoverRef.current;
   const isMobile = useIsMobile();
@@ -14,11 +15,11 @@ function GenZStopCard({ s, onNav }) {
   const backStampSize = isMobile ? 34 : 48;
   const handleClick = () => {
     if (canHover) { onNav(s.key); return; }
-    if (!flipped) { setFlipped(true); return; }
+    if (!flipped) { setManualFlipped(true); return; }
     onNav(s.key);
   };
   return (
-    <div className="gz-stopcard" onClick={handleClick} onMouseEnter={() => canHover && setFlipped(true)} onMouseLeave={() => canHover && setFlipped(false)}
+    <div className="gz-stopcard" onClick={handleClick} onMouseEnter={() => canHover && setManualFlipped(true)} onMouseLeave={() => canHover && setManualFlipped(false)}
       style={{ cursor: 'pointer', height: 280, perspective: 1200 }}
     >
       <div style={{ position: 'relative', width: '100%', height: '100%', transformStyle: 'preserve-3d', transition: 'transform .6s var(--ease-bounce)', transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)' }}>
@@ -54,7 +55,14 @@ function GenZStopCard({ s, onNav }) {
               <JourneyStamp country={s.key} number={s.number} size={backStampSize} />
               <div className="gz-stopcard-country" style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 20, color: '#fff', textTransform: 'capitalize' }}>{s.key}</div>
             </div>
-            {!canHover && <div className="gz-stopcard-hint" style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'rgba(255,255,255,.85)', letterSpacing: '0.02em' }}>One more click if you're hungry</div>}
+            <div className="gz-stopcard-hint" style={{ display: 'flex', alignItems: 'center', gap: 7, fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 15, color: 'var(--gold-highlight)', letterSpacing: '0.01em' }}>
+              <svg className="gz-stopcard-hint-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+                <circle cx="12" cy="12" r="3.2" fill="currentColor" />
+                <circle cx="12" cy="12" r="7.2" stroke="currentColor" strokeWidth="1.6" opacity="0.55" />
+                <circle cx="12" cy="12" r="10.6" stroke="currentColor" strokeWidth="1.6" opacity="0.28" />
+              </svg>
+              {canHover ? 'Click to explore' : 'One more click if you\'re hungry'}
+            </div>
           </div>
         </div>
       </div>
@@ -63,6 +71,11 @@ function GenZStopCard({ s, onNav }) {
 }
 function GenZHome({ onNav }) {
   const { JourneyStamp, Postcard, Button, SectionEyebrow, OrderNowMenu } = window.MargreetaDesignSystem_35c101;
+  const [autoFlipped, setAutoFlipped] = React.useState(false);
+  React.useEffect(() => {
+    const t = setInterval(() => setAutoFlipped(v => !v), 3000);
+    return () => clearInterval(t);
+  }, []);
   return (
     <div>
       <section className="gz-hero-section" style={{ background: 'var(--surface-cream)', padding: '96px 48px 120px', textAlign: 'center' }}>
@@ -91,7 +104,7 @@ function GenZHome({ onNav }) {
         <div className="gz-worldtour-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 28, maxWidth: 1080, margin: '0 auto', alignItems: 'stretch' }}>
           {STOPS.map((s, i) => (
             <GenZReveal key={s.key} delay={i * 0.08} className="gz-worldtour-item">
-              <GenZStopCard s={s} onNav={onNav} />
+              <GenZStopCard s={s} onNav={onNav} autoFlipped={autoFlipped} />
             </GenZReveal>
           ))}
         </div>
