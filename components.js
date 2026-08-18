@@ -99,9 +99,9 @@ function Tag({ children, tone = 'outline' }) {
 }
 
 const ORDER_NOW_COUNTRIES = [
-  ['italy', 'Italy'],
-  ['america', 'America'],
-  ['egypt', 'Egypt']
+  ['italy', 'Italy', 'assets/italy-bg.jpg', '-4deg'],
+  ['america', 'America', 'assets/america-bg-nyc.webp', '2deg'],
+  ['egypt', 'Egypt', 'assets/egypt-bg.jpg', '-2deg']
 ];
 function OrderNowMenu({ onNav, variant = 'primary', size = 'md', label = 'Order now', align = 'center' }) {
   const [open, setOpen] = React.useState(false);
@@ -128,25 +128,29 @@ function OrderNowMenu({ onNav, variant = 'primary', size = 'md', label = 'Order 
           <div onClick={() => setOpen(false)} className="gz-ordernow-scrim" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', backdropFilter: 'blur(5px)', WebkitBackdropFilter: 'blur(5px)', zIndex: 35 }}></div>
           <div className="gz-ordernow-panel" style={{
             position: 'absolute', top: 'calc(100% + 16px)', ...menuPos, zIndex: 40,
-            display: 'grid', gridTemplateColumns: `repeat(${ORDER_NOW_COUNTRIES.length}, 1fr)`, gap: 18,
+            display: 'flex', gap: 14,
             padding: 8, background: 'transparent', border: 'none', boxShadow: 'none'
           }}>
-            {ORDER_NOW_COUNTRIES.map(([key, text], i) => (
+            {ORDER_NOW_COUNTRIES.map(([key, text, photo, tilt], i) => (
               <div key={key} className="gz-ordernow-chip-in" style={{ animation: 'gzChipIn .5s var(--ease-bounce) both', animationDelay: `${i * 0.06}s` }}>
                 <button onClick={() => { setOpen(false); onNav(key); }}
                   className="gz-ordernow-chip"
                   style={{
-                    width: 76, height: 76, margin: 0, borderRadius: '50%', border: '1.5px solid var(--gold-foil)',
-                    background: 'rgba(255,255,255,.04)', backdropFilter: 'blur(2px)', WebkitBackdropFilter: 'blur(2px)', color: '#fff',
-                    fontFamily: 'var(--font-stamp)', fontVariant: 'small-caps', letterSpacing: '0.03em', fontSize: 11,
-                    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center',
+                    position: 'relative', width: 96, height: 122, margin: 0, padding: 0, borderRadius: 16, overflow: 'hidden',
+                    border: '2px solid var(--gold-foil)', background: `url(${photo}) center/cover`, color: '#fff',
+                    cursor: 'pointer', display: 'block', textAlign: 'left',
                     animation: 'gzChipFloat 3.4s ease-in-out infinite', animationDelay: `${i * 0.2}s`,
-                    boxShadow: '0 0 18px -3px var(--gold-foil)',
-                    transition: 'box-shadow .2s ease'
+                    boxShadow: '0 0 16px -4px var(--gold-foil)',
+                    transform: `rotate(${tilt})`,
+                    transition: 'transform .2s var(--ease-bounce), box-shadow .2s ease'
                   }}
-                  onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 0 28px 2px var(--gold-foil)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 0 18px -3px var(--gold-foil)'; }}
-                >{text}</button>
+                  onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 0 24px 0 var(--gold-foil)'; e.currentTarget.style.transform = 'rotate(0deg) scale(1.05)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 0 16px -4px var(--gold-foil)'; e.currentTarget.style.transform = `rotate(${tilt})`; }}
+                >
+                  <span style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0) 45%, rgba(0,0,0,.85) 100%)' }}></span>
+                  <span style={{ position: 'absolute', top: 6, right: 6, width: 22, height: 22, borderRadius: '50%', background: 'var(--gold-foil)', color: 'var(--ink-bordeaux-900)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-stamp)', fontSize: 10, fontWeight: 700 }}>0{i + 1}</span>
+                  <span style={{ position: 'absolute', bottom: 10, left: 10, right: 10, fontFamily: 'var(--font-stamp)', fontVariant: 'small-caps', letterSpacing: '0.02em', fontSize: 13 }}>{text}</span>
+                </button>
               </div>
             ))}
           </div>
