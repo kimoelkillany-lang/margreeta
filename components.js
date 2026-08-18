@@ -105,6 +105,7 @@ const ORDER_NOW_COUNTRIES = [
 ];
 function OrderNowMenu({ onNav, variant = 'primary', size = 'md', label = 'Order now', align = 'center' }) {
   const [open, setOpen] = React.useState(false);
+  const [panelTop, setPanelTop] = React.useState(0);
   const ref = React.useRef(null);
   React.useEffect(() => {
     if (!open) return;
@@ -120,16 +121,22 @@ function OrderNowMenu({ onNav, variant = 'primary', size = 'md', label = 'Order 
     };
   }, [open]);
   const menuPos = align === 'right' ? { right: 0 } : { left: '50%', transform: 'translateX(-50%)' };
+  const toggleOpen = () => {
+    if (!open && ref.current) setPanelTop(ref.current.getBoundingClientRect().bottom + 16);
+    setOpen(o => !o);
+  };
   return (
     <div ref={ref} style={{ position: 'relative', display: 'inline-block' }}>
-      <Button variant={variant} size={size} onClick={() => setOpen(o => !o)}>{label}</Button>
+      <Button variant={variant} size={size} onClick={toggleOpen}>{label}</Button>
       {open && (
         <React.Fragment>
           <div onClick={() => setOpen(false)} className="gz-ordernow-scrim" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', backdropFilter: 'blur(5px)', WebkitBackdropFilter: 'blur(5px)', zIndex: 35 }}></div>
           <div className="gz-ordernow-panel" style={{
-            position: 'absolute', top: 'calc(100% + 16px)', ...menuPos, zIndex: 40,
-            display: 'flex', gap: 14,
-            padding: 8, background: 'transparent', border: 'none', boxShadow: 'none'
+            position: align === 'right' ? 'absolute' : 'fixed',
+            top: align === 'right' ? 'calc(100% + 16px)' : panelTop,
+            ...menuPos, zIndex: 40,
+            display: 'flex', gap: 14, maxWidth: 'calc(100vw - 24px)',
+            padding: '8px 16px', background: 'transparent', border: 'none', boxShadow: 'none'
           }}>
             {ORDER_NOW_COUNTRIES.map(([key, text, photo, tilt], i) => (
               <div key={key} className="gz-ordernow-chip-in" style={{ animation: 'gzChipIn .5s var(--ease-bounce) both', animationDelay: `${i * 0.06}s` }}>
