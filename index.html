@@ -80,6 +80,11 @@
 50%{transform:scale(1.25);opacity:1}
 }
 .gz-nav-underline{position:absolute;bottom:2px;height:2px;border-radius:2px;background:var(--gold-foil);box-shadow:0 0 8px 0 var(--gold-foil);transition:left .3s var(--ease-bounce), width .3s var(--ease-bounce), opacity .2s ease;pointer-events:none}
+.gz-stopcard-hint-icon{animation:gzTapPulse 1.4s ease-in-out infinite}
+@keyframes gzTapPulse{
+0%,100%{transform:scale(1);opacity:.85}
+50%{transform:scale(1.18);opacity:1}
+}
 @media (max-width:800px){
 .gz-nav-links{display:none!important}
 .gz-nav-burger{display:flex!important}
@@ -123,7 +128,8 @@ footer{padding:24px 16px!important}
 .gz-stopcard-line{font-size:12.5px!important;margin-top:6px!important}
 .gz-stopcard-back{padding:14px!important;gap:2px!important}
 .gz-stopcard-country{font-size:16px!important}
-.gz-stopcard-hint{font-size:10.5px!important}
+.gz-stopcard-hint{font-size:12.5px!important;gap:5px!important}
+.gz-stopcard-hint-icon{width:14px!important;height:14px!important}
 .gz-stopcard-frontcue{font-size:10px!important;margin-top:8px!important;padding:5px 10px!important}
 .gz-country-hero{padding-top:28px!important;padding-bottom:28px!important;gap:16px!important}
 .gz-country-heading{font-size:23px!important}
