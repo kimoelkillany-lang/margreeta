@@ -8,7 +8,7 @@ function GenZCart(){
   const [open, setOpen] = React.useState(false);
   const [step, setStep] = React.useState('cart');
   const [fulfillment, setFulfillment] = React.useState('delivery');
-  const [form, setForm] = React.useState({ name: '', phone: '', address: '', compound: '', pickupLocation: PICKUP_LOCATION, pickupTime: '', notes: '' });
+  const [form, setForm] = React.useState({ firstName: '', lastName: '', phone: '', address: '', compound: '', pickupLocation: PICKUP_LOCATION, pickupTime: '', notes: '' });
   const [orderRef, setOrderRef] = React.useState(null);
   const [whatsappUrl, setWhatsappUrl] = React.useState(null);
   const fabRef = React.useRef(null);
@@ -55,13 +55,27 @@ function GenZCart(){
   const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
   const inputStyle = { width: '100%', padding: '12px 14px', borderRadius: 10, border: '1px solid var(--border-hairline-soft)', fontFamily: 'var(--font-body)', fontSize: 15, background: '#fff', color: 'var(--ink-black)', marginTop: 6 };
   const labelStyle = { fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 13, color: 'var(--text-muted-on-light)', display: 'block' };
+  const isFirstNameValid = form.firstName.trim().length >= 2;
+  const isLastNameValid = form.lastName.trim().length >= 2;
   const isPhoneValid = /^[0-9]{11}$/.test(form.phone.trim());
-  const phoneInputStyle = { ...inputStyle, ...(form.phone && !isPhoneValid ? { border: '1px solid var(--brand-red)', outlineColor: 'var(--brand-red)' } : {}) };
+  const isAddressValid = form.address.trim().length >= 5;
+  const isCompoundValid = form.compound.trim().length > 0;
+  const isPickupTimeValid = form.pickupTime.trim().length >= 2;
+  const isFulfillmentValid = fulfillment === 'delivery' ? (isAddressValid && isCompoundValid) : isPickupTimeValid;
+  const canContinue = isFirstNameValid && isLastNameValid && isPhoneValid && isFulfillmentValid;
+  const invalidStyle = (touched, valid) => ({ ...inputStyle, ...(touched && !valid ? { border: '1px solid var(--brand-red)', outlineColor: 'var(--brand-red)' } : {}) });
+  const firstNameInputStyle = invalidStyle(form.firstName, isFirstNameValid);
+  const lastNameInputStyle = invalidStyle(form.lastName, isLastNameValid);
+  const phoneInputStyle = invalidStyle(form.phone, isPhoneValid);
+  const addressInputStyle = invalidStyle(form.address, isAddressValid);
+  const compoundInputStyle = invalidStyle(true, isCompoundValid);
+  const pickupTimeInputStyle = invalidStyle(form.pickupTime, isPickupTimeValid);
+  const errorText = (msg) => <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--brand-red)', marginTop: 4 }}>{msg}</div>;
   const buildOrderMessage = (ref) => {
     const lines = [`New order ${ref}`, ''];
     items.forEach(i => lines.push(`${i.qty}x ${i.name} — ${i.price * i.qty} EGP`));
     lines.push('', `Total: ${total} EGP`, '');
-    lines.push(`Name: ${form.name}`);
+    lines.push(`Name: ${form.firstName} ${form.lastName}`);
     lines.push(`Phone: ${form.phone}`);
     if (fulfillment === 'delivery') { lines.push(`Delivery to: ${form.address}`); lines.push(`Compound: ${form.compound}`); }
     else { lines.push(`Pickup at: ${form.pickupLocation}`); lines.push(`Pickup time: ${form.pickupTime}`); }
@@ -80,7 +94,7 @@ function GenZCart(){
     setStep('confirmed');
     Store.clear();
   };
-  const resetAndClose = () => { setOpen(false); setStep('cart'); setOrderRef(null); setWhatsappUrl(null); setForm({ name: '', phone: '', address: '', compound: '', pickupLocation: PICKUP_LOCATION, pickupTime: '', notes: '' }); };
+  const resetAndClose = () => { setOpen(false); setStep('cart'); setOrderRef(null); setWhatsappUrl(null); setForm({ firstName: '', lastName: '', phone: '', address: '', compound: '', pickupLocation: PICKUP_LOCATION, pickupTime: '', notes: '' }); };
   return (
     <div>
       <button ref={fabRef} onClick={() => setOpen(true)} onAnimationEnd={() => fabRef.current && fabRef.current.classList.remove('gz-cart-fab-bump')} aria-label="Open cart" className="gz-cart-fab" style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 40, width: 62, height: 62, borderRadius: '50%', background: 'var(--gold-foil)', border: 'none', boxShadow: 'var(--shadow-card)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
@@ -129,18 +143,28 @@ function GenZCart(){
                     <button key={f} onClick={() => setFulfillment(f)} style={{ flex: 1, padding: '10px', borderRadius: 10, border: fulfillment === f ? '2px solid var(--gold-foil)' : '1px solid var(--border-hairline-soft)', background: fulfillment === f ? 'var(--gold-highlight)' : '#fff', color: 'var(--ink-black)', fontFamily: 'var(--font-body)', fontWeight: 700, textTransform: 'capitalize', cursor: 'pointer' }}>{f}</button>
                   ))}
                 </div>
-                <label style={labelStyle}>Name<input style={inputStyle} value={form.name} onChange={set('name')} placeholder="Your name" /></label>
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <label style={{ ...labelStyle, flex: 1 }}>First name<input style={firstNameInputStyle} value={form.firstName} onChange={set('firstName')} placeholder="First name" />
+                    {form.firstName && !isFirstNameValid && errorText('At least 2 characters.')}
+                  </label>
+                  <label style={{ ...labelStyle, flex: 1 }}>Family name<input style={lastNameInputStyle} value={form.lastName} onChange={set('lastName')} placeholder="Family name" />
+                    {form.lastName && !isLastNameValid && errorText('At least 2 characters.')}
+                  </label>
+                </div>
                 <label style={labelStyle}>Phone<input style={phoneInputStyle} value={form.phone} onChange={set('phone')} placeholder="01xxxxxxxxx" inputMode="numeric" maxLength={11} />
-                  {form.phone && !isPhoneValid && <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--brand-red)', marginTop: 4 }}>Phone number must be exactly 11 digits.</div>}
+                  {form.phone && !isPhoneValid && errorText('Phone number must be exactly 11 digits.')}
                 </label>
                 {fulfillment === 'delivery' ? (
                   <React.Fragment>
-                    <label style={labelStyle}>Delivery address<input style={inputStyle} value={form.address} onChange={set('address')} placeholder="Street, building, city" /></label>
+                    <label style={labelStyle}>Delivery address<input style={addressInputStyle} value={form.address} onChange={set('address')} placeholder="Street, building, city" />
+                      {form.address && !isAddressValid && errorText('Please enter a fuller address (at least 5 characters).')}
+                    </label>
                     <label style={labelStyle}>Compound
-                      <select style={inputStyle} value={form.compound} onChange={set('compound')}>
+                      <select style={compoundInputStyle} value={form.compound} onChange={set('compound')}>
                         <option value="" disabled>Select your compound</option>
                         {COMPOUNDS.map(c => <option key={c} value={c}>{c}</option>)}
                       </select>
+                      {!isCompoundValid && errorText('Please select your compound.')}
                     </label>
                   </React.Fragment>
                 ) : (
@@ -149,13 +173,15 @@ function GenZCart(){
                       <div style={labelStyle}>Pickup location</div>
                       <div style={{ ...inputStyle, background: 'var(--gold-highlight)', color: 'var(--ink-black)', fontWeight: 700 }}>{PICKUP_LOCATION}</div>
                     </div>
-                    <label style={labelStyle}>Pickup time<input style={inputStyle} value={form.pickupTime} onChange={set('pickupTime')} placeholder="e.g. Today, 7:30 PM" /></label>
+                    <label style={labelStyle}>Pickup time<input style={pickupTimeInputStyle} value={form.pickupTime} onChange={set('pickupTime')} placeholder="e.g. Today, 7:30 PM" />
+                      {form.pickupTime && !isPickupTimeValid && errorText('Please enter a pickup time.')}
+                    </label>
                   </React.Fragment>
                 )}
                 <label style={labelStyle}>Order notes<input style={inputStyle} value={form.notes} onChange={set('notes')} placeholder="Extra spicy, no onions..." /></label>
                 <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
                   <button onClick={() => setStep('cart')} style={{ flex: 1, padding: '12px', borderRadius: 10, border: '1px solid var(--border-hairline-soft)', background: '#fff', color: 'var(--ink-black)', fontFamily: 'var(--font-body)', fontWeight: 700, cursor: 'pointer' }}>Back</button>
-                  <button disabled={!form.name || !isPhoneValid} onClick={goToPayment} style={{ flex: 2, padding: '12px', borderRadius: 10, border: 'none', background: (!form.name || !isPhoneValid) ? '#ddd' : 'var(--gold-foil)', color: 'var(--ink-bordeaux-900)', fontFamily: 'var(--font-body)', fontWeight: 700, cursor: (!form.name || !isPhoneValid) ? 'not-allowed' : 'pointer' }}>Continue to payment</button>
+                  <button disabled={!canContinue} onClick={goToPayment} style={{ flex: 2, padding: '12px', borderRadius: 10, border: 'none', background: !canContinue ? '#ddd' : 'var(--gold-foil)', color: 'var(--ink-bordeaux-900)', fontFamily: 'var(--font-body)', fontWeight: 700, cursor: !canContinue ? 'not-allowed' : 'pointer' }}>Continue to payment</button>
                 </div>
               </div>
             )}
@@ -180,7 +206,7 @@ function GenZCart(){
                   <span className="gz-confirm-glow"></span>
                   <div className="gz-cart-emoji" style={{ fontSize: 44, position: 'relative', animation: 'gzChipIn .5s var(--ease-bounce) both' }}>📲</div>
                 </div>
-                <div className="gz-cart-confirm-main" style={{ fontFamily: 'var(--font-body)', fontSize: 16, color: 'var(--ink-black)', marginTop: 12 }}>Almost there{form.name ? ', ' + form.name : ''}! We've opened WhatsApp with order <strong>{orderRef}</strong> filled in.</div>
+                <div className="gz-cart-confirm-main" style={{ fontFamily: 'var(--font-body)', fontSize: 16, color: 'var(--ink-black)', marginTop: 12 }}>Almost there{form.firstName ? ', ' + form.firstName : ''}! We've opened WhatsApp with order <strong>{orderRef}</strong> filled in.</div>
                 <div className="gz-cart-confirm-sub" style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--text-muted-on-light)', marginTop: 8 }}>Just hit <strong>Send</strong> in WhatsApp to confirm with Margreeta — {fulfillment === 'delivery' ? "we'll deliver it to " + (form.address || 'your address') : 'ready for pickup at ' + (form.pickupLocation || 'your chosen stop')}.</div>
                 {whatsappUrl && (
                   <div className="gz-cart-confirm-sub" style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--text-muted-on-light)', marginTop: 14 }}>
