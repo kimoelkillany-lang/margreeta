@@ -1,5 +1,6 @@
 const WHATSAPP_NUMBER = '201055788000';
 const PICKUP_LOCATION = 'E1-4B Mountain View Chillout Park';
+const COMPOUNDS = ['Mountain View Chillout Park', 'Grand Heights', 'Nyoum', 'Mountain View iCity', 'Green 5', 'SODIC October Plaza'];
 
 function GenZCart(){
   const Store = window.GenZCartStore;
@@ -7,7 +8,7 @@ function GenZCart(){
   const [open, setOpen] = React.useState(false);
   const [step, setStep] = React.useState('cart');
   const [fulfillment, setFulfillment] = React.useState('delivery');
-  const [form, setForm] = React.useState({ name: '', phone: '', address: '', pickupLocation: PICKUP_LOCATION, pickupTime: '', notes: '' });
+  const [form, setForm] = React.useState({ name: '', phone: '', address: '', compound: '', pickupLocation: PICKUP_LOCATION, pickupTime: '', notes: '' });
   const [orderRef, setOrderRef] = React.useState(null);
   const [whatsappUrl, setWhatsappUrl] = React.useState(null);
   const fabRef = React.useRef(null);
@@ -62,7 +63,7 @@ function GenZCart(){
     lines.push('', `Total: ${total} EGP`, '');
     lines.push(`Name: ${form.name}`);
     lines.push(`Phone: ${form.phone}`);
-    if (fulfillment === 'delivery') lines.push(`Delivery to: ${form.address}`);
+    if (fulfillment === 'delivery') { lines.push(`Delivery to: ${form.address}`); lines.push(`Compound: ${form.compound}`); }
     else { lines.push(`Pickup at: ${form.pickupLocation}`); lines.push(`Pickup time: ${form.pickupTime}`); }
     lines.push(`Payment: ${fulfillment === 'delivery' ? 'Cash on delivery' : 'Cash on pickup'}`);
     if (form.notes) lines.push(`Notes: ${form.notes}`);
@@ -79,7 +80,7 @@ function GenZCart(){
     setStep('confirmed');
     Store.clear();
   };
-  const resetAndClose = () => { setOpen(false); setStep('cart'); setOrderRef(null); setWhatsappUrl(null); setForm({ name: '', phone: '', address: '', pickupLocation: PICKUP_LOCATION, pickupTime: '', notes: '' }); };
+  const resetAndClose = () => { setOpen(false); setStep('cart'); setOrderRef(null); setWhatsappUrl(null); setForm({ name: '', phone: '', address: '', compound: '', pickupLocation: PICKUP_LOCATION, pickupTime: '', notes: '' }); };
   return (
     <div>
       <button ref={fabRef} onClick={() => setOpen(true)} onAnimationEnd={() => fabRef.current && fabRef.current.classList.remove('gz-cart-fab-bump')} aria-label="Open cart" className="gz-cart-fab" style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 40, width: 62, height: 62, borderRadius: '50%', background: 'var(--gold-foil)', border: 'none', boxShadow: 'var(--shadow-card)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
@@ -133,7 +134,15 @@ function GenZCart(){
                   {form.phone && !isPhoneValid && <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--brand-red)', marginTop: 4 }}>Phone number must be exactly 11 digits.</div>}
                 </label>
                 {fulfillment === 'delivery' ? (
-                  <label style={labelStyle}>Delivery address<input style={inputStyle} value={form.address} onChange={set('address')} placeholder="Street, building, city" /></label>
+                  <React.Fragment>
+                    <label style={labelStyle}>Delivery address<input style={inputStyle} value={form.address} onChange={set('address')} placeholder="Street, building, city" /></label>
+                    <label style={labelStyle}>Compound
+                      <select style={inputStyle} value={form.compound} onChange={set('compound')}>
+                        <option value="" disabled>Select your compound</option>
+                        {COMPOUNDS.map(c => <option key={c} value={c}>{c}</option>)}
+                      </select>
+                    </label>
+                  </React.Fragment>
                 ) : (
                   <React.Fragment>
                     <div>
