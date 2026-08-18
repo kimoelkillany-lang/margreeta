@@ -92,7 +92,8 @@ const INGREDIENT_ICONS = [
   ['pepperoni', '🥓'], ['pastrami', '🥩'], ['salami', '🌶️'], ['mushroom', '🍄'],
   ['tomato', '🍅'], ['basil', '🌿'], ['parsley', '🌿'], ['arugula', '🥬'],
   ['olive', '🫒'], ['onion', '🧅'], ['pepper', '🫑'], ['honey', '🍯'],
-  ['mozzarella', '🥛'], ['cheese', '🧀'], ['parmesan', '🧀'], ['provolone', '🧀']
+  ['mozzarella', { img: 'assets/icon-mozzarella.png' }],
+  ['cheese', '🧀'], ['parmesan', '🧀'], ['provolone', '🧀']
 ];
 function getIngredientIcon(text) {
   const lower = String(text).toLowerCase();
@@ -107,7 +108,9 @@ function Tag({ children, tone = 'outline' }) {
   const icon = getIngredientIcon(children);
   return (
     <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--text-body-sm)', fontWeight: 500, padding: 'var(--tag-pad)', borderRadius: 'var(--radius-sm)', display: 'inline-flex', alignItems: 'center', gap: 5, letterSpacing: '0.01em', ...styles[tone] }}>
-      {icon && <span aria-hidden="true" style={{ fontSize: '1.05em', lineHeight: 1 }}>{icon}</span>}
+      {icon && (typeof icon === 'object'
+        ? <img src={icon.img} alt="" aria-hidden="true" style={{ width: '1.15em', height: '1.15em', objectFit: 'cover', borderRadius: '50%', flexShrink: 0 }} />
+        : <span aria-hidden="true" style={{ fontSize: '1.05em', lineHeight: 1 }}>{icon}</span>)}
       {children}
     </span>
   );
