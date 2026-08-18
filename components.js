@@ -94,7 +94,8 @@ const INGREDIENT_ICONS = [
   ['olive', '🫒'], ['onion', '🧅'], ['pepper', '🫑'], ['honey', '🍯'],
   ['mozzarella', { img: 'assets/icon-mozzarella.png' }],
   ['blue cheese', { img: 'assets/icon-bluecheese.png' }],
-  ['cheese', '🧀'], ['parmesan', '🧀'], ['provolone', '🧀']
+  ['provolone', { img: 'assets/icon-provolone.png' }],
+  ['cheese', '🧀'], ['parmesan', '🧀']
 ];
 function getIngredientIcon(text) {
   const lower = String(text).toLowerCase();
