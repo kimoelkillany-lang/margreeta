@@ -101,6 +101,10 @@ function GenZHome({ onNav }) {
           <SectionEyebrow accent="gold">Explore the flavors of each country</SectionEyebrow>
           <div className="gz-section-heading" style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 32, color: 'var(--text-on-red)' }}>Same dough. Every stamp a different country.</div>
         </div>
+        <div className="gz-swipe-hint" style={{ display: 'none', alignItems: 'center', justifyContent: 'center', gap: 10, margin: '-10px 0 18px', fontFamily: "'Fraunces', serif", fontWeight: 700, color: 'var(--gold-highlight)' }}>
+          Swipe to see all 3
+          <svg className="gz-swipe-arrow" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </div>
         <div className="gz-worldtour-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 28, maxWidth: 1080, margin: '0 auto', alignItems: 'stretch' }}>
           {STOPS.map((s, i) => (
             <GenZReveal key={s.key} delay={i * 0.08} className="gz-worldtour-item">

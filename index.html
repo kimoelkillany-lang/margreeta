@@ -10,7 +10,7 @@
 <script src="vendor/babel.min.js"></script>
 <script src="image-slot.js?v=3"></script>
 <script src="GenZCartStore.js?v=2"></script>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Bungee&family=Caveat:wght@500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Bungee&family=Caveat:wght@500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Fraunces:wght@600;700&display=swap">
 <style>
 :root{
 --surface-cream:#FC0000;--paper-white:#FFFFFF;--surface-deep-red:#FC0000;
@@ -117,6 +117,12 @@ footer{padding:24px 16px!important}
 .gz-worldtour-section{padding-top:32px!important;padding-bottom:32px!important}
 .gz-worldtour-grid{display:flex!important;overflow-x:auto!important;scroll-snap-type:x mandatory;gap:16px!important;padding:4px 16px 12px!important;margin-left:-16px!important;margin-right:-16px!important;-webkit-overflow-scrolling:touch;scrollbar-width:none}
 .gz-worldtour-grid::-webkit-scrollbar{display:none}
+.gz-swipe-hint{display:flex!important;font-size:14px!important}
+.gz-swipe-arrow{width:36px!important;height:36px!important;animation:gzSwipeBounce 1.3s ease-in-out infinite}
+@keyframes gzSwipeBounce{
+0%,100%{transform:translateX(0)}
+50%{transform:translateX(12px)}
+}
 .gz-worldtour-item{flex:0 0 82%!important;scroll-snap-align:center}
 .gz-concept-section{padding-top:26px!important;padding-bottom:26px!important}
 .gz-section-heading{font-size:19px!important}
