@@ -1,3 +1,4 @@
+const NEXT_COUNTRY = { italy: 'america', america: 'egypt' };
 const DATA = {
   italy: { number: '01', title: 'Italy', line: "The classics, done properly, cause we're as authentic as you are.", accent: 'italy', dishes: [
     { slot: 'italy-1', image: 'italy-1.jpg', name: 'Margherita', price: 250, tags: ['Tomato sauce', 'Parmesan', 'Buffalo mozzarella', 'Fresh basil', 'Extra virgin olive oil'] },
@@ -102,7 +103,14 @@ function GenZCountryStop({ country, onNav }) {
         ))}
       </section>
       <div style={{ textAlign: 'center', padding: '0 0 64px' }}>
-        <Button variant="dark" onClick={() => onNav('home')}>Back to the tour</Button>
+        {NEXT_COUNTRY[country] ? (
+          <Button variant="dark" onClick={() => onNav(NEXT_COUNTRY[country])}>
+            Explore {DATA[NEXT_COUNTRY[country]].title}
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </Button>
+        ) : (
+          <Button variant="dark" onClick={() => onNav('home')}>Back to the tour</Button>
+        )}
       </div>
     </div>
   );
