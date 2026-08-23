@@ -5,22 +5,22 @@ const TAGS = {
   parmesan: TAG('parmesan', 'Parmesan', 'بارميزان'),
   parmesanCheese: TAG('parmesan', 'Parmesan cheese', 'بارميزان'),
   buffaloMozz: TAG('mozzarella', 'Buffalo mozzarella', 'موتزاريلا جاموسي'),
-  basil: TAG('basil', 'Fresh basil', 'ريحان طازة'),
+  basil: TAG('basil', 'Fresh basil', 'ريحان طازج'),
   oliveOilExtra: TAG('olive', 'Extra virgin olive oil', 'زيت زيتون بكر ممتاز'),
   oliveOil: TAG('olive', 'Olive oil', 'زيت زيتون'),
   spicySalami: TAG('salami', 'Spicy salami', 'سلامي حار'),
-  onion: TAG('onion', 'Fresh onion', 'بصل طازة'),
+  onion: TAG('onion', 'Fresh onion', 'بصل طازج'),
   greenPepper: TAG('pepper', 'Green pepper', 'فلفل أخضر'),
-  arugula: TAG('arugula', 'Fresh arugula', 'جرجير طازة'),
-  mushroom: TAG('mushroom', 'Fresh mushroom', 'مشروم طازة'),
+  arugula: TAG('arugula', 'Fresh arugula', 'جرجير طازج'),
+  mushroom: TAG('mushroom', 'Fresh mushroom', 'فطر طازج'),
   pepperoni: TAG('pepperoni', 'Pepperoni', 'بيبروني'),
-  hotHoney: TAG('honey', 'Hot honey sauce', 'صوص العسل الحار'),
+  hotHoney: TAG('honey', 'Hot honey sauce', 'صلصة العسل الحار'),
   mozzarella: TAG('mozzarella', 'Mozzarella', 'موتزاريلا'),
   blueCheese: TAG('blue cheese', 'Blue cheese', 'جبنة زرقاء'),
   provolone: TAG('provolone', 'Provolone', 'بروفولون'),
   premiumPastrami: TAG('pastrami', 'Premium pastrami', 'باسترامي فاخر'),
   redOnion: TAG('onion', 'Red onion', 'بصل أحمر'),
-  parsley: TAG('parsley', 'Fresh parsley', 'بقدونس طازة')
+  parsley: TAG('parsley', 'Fresh parsley', 'بقدونس طازج')
 };
 const DATA = {
   italy: { number: '01', accent: 'italy', dishes: [
