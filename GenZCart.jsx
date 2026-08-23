@@ -4,6 +4,7 @@ const COMPOUNDS = ['Mountain View Chillout Park', 'Grand Heights', 'Nyoum', 'Mou
 
 function GenZCart(){
   const Store = window.GenZCartStore;
+  const { t, lang, dir } = window.useGenZLang();
   const [items, setItems] = React.useState(Store.getItems());
   const [open, setOpen] = React.useState(false);
   const [step, setStep] = React.useState('cart');
@@ -81,6 +82,7 @@ function GenZCart(){
     else { lines.push(`Pickup at: ${form.pickupLocation}`); lines.push(`Pickup time: ${form.pickupTime}`); }
     lines.push(`Payment: ${fulfillment === 'delivery' ? 'Cash on delivery' : 'Cash on pickup'}`);
     if (form.notes) lines.push(`Notes: ${form.notes}`);
+    if (lang === 'ar') lines.push('', '(Ordered via Arabic site)');
     return lines.join('\n');
   };
   const pendingRef = orderRef || 'MG-PENDING';
@@ -97,27 +99,27 @@ function GenZCart(){
   const resetAndClose = () => { setOpen(false); setStep('cart'); setOrderRef(null); setWhatsappUrl(null); setForm({ firstName: '', lastName: '', phone: '', address: '', compound: '', pickupLocation: PICKUP_LOCATION, pickupTime: '', notes: '' }); };
   return (
     <div>
-      <button ref={fabRef} onClick={() => setOpen(true)} onAnimationEnd={() => fabRef.current && fabRef.current.classList.remove('gz-cart-fab-bump')} aria-label="Open cart" className="gz-cart-fab" style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 40, width: 62, height: 62, borderRadius: '50%', background: 'var(--gold-foil)', border: 'none', boxShadow: 'var(--shadow-card)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+      <button ref={fabRef} onClick={() => setOpen(true)} onAnimationEnd={() => fabRef.current && fabRef.current.classList.remove('gz-cart-fab-bump')} aria-label={t('cart.openCart')} className="gz-cart-fab" style={{ position: 'fixed', bottom: 24, insetInlineEnd: 24, zIndex: 40, width: 62, height: 62, borderRadius: '50%', background: 'var(--gold-foil)', border: 'none', boxShadow: 'var(--shadow-card)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
       >
         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--ink-bordeaux-900)" strokeWidth="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-        {count > 0 && <span style={{ position: 'absolute', top: -4, right: -4, background: 'var(--brand-red)', color: '#fff', fontSize: 12, fontWeight: 700, borderRadius: '50%', width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{count}</span>}
+        {count > 0 && <span style={{ position: 'absolute', top: -4, insetInlineEnd: -4, background: 'var(--brand-red)', color: '#fff', fontSize: 12, fontWeight: 700, borderRadius: '50%', width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{count}</span>}
       </button>
       {open && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', justifyContent: 'flex-end' }}>
           <div onClick={resetAndClose} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.5)' }}></div>
-          <div className="gz-cart-panel" style={{ position: 'relative', width: 420, maxWidth: '100vw', height: '100%', background: '#fff', overflowY: 'auto', padding: 28, boxShadow: '-8px 0 30px rgba(0,0,0,.25)' }}>
+          <div className="gz-cart-panel" style={{ position: 'relative', width: 420, maxWidth: '100vw', height: '100%', background: '#fff', overflowY: 'auto', padding: 28, boxShadow: dir === 'rtl' ? '8px 0 30px rgba(0,0,0,.25)' : '-8px 0 30px rgba(0,0,0,.25)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-              <div className="gz-cart-title" style={{ fontFamily: 'var(--font-display)', fontSize: 26, color: 'var(--ink-black)' }}>{step === 'confirmed' ? 'Order placed!' : 'Your order'}</div>
+              <div className="gz-cart-title" style={{ fontFamily: 'var(--font-display)', fontSize: 26, color: 'var(--ink-black)' }}>{step === 'confirmed' ? t('cart.orderPlaced') : t('cart.yourOrder')}</div>
               <button onClick={resetAndClose} className="gz-cart-close" style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: 'var(--ink-black)' }}>&times;</button>
             </div>
             {step === 'cart' && (
               <div>
-                {items.length === 0 && <div style={{ fontFamily: 'var(--font-body)', color: 'var(--text-muted-on-light)', padding: '40px 0', textAlign: 'center' }}>Your cart is empty. Add a pizza from any country stop!</div>}
+                {items.length === 0 && <div style={{ fontFamily: 'var(--font-body)', color: 'var(--text-muted-on-light)', padding: '40px 0', textAlign: 'center' }}>{t('cart.empty')}</div>}
                 {items.map(item => (
                   <div key={item.slot} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '14px 0', borderBottom: '1px solid var(--border-hairline-soft)' }}>
                     <div>
                       <div className="gz-cart-item-name" style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 15, color: 'var(--ink-black)', textTransform: 'capitalize' }}>{item.name}</div>
-                      <div className="gz-cart-item-price" style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--text-muted-on-light)' }}>{item.price} EGP</div>
+                      <div className="gz-cart-item-price" style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--text-muted-on-light)' }}>{item.price} {t('dish.priceUnit')}</div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <button onClick={() => Store.setQty(item.slot, item.qty - 1)} style={{ width: 26, height: 26, borderRadius: '50%', border: '1px solid var(--border-hairline-soft)', background: '#fff', color: 'var(--ink-black)', cursor: 'pointer' }}>−</button>
@@ -129,9 +131,9 @@ function GenZCart(){
                 {items.length > 0 && (
                   <div>
                     <div className="gz-cart-total" style={{ display: 'flex', justifyContent: 'space-between', padding: '18px 0', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 17, color: 'var(--ink-black)' }}>
-                      <span>Total</span><span>{total} EGP</span>
+                      <span>{t('cart.total')}</span><span>{total} {t('dish.priceUnit')}</span>
                     </div>
-                    <button onClick={() => setStep('details')} style={{ width: '100%', padding: '14px', borderRadius: 10, border: 'none', background: 'var(--gold-foil)', color: 'var(--ink-bordeaux-900)', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Continue</button>
+                    <button onClick={() => setStep('details')} style={{ width: '100%', padding: '14px', borderRadius: 10, border: 'none', background: 'var(--gold-foil)', color: 'var(--ink-bordeaux-900)', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>{t('cart.continue')}</button>
                   </div>
                 )}
               </div>
@@ -140,63 +142,63 @@ function GenZCart(){
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 <div style={{ display: 'flex', gap: 8 }}>
                   {['delivery','pickup'].map(f => (
-                    <button key={f} onClick={() => setFulfillment(f)} style={{ flex: 1, padding: '10px', borderRadius: 10, border: fulfillment === f ? '2px solid var(--gold-foil)' : '1px solid var(--border-hairline-soft)', background: fulfillment === f ? 'var(--gold-highlight)' : '#fff', color: 'var(--ink-black)', fontFamily: 'var(--font-body)', fontWeight: 700, textTransform: 'capitalize', cursor: 'pointer' }}>{f}</button>
+                    <button key={f} onClick={() => setFulfillment(f)} style={{ flex: 1, padding: '10px', borderRadius: 10, border: fulfillment === f ? '2px solid var(--gold-foil)' : '1px solid var(--border-hairline-soft)', background: fulfillment === f ? 'var(--gold-highlight)' : '#fff', color: 'var(--ink-black)', fontFamily: 'var(--font-body)', fontWeight: 700, textTransform: 'capitalize', cursor: 'pointer' }}>{t('cart.' + f)}</button>
                   ))}
                 </div>
                 <div style={{ display: 'flex', gap: 10 }}>
-                  <label style={{ ...labelStyle, flex: 1 }}>First name<input style={firstNameInputStyle} value={form.firstName} onChange={set('firstName')} placeholder="First name" />
-                    {form.firstName && !isFirstNameValid && errorText('At least 2 characters.')}
+                  <label style={{ ...labelStyle, flex: 1 }}>{t('cart.firstName')}<input style={firstNameInputStyle} value={form.firstName} onChange={set('firstName')} placeholder={t('cart.firstName')} />
+                    {form.firstName && !isFirstNameValid && errorText(t('cart.minTwoChars'))}
                   </label>
-                  <label style={{ ...labelStyle, flex: 1 }}>Family name<input style={lastNameInputStyle} value={form.lastName} onChange={set('lastName')} placeholder="Family name" />
-                    {form.lastName && !isLastNameValid && errorText('At least 2 characters.')}
+                  <label style={{ ...labelStyle, flex: 1 }}>{t('cart.familyName')}<input style={lastNameInputStyle} value={form.lastName} onChange={set('lastName')} placeholder={t('cart.familyName')} />
+                    {form.lastName && !isLastNameValid && errorText(t('cart.minTwoChars'))}
                   </label>
                 </div>
-                <label style={labelStyle}>Phone<input style={phoneInputStyle} value={form.phone} onChange={set('phone')} placeholder="01xxxxxxxxx" inputMode="numeric" maxLength={11} />
-                  {form.phone && !isPhoneValid && errorText('Phone number must be exactly 11 digits.')}
+                <label style={labelStyle}>{t('cart.phone')}<input style={phoneInputStyle} value={form.phone} onChange={set('phone')} placeholder={t('cart.phonePlaceholder')} inputMode="numeric" maxLength={11} />
+                  {form.phone && !isPhoneValid && errorText(t('cart.phoneInvalid'))}
                 </label>
                 {fulfillment === 'delivery' ? (
                   <React.Fragment>
-                    <label style={labelStyle}>Delivery address<input style={addressInputStyle} value={form.address} onChange={set('address')} placeholder="Street, building, city" />
-                      {form.address && !isAddressValid && errorText('Please enter a fuller address (at least 5 characters).')}
+                    <label style={labelStyle}>{t('cart.deliveryAddress')}<input style={addressInputStyle} value={form.address} onChange={set('address')} placeholder={t('cart.addressPlaceholder')} />
+                      {form.address && !isAddressValid && errorText(t('cart.addressInvalid'))}
                     </label>
-                    <label style={labelStyle}>Compound
+                    <label style={labelStyle}>{t('cart.compound')}
                       <select style={compoundInputStyle} value={form.compound} onChange={set('compound')}>
-                        <option value="" disabled>Select your compound</option>
+                        <option value="" disabled>{t('cart.selectCompound')}</option>
                         {COMPOUNDS.map(c => <option key={c} value={c}>{c}</option>)}
                       </select>
-                      {!isCompoundValid && errorText('Please select your compound.')}
+                      {!isCompoundValid && errorText(t('cart.compoundInvalid'))}
                     </label>
                   </React.Fragment>
                 ) : (
                   <React.Fragment>
                     <div>
-                      <div style={labelStyle}>Pickup location</div>
+                      <div style={labelStyle}>{t('cart.pickupLocation')}</div>
                       <div style={{ ...inputStyle, background: 'var(--gold-highlight)', color: 'var(--ink-black)', fontWeight: 700 }}>{PICKUP_LOCATION}</div>
                     </div>
-                    <label style={labelStyle}>Pickup time<input style={pickupTimeInputStyle} value={form.pickupTime} onChange={set('pickupTime')} placeholder="e.g. Today, 7:30 PM" />
-                      {form.pickupTime && !isPickupTimeValid && errorText('Please enter a pickup time.')}
+                    <label style={labelStyle}>{t('cart.pickupTime')}<input style={pickupTimeInputStyle} value={form.pickupTime} onChange={set('pickupTime')} placeholder={t('cart.pickupTimePlaceholder')} />
+                      {form.pickupTime && !isPickupTimeValid && errorText(t('cart.pickupTimeInvalid'))}
                     </label>
                   </React.Fragment>
                 )}
-                <label style={labelStyle}>Order notes<input style={inputStyle} value={form.notes} onChange={set('notes')} placeholder="Extra spicy, no onions..." /></label>
+                <label style={labelStyle}>{t('cart.notes')}<input style={inputStyle} value={form.notes} onChange={set('notes')} placeholder={t('cart.notesPlaceholder')} /></label>
                 <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
-                  <button onClick={() => setStep('cart')} style={{ flex: 1, padding: '12px', borderRadius: 10, border: '1px solid var(--border-hairline-soft)', background: '#fff', color: 'var(--ink-black)', fontFamily: 'var(--font-body)', fontWeight: 700, cursor: 'pointer' }}>Back</button>
-                  <button disabled={!canContinue} onClick={goToPayment} style={{ flex: 2, padding: '12px', borderRadius: 10, border: 'none', background: !canContinue ? '#ddd' : 'var(--gold-foil)', color: 'var(--ink-bordeaux-900)', fontFamily: 'var(--font-body)', fontWeight: 700, cursor: !canContinue ? 'not-allowed' : 'pointer' }}>Continue to payment</button>
+                  <button onClick={() => setStep('cart')} style={{ flex: 1, padding: '12px', borderRadius: 10, border: '1px solid var(--border-hairline-soft)', background: '#fff', color: 'var(--ink-black)', fontFamily: 'var(--font-body)', fontWeight: 700, cursor: 'pointer' }}>{t('cart.back')}</button>
+                  <button disabled={!canContinue} onClick={goToPayment} style={{ flex: 2, padding: '12px', borderRadius: 10, border: 'none', background: !canContinue ? '#ddd' : 'var(--gold-foil)', color: 'var(--ink-bordeaux-900)', fontFamily: 'var(--font-body)', fontWeight: 700, cursor: !canContinue ? 'not-allowed' : 'pointer' }}>{t('cart.continueToPayment')}</button>
                 </div>
               </div>
             )}
             {step === 'payment' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 <div>
-                  <div style={labelStyle}>Payment method</div>
-                  <div style={{ ...inputStyle, background: 'var(--gold-highlight)', color: 'var(--ink-black)', fontWeight: 700 }}>{fulfillment === 'delivery' ? 'Cash on delivery' : 'Cash on pickup'}</div>
+                  <div style={labelStyle}>{t('cart.paymentMethod')}</div>
+                  <div style={{ ...inputStyle, background: 'var(--gold-highlight)', color: 'var(--ink-black)', fontWeight: 700 }}>{fulfillment === 'delivery' ? t('cart.cashOnDelivery') : t('cart.cashOnPickup')}</div>
                 </div>
                 <div className="gz-cart-total" style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 16, color: 'var(--ink-black)' }}>
-                  <span>Total</span><span>{total} EGP</span>
+                  <span>{t('cart.total')}</span><span>{total} {t('dish.priceUnit')}</span>
                 </div>
                 <div style={{ display: 'flex', gap: 10 }}>
-                  <button onClick={() => setStep('details')} style={{ flex: 1, padding: '12px', borderRadius: 10, border: '1px solid var(--border-hairline-soft)', background: '#fff', color: 'var(--ink-black)', fontFamily: 'var(--font-body)', fontWeight: 700, cursor: 'pointer' }}>Back</button>
-                  <a href={orderUrl} target="_blank" rel="noopener noreferrer" onClick={confirmOrder} style={{ flex: 2, padding: '12px', borderRadius: 10, border: 'none', background: 'var(--gold-foil)', color: 'var(--ink-bordeaux-900)', fontFamily: 'var(--font-body)', fontWeight: 700, cursor: 'pointer', textAlign: 'center', textDecoration: 'none', display: 'inline-block' }}>Place order</a>
+                  <button onClick={() => setStep('details')} style={{ flex: 1, padding: '12px', borderRadius: 10, border: '1px solid var(--border-hairline-soft)', background: '#fff', color: 'var(--ink-black)', fontFamily: 'var(--font-body)', fontWeight: 700, cursor: 'pointer' }}>{t('cart.back')}</button>
+                  <a href={orderUrl} target="_blank" rel="noopener noreferrer" onClick={confirmOrder} style={{ flex: 2, padding: '12px', borderRadius: 10, border: 'none', background: 'var(--gold-foil)', color: 'var(--ink-bordeaux-900)', fontFamily: 'var(--font-body)', fontWeight: 700, cursor: 'pointer', textAlign: 'center', textDecoration: 'none', display: 'inline-block' }}>{t('cart.placeOrder')}</a>
                 </div>
               </div>
             )}
@@ -206,14 +208,20 @@ function GenZCart(){
                   <span className="gz-confirm-glow"></span>
                   <div className="gz-cart-emoji" style={{ fontSize: 44, position: 'relative', animation: 'gzChipIn .5s var(--ease-bounce) both' }}>📲</div>
                 </div>
-                <div className="gz-cart-confirm-main" style={{ fontFamily: 'var(--font-body)', fontSize: 16, color: 'var(--ink-black)', marginTop: 12 }}>Almost there{form.firstName ? ', ' + form.firstName : ''}! We've opened WhatsApp with order <strong>{orderRef}</strong> filled in.</div>
-                <div className="gz-cart-confirm-sub" style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--text-muted-on-light)', marginTop: 8 }}>Just hit <strong>Send</strong> in WhatsApp to confirm with Margreeta — {fulfillment === 'delivery' ? "we'll deliver it to " + (form.address || 'your address') : 'ready for pickup at ' + (form.pickupLocation || 'your chosen stop')}.</div>
+                <div className="gz-cart-confirm-main" style={{ fontFamily: 'var(--font-body)', fontSize: 16, color: 'var(--ink-black)', marginTop: 12 }}>
+                  {t('cart.confirmMain', { namePart: form.firstName ? (lang === 'ar' ? ' يا ' + form.firstName : ', ' + form.firstName) : '', ref: orderRef })}
+                </div>
+                <div className="gz-cart-confirm-sub" style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--text-muted-on-light)', marginTop: 8 }}>
+                  {fulfillment === 'delivery'
+                    ? t('cart.confirmSubDelivery', { target: form.address || t('cart.confirmSubDeliveryFallback') })
+                    : t('cart.confirmSubPickup', { target: form.pickupLocation || t('cart.confirmSubPickupFallback') })}
+                </div>
                 {whatsappUrl && (
                   <div className="gz-cart-confirm-sub" style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--text-muted-on-light)', marginTop: 14 }}>
-                    Didn't open? <a href={whatsappUrl} target="_blank" rel="noopener" style={{ color: 'var(--brand-red)', fontWeight: 700 }}>Open WhatsApp</a>
+                    {t('cart.notOpened')} <a href={whatsappUrl} target="_blank" rel="noopener" style={{ color: 'var(--brand-red)', fontWeight: 700 }}>{t('cart.openWhatsapp')}</a>
                   </div>
                 )}
-                <button onClick={resetAndClose} style={{ marginTop: 24, padding: '12px 28px', borderRadius: 10, border: 'none', background: 'var(--gold-foil)', color: 'var(--ink-bordeaux-900)', fontFamily: 'var(--font-body)', fontWeight: 700, cursor: 'pointer' }}>Done</button>
+                <button onClick={resetAndClose} style={{ marginTop: 24, padding: '12px 28px', borderRadius: 10, border: 'none', background: 'var(--gold-foil)', color: 'var(--ink-bordeaux-900)', fontFamily: 'var(--font-body)', fontWeight: 700, cursor: 'pointer' }}>{t('cart.done')}</button>
               </div>
             )}
           </div>

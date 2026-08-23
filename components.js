@@ -1,7 +1,8 @@
 const ACCENTS_STAMP = { italy: 'var(--accent-italy)', america: 'var(--accent-america)', egypt: 'var(--accent-egypt)', dessert: 'var(--accent-dessert)' };
 function JourneyStamp({ country = 'italy', label, number = '01', size = 96 }) {
+  const { t } = window.useGenZLang();
   const accent = ACCENTS_STAMP[country] || 'var(--gold-foil)';
-  const displayLabel = label || country.charAt(0).toUpperCase() + country.slice(1);
+  const displayLabel = label || t('countries.' + country) || country.charAt(0).toUpperCase() + country.slice(1);
   const ref = React.useRef(null);
   const [visible, setVisible] = React.useState(false);
   React.useEffect(() => {
@@ -17,7 +18,7 @@ function JourneyStamp({ country = 'italy', label, number = '01', size = 96 }) {
     <div ref={ref} className={visible ? 'gz-stamp-thud' : ''} style={{ width: size, height: size, borderRadius: '50%', border: `1.5px solid ${accent}`, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, opacity: visible ? 1 : 0 }}>
       <div style={{ position: 'absolute', inset: 6, borderRadius: '50%', border: `1px solid ${accent}`, opacity: 0.6 }}></div>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-        <span style={{ fontFamily: 'var(--font-stamp)', fontVariant: 'small-caps', letterSpacing: 'var(--ls-stamp)', fontSize: size * 0.14, color: accent, textTransform: 'uppercase' }}>Stop No.</span>
+        <span style={{ fontFamily: 'var(--font-stamp)', fontVariant: 'small-caps', letterSpacing: 'var(--ls-stamp)', fontSize: size * 0.14, color: accent, textTransform: 'uppercase' }}>{t('common.stopNo')}</span>
         <span style={{ fontFamily: 'var(--font-stamp)', fontSize: size * 0.28, color: accent, lineHeight: 1 }}>{number}</span>
         <span style={{ fontFamily: 'var(--font-stamp)', fontVariant: 'small-caps', letterSpacing: 'var(--ls-stamp)', fontSize: size * 0.13, color: accent }}>{displayLabel}</span>
       </div>
@@ -102,12 +103,12 @@ function getIngredientIcon(text) {
   const match = INGREDIENT_ICONS.find(([kw]) => lower.includes(kw));
   return match ? match[1] : null;
 }
-function Tag({ children, tone = 'outline' }) {
+function Tag({ children, tone = 'outline', iconKey }) {
   const styles = {
     outline: { border: '1px solid var(--border-hairline-soft)', color: 'var(--ink-bordeaux-900)', background: 'transparent' },
     filled: { border: '1px solid transparent', color: 'var(--ink-bordeaux-900)', background: 'var(--gold-highlight)' }
   };
-  const icon = getIngredientIcon(children);
+  const icon = getIngredientIcon(iconKey || children);
   return (
     <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--text-body-sm)', fontWeight: 500, padding: 'var(--tag-pad)', borderRadius: 'var(--radius-sm)', display: 'inline-flex', alignItems: 'center', gap: 5, letterSpacing: '0.01em', ...styles[tone] }}>
       {icon && (typeof icon === 'object'
@@ -119,11 +120,13 @@ function Tag({ children, tone = 'outline' }) {
 }
 
 const ORDER_NOW_COUNTRIES = [
-  ['italy', 'Italy', 'assets/italy-bg.jpg', '-4deg'],
-  ['america', 'America', 'assets/america-bg-nyc.webp', '2deg'],
-  ['egypt', 'Egypt', 'assets/egypt-bg.jpg', '-2deg']
+  ['italy', 'assets/italy-bg.jpg', '-4deg'],
+  ['america', 'assets/america-bg-nyc.webp', '2deg'],
+  ['egypt', 'assets/egypt-bg.jpg', '-2deg']
 ];
-function OrderNowMenu({ onNav, variant = 'primary', size = 'md', label = 'Order now', align = 'center' }) {
+function OrderNowMenu({ onNav, variant = 'primary', size = 'md', label, align = 'center' }) {
+  const { t, dir } = window.useGenZLang();
+  const displayLabel = label || t('common.orderNow');
   const [open, setOpen] = React.useState(false);
   const [panelTop, setPanelTop] = React.useState(0);
   const ref = React.useRef(null);
@@ -140,32 +143,32 @@ function OrderNowMenu({ onNav, variant = 'primary', size = 'md', label = 'Order 
       document.removeEventListener('keydown', onKey);
     };
   }, [open]);
-  const menuPos = align === 'right' ? { right: 0 } : { left: '50%', transform: 'translateX(-50%)' };
+  const menuPos = align === 'right' ? { right: 0 } : align === 'left' ? { left: 0 } : { left: '50%', transform: 'translateX(-50%)' };
   const toggleOpen = () => {
     if (!open && ref.current) setPanelTop(ref.current.getBoundingClientRect().bottom + 16);
     setOpen(o => !o);
   };
   return (
     <div ref={ref} style={{ position: 'relative', display: 'inline-block' }}>
-      <Button variant={variant} size={size} onClick={toggleOpen}>{label}</Button>
+      <Button variant={variant} size={size} onClick={toggleOpen}>{displayLabel}</Button>
       {open && (
         <React.Fragment>
           <div onClick={() => setOpen(false)} className="gz-ordernow-scrim" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', backdropFilter: 'blur(5px)', WebkitBackdropFilter: 'blur(5px)', zIndex: 35 }}></div>
           <div className="gz-ordernow-panel" style={{
-            position: align === 'right' ? 'absolute' : 'fixed',
-            top: align === 'right' ? 'calc(100% + 16px)' : panelTop,
+            position: (align === 'right' || align === 'left') ? 'absolute' : 'fixed',
+            top: (align === 'right' || align === 'left') ? 'calc(100% + 16px)' : panelTop,
             ...menuPos, zIndex: 40,
             display: 'flex', gap: 14, maxWidth: 'calc(100vw - 24px)',
             padding: '8px 16px', background: 'transparent', border: 'none', boxShadow: 'none'
           }}>
-            {ORDER_NOW_COUNTRIES.map(([key, text, photo, tilt], i) => (
+            {ORDER_NOW_COUNTRIES.map(([key, photo, tilt], i) => (
               <div key={key} className="gz-ordernow-chip-in" style={{ animation: 'gzChipIn .5s var(--ease-bounce) both', animationDelay: `${i * 0.06}s` }}>
                 <button onClick={() => { setOpen(false); onNav(key); }}
                   className="gz-ordernow-chip"
                   style={{
                     position: 'relative', width: 96, height: 122, margin: 0, padding: 0, borderRadius: 16, overflow: 'hidden',
                     border: '2px solid var(--gold-foil)', background: `url(${photo}) center/cover`, color: '#fff',
-                    cursor: 'pointer', display: 'block', textAlign: 'left',
+                    cursor: 'pointer', display: 'block', textAlign: 'start',
                     animation: 'gzChipFloat 3.4s ease-in-out infinite', animationDelay: `${i * 0.2}s`,
                     boxShadow: '0 0 16px -4px var(--gold-foil)',
                     transform: `rotate(${tilt})`,
@@ -175,8 +178,8 @@ function OrderNowMenu({ onNav, variant = 'primary', size = 'md', label = 'Order 
                   onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 0 16px -4px var(--gold-foil)'; e.currentTarget.style.transform = `rotate(${tilt})`; }}
                 >
                   <span style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0) 45%, rgba(0,0,0,.85) 100%)' }}></span>
-                  <span style={{ position: 'absolute', top: 6, right: 6, width: 22, height: 22, borderRadius: '50%', background: 'var(--gold-foil)', color: 'var(--ink-bordeaux-900)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-stamp)', fontSize: 10, fontWeight: 700 }}>0{i + 1}</span>
-                  <span style={{ position: 'absolute', bottom: 10, left: 10, right: 10, fontFamily: 'var(--font-stamp)', fontVariant: 'small-caps', letterSpacing: '0.02em', fontSize: 13 }}>{text}</span>
+                  <span style={{ position: 'absolute', top: 6, insetInlineEnd: 6, width: 22, height: 22, borderRadius: '50%', background: 'var(--gold-foil)', color: 'var(--ink-bordeaux-900)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-stamp)', fontSize: 10, fontWeight: 700 }}>0{i + 1}</span>
+                  <span style={{ position: 'absolute', bottom: 10, left: 10, right: 10, fontFamily: 'var(--font-stamp)', fontVariant: 'small-caps', letterSpacing: '0.02em', fontSize: 13 }}>{t('countries.' + key)}</span>
                 </button>
               </div>
             ))}
