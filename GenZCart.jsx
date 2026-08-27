@@ -1,6 +1,6 @@
 const WHATSAPP_NUMBER = '201055788000';
 const PICKUP_LOCATION = 'E1-4B Mountain View Chillout Park';
-const COMPOUNDS = ['Mountain View Chillout Park', 'Grand Heights', 'Nyoum', 'Mountain View iCity', 'Green 5', 'SODIC October Plaza'];
+const COMPOUNDS = ['Mountain View Chillout Park', 'Grand Heights', 'Nyoum', 'Mountain View iCity', 'Green 5', 'SODIC October Plaza', 'Kayan'];
 
 function GenZCart(){
   const Store = window.GenZCartStore;
