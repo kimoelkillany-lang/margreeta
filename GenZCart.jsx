@@ -192,6 +192,9 @@ function GenZCart(){
                 <div>
                   <div style={labelStyle}>{t('cart.paymentMethod')}</div>
                   <div style={{ ...inputStyle, background: 'var(--gold-highlight)', color: 'var(--ink-black)', fontWeight: 700 }}>{fulfillment === 'delivery' ? t('cart.cashOnDelivery') : t('cart.cashOnPickup')}</div>
+                  {fulfillment === 'delivery' && (
+                    <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--text-muted-on-light)', marginTop: 6 }}>{t('cart.instapayNote')}</div>
+                  )}
                 </div>
                 <div className="gz-cart-total" style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 16, color: 'var(--ink-black)' }}>
                   <span>{t('cart.total')}</span><span>{total} {t('dish.priceUnit')}</span>
