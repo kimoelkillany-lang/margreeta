@@ -19,8 +19,8 @@ const TAGS = {
   blueCheese: TAG('blue cheese', 'Blue cheese', 'جبنة زرقاء'),
   provolone: TAG('provolone', 'Provolone', 'بروفولون'),
   premiumPastrami: TAG('pastrami', 'Premium pastrami', 'باسترامي فاخر'),
-  redOnion: TAG('onion', 'Red onion', 'بصل أحمر'),
-  parsley: TAG('parsley', 'Fresh parsley', 'بقدونس طازج')
+  parsley: TAG('parsley', 'Fresh parsley', 'بقدونس طازج'),
+  garlic: TAG('garlic', 'Garlic', 'ثوم')
 };
 const DATA = {
   italy: { number: '01', accent: 'italy', dishes: [
@@ -28,14 +28,14 @@ const DATA = {
     { slot: 'italy-2', image: 'italy-2.jpg', name: { en: 'Diavola', ar: 'ديابولا' }, price: 350, tags: [TAGS.tomato, TAGS.parmesan, TAGS.buffaloMozz, TAGS.spicySalami, TAGS.oliveOil] },
     { slot: 'italy-3', image: 'italy-3.jpg', name: { en: 'Veggi', ar: 'فيجي' }, price: 280, tags: [TAGS.tomato, TAGS.parmesan, TAGS.buffaloMozz, TAGS.basil, TAGS.oliveOilExtra, TAGS.onion, TAGS.greenPepper, TAGS.arugula] },
     { slot: 'italy-4', image: 'italy-4.jpg', name: { en: 'funghi', ar: 'فونجي' }, price: 330, recommended: true, tags: [TAGS.tomato, TAGS.parmesan, TAGS.buffaloMozz, TAGS.basil, TAGS.oliveOilExtra, TAGS.mushroom] },
-    { slot: 'italy-5', image: 'italy-5.jpg', name: { en: 'Marinara', ar: 'مارينارا' }, price: 205, tags: [TAGS.tomato, TAGS.parmesan, TAGS.basil, TAGS.oliveOilExtra] }
+    { slot: 'italy-5', image: 'italy-5.jpg', name: { en: 'Marinara', ar: 'مارينارا' }, price: 205, tags: [TAGS.tomato, TAGS.parmesan, TAGS.basil, TAGS.oliveOilExtra, TAGS.garlic] }
   ]},
   america: { number: '02', accent: 'america', dishes: [
     { slot: 'america-1', image: 'america-1.jpg', name: { en: 'hot honey pepperoni', ar: 'بيبروني بالعسل الحار' }, price: 380, spicy: true, recommended: true, tags: [TAGS.tomato, TAGS.parmesanCheese, TAGS.buffaloMozz, TAGS.pepperoni, TAGS.hotHoney] },
     { slot: 'america-2', image: 'america-2.jpg', name: { en: 'cheese lovers', ar: 'عشاق الجبنة' }, price: 340, tags: [TAGS.tomato, TAGS.mozzarella, TAGS.parmesan, TAGS.blueCheese, TAGS.provolone] }
   ]},
   egypt: { number: '03', accent: 'egypt', dishes: [
-    { slot: 'egypt-1', image: 'egypt-1.jpeg', name: { en: 'Pastrami', ar: 'باسترامي' }, price: 355, recommended: true, tags: [TAGS.tomato, TAGS.buffaloMozz, TAGS.premiumPastrami, TAGS.redOnion, TAGS.parsley, TAGS.oliveOilExtra] }
+    { slot: 'egypt-1', image: 'egypt-1.jpeg', name: { en: 'Pastrami', ar: 'باسترامي' }, price: 355, recommended: true, tags: [TAGS.tomato, TAGS.buffaloMozz, TAGS.premiumPastrami, TAGS.parsley, TAGS.oliveOilExtra] }
   ]}
 };
 function GenZDishCard({ dish, country, isEgyptPastrami }) {
