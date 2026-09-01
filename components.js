@@ -92,7 +92,7 @@ function SectionEyebrow({ children, accent = 'gold' }) {
 const INGREDIENT_ICONS = [
   ['pepperoni', { img: 'assets/icon-pepperoni.png' }], ['pastrami', '🥩'], ['salami', { img: 'assets/icon-pepperoni.png' }], ['mushroom', '🍄'],
   ['tomato', '🍅'], ['basil', { img: 'assets/icon-basil.png' }], ['parsley', '🌿'], ['arugula', { img: 'assets/icon-arugula.png' }],
-  ['olive', { img: 'assets/icon-oliveoil.png' }], ['onion', '🧅'], ['pepper', '🫑'], ['honey', '🍯'], ['garlic', '🧄'],
+  ['olive', { img: 'assets/icon-oliveoil.png' }], ['onion', '🧅'], ['pepper', '🫑'], ['honey', '🍯'], ['garlic', '🧄'], ['chili', '🌶️'],
   ['mozzarella', { img: 'assets/icon-mozzarella.png' }],
   ['blue cheese', { img: 'assets/icon-bluecheese.png' }],
   ['provolone', { img: 'assets/icon-provolone.png' }],
@@ -204,4 +204,4 @@ function useIsMobile(breakpoint = 720) {
   return isMobile;
 }
 
-window.MargreetaDesignSystem_35c101 = { JourneyStamp, Postcard, Wordmark, Button, Input, SectionEyebrow, Tag, useIsMobile, OrderNowMenu };
+window.MargreetaDesignSystem_35c101 = { JourneyStamp, Postcard, Wordmark, Button, Input, SectionEyebrow, Tag, useIsMobile, OrderNowMenu, getIngredientIcon };

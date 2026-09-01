@@ -74,7 +74,10 @@ function GenZCart(){
   const errorText = (msg) => <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--brand-red)', marginTop: 4 }}>{msg}</div>;
   const buildOrderMessage = (ref) => {
     const lines = [`New order ${ref}`, ''];
-    items.forEach(i => lines.push(`${i.qty}x ${i.name} — ${i.price * i.qty} EGP`));
+    items.forEach(i => {
+      lines.push(`${i.qty}x ${i.name} — ${i.price * i.qty} EGP`);
+      if (i.extras && i.extras.length > 0) lines.push(`   + ${i.extras.map(e => e.name).join(', ')}`);
+    });
     lines.push('', `Total: ${total} EGP`, '');
     lines.push(`Name: ${form.firstName} ${form.lastName}`);
     lines.push(`Phone: ${form.phone}`);
@@ -116,15 +119,20 @@ function GenZCart(){
               <div>
                 {items.length === 0 && <div style={{ fontFamily: 'var(--font-body)', color: 'var(--text-muted-on-light)', padding: '40px 0', textAlign: 'center' }}>{t('cart.empty')}</div>}
                 {items.map(item => (
-                  <div key={item.slot} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '14px 0', borderBottom: '1px solid var(--border-hairline-soft)' }}>
+                  <div key={item.cartKey || item.slot} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '14px 0', borderBottom: '1px solid var(--border-hairline-soft)' }}>
                     <div>
                       <div className="gz-cart-item-name" style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 15, color: 'var(--ink-black)', textTransform: 'capitalize' }}>{item.name}</div>
+                      {item.extras && item.extras.length > 0 && (
+                        <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--text-muted-on-light)', marginTop: 2 }}>
+                          + {item.extras.map(e => (lang === 'ar' ? (e.nameAr || e.name) : e.name)).join(', ')}
+                        </div>
+                      )}
                       <div className="gz-cart-item-price" style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--text-muted-on-light)' }}>{item.price} {t('dish.priceUnit')}</div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <button onClick={() => Store.setQty(item.slot, item.qty - 1)} style={{ width: 26, height: 26, borderRadius: '50%', border: '1px solid var(--border-hairline-soft)', background: '#fff', color: 'var(--ink-black)', cursor: 'pointer' }}>−</button>
+                      <button onClick={() => Store.setQty(item.cartKey || item.slot, item.qty - 1)} style={{ width: 26, height: 26, borderRadius: '50%', border: '1px solid var(--border-hairline-soft)', background: '#fff', color: 'var(--ink-black)', cursor: 'pointer' }}>−</button>
                       <span style={{ minWidth: 18, textAlign: 'center', fontFamily: 'var(--font-body)', fontWeight: 600 }}>{item.qty}</span>
-                      <button onClick={() => Store.setQty(item.slot, item.qty + 1)} style={{ width: 26, height: 26, borderRadius: '50%', border: '1px solid var(--border-hairline-soft)', background: '#fff', color: 'var(--ink-black)', cursor: 'pointer' }}>+</button>
+                      <button onClick={() => Store.setQty(item.cartKey || item.slot, item.qty + 1)} style={{ width: 26, height: 26, borderRadius: '50%', border: '1px solid var(--border-hairline-soft)', background: '#fff', color: 'var(--ink-black)', cursor: 'pointer' }}>+</button>
                     </div>
                   </div>
                 ))}

@@ -49,6 +49,7 @@ window.GenZT = {
     dish: {
       spicy: 'Spicy',
       recommended: 'Recommended',
+      extrasLabel: 'Extras',
       addToOrder: 'Add to order',
       added: 'Added',
       priceUnit: 'EGP'
@@ -148,6 +149,7 @@ window.GenZT = {
     dish: {
       spicy: 'حار',
       recommended: 'الأكثر طلبًا',
+      extrasLabel: 'إضافات',
       addToOrder: 'أضفها إلى الطلب',
       added: 'أُضيفت',
       priceUnit: 'جنيه'

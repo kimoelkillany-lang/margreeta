@@ -22,6 +22,37 @@ const TAGS = {
   parsley: TAG('parsley', 'Fresh parsley', 'بقدونس طازج'),
   garlic: TAG('garlic', 'Garlic', 'ثوم')
 };
+const EXTRAS = [
+  { key: 'extraMozz', icon: 'mozzarella', en: 'Extra buffalo mozzarella', ar: 'موتزاريلا إضافية', price: 30 },
+  { key: 'extraParmesan', icon: 'parmesan', en: 'Extra parmesan', ar: 'بارميزان إضافي', price: 35 },
+  { key: 'extraOliveOil', icon: 'olive', en: 'Extra olive oil', ar: 'زيت زيتون إضافي', price: 20 },
+  { key: 'extraMushroom', icon: 'mushroom', en: 'Extra mushroom', ar: 'فطر إضافي', price: 30 },
+  { key: 'chiliFlakes', icon: 'chili', en: 'Chili flakes', ar: 'رقائق الفلفل الحار', price: 15 }
+];
+function ExtraChip({ extra, selected, onToggle, lang, t }) {
+  const { getIngredientIcon } = window.MargreetaDesignSystem_35c101;
+  const icon = getIngredientIcon(extra.icon);
+  return (
+    <button type="button" onClick={onToggle} aria-pressed={selected}
+      style={{
+        display: 'inline-flex', alignItems: 'center', gap: 5, fontFamily: 'var(--font-body)', fontSize: 'var(--text-body-sm)', fontWeight: 500,
+        padding: 'var(--tag-pad)', borderRadius: 'var(--radius-sm)', cursor: 'pointer', letterSpacing: '0.01em',
+        border: selected ? '1px solid var(--gold-foil)' : '1px solid var(--border-hairline-soft)',
+        background: selected ? 'var(--gold-highlight)' : 'transparent',
+        color: 'var(--ink-bordeaux-900)', transition: 'background .15s ease, border-color .15s ease'
+      }}
+    >
+      {icon && (typeof icon === 'object'
+        ? <img src={icon.img} alt="" aria-hidden="true" style={{ width: '1.15em', height: '1.15em', objectFit: 'cover', borderRadius: '50%', flexShrink: 0 }} />
+        : <span aria-hidden="true" style={{ fontSize: '1.05em', lineHeight: 1 }}>{icon}</span>)}
+      {extra[lang] || extra.en}
+      <span style={{ opacity: 0.75 }}>+{extra.price} {t('dish.priceUnit')}</span>
+      {selected && (
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9 17.5L20 6.5" stroke="var(--ink-bordeaux-900)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/></svg>
+      )}
+    </button>
+  );
+}
 const DATA = {
   italy: { number: '01', accent: 'italy', dishes: [
     { slot: 'italy-1', image: 'italy-1.jpg', name: { en: 'Margherita', ar: 'مارجريتا' }, price: 250, tags: [TAGS.tomato, TAGS.parmesan, TAGS.buffaloMozz, TAGS.basil, TAGS.oliveOilExtra] },
@@ -42,10 +73,20 @@ function GenZDishCard({ dish, country, isEgyptPastrami }) {
   const { Postcard, Tag } = window.MargreetaDesignSystem_35c101;
   const { t, lang, dir } = window.useGenZLang();
   const [added, setAdded] = React.useState(false);
+  const [selectedExtras, setSelectedExtras] = React.useState([]);
   const timeoutRef = React.useRef(null);
   React.useEffect(() => () => clearTimeout(timeoutRef.current), []);
+  const toggleExtra = (key) => setSelectedExtras(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]);
+  const chosenExtras = EXTRAS.filter(e => selectedExtras.includes(e.key));
+  const extrasTotal = chosenExtras.reduce((s, e) => s + e.price, 0);
+  const totalPrice = dish.price + extrasTotal;
   const handleAdd = () => {
-    window.GenZCartStore.add({ ...dish, name: dish.name.en }, country);
+    window.GenZCartStore.add({
+      ...dish,
+      name: dish.name.en,
+      price: totalPrice,
+      extras: chosenExtras.map(e => ({ key: e.key, name: e.en, nameAr: e.ar, price: e.price }))
+    }, country);
     setAdded(true);
     clearTimeout(timeoutRef.current);
     timeoutRef.current = setTimeout(() => setAdded(false), 1200);
@@ -76,10 +117,18 @@ function GenZDishCard({ dish, country, isEgyptPastrami }) {
             )}
             {dishName}
           </span>
-          <span className="gz-dish-price" style={{ color: 'var(--brand-red)', fontSize: 17, whiteSpace: 'nowrap' }}>{dish.price} {t('dish.priceUnit')}</span>
+          <span className="gz-dish-price" style={{ color: 'var(--brand-red)', fontSize: 17, whiteSpace: 'nowrap' }}>{totalPrice} {t('dish.priceUnit')}</span>
         </div>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 12 }}>
           {dish.tags.map(tag => <Tag key={tag.key + tag.en} iconKey={tag.key}>{tag[lang] || tag.en}</Tag>)}
+        </div>
+        <div style={{ marginTop: 14 }}>
+          <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 12, color: 'var(--text-muted-on-light)', marginBottom: 6 }}>{t('dish.extrasLabel')}</div>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            {EXTRAS.map(extra => (
+              <ExtraChip key={extra.key} extra={extra} lang={lang} t={t} selected={selectedExtras.includes(extra.key)} onToggle={() => toggleExtra(extra.key)} />
+            ))}
+          </div>
         </div>
         <button className={`gz-dish-addbtn${added ? ' gz-dish-addbtn-added' : ''}`} onClick={handleAdd}
           style={{ marginTop: 14, width: '100%', padding: '11px', borderRadius: 10, border: 'none', background: added ? 'linear-gradient(135deg, var(--accent-italy), #12a866)' : 'var(--gold-foil)', color: added ? '#fff' : 'var(--ink-bordeaux-900)', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 14, cursor: 'pointer', transition: 'transform .15s ease, background .2s ease', boxShadow: added ? '0 0 16px -2px var(--accent-italy)' : 'none' }}
