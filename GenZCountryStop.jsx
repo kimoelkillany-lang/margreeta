@@ -22,30 +22,89 @@ const TAGS = {
   parsley: TAG('parsley', 'Fresh parsley', 'بقدونس طازج'),
   garlic: TAG('garlic', 'Garlic', 'ثوم')
 };
+const EXTRAS = [
+  { key: 'extraMozz', icon: 'mozzarella', en: 'Extra buffalo mozzarella', ar: 'موتزاريلا إضافية', price: 30 },
+  { key: 'extraParmesan', icon: 'parmesan', en: 'Extra parmesan', ar: 'بارميزان إضافي', price: 35 },
+  { key: 'extraOliveOil', icon: 'olive', en: 'Extra olive oil', ar: 'زيت زيتون إضافي', price: 20 },
+  { key: 'extraMushroom', icon: 'mushroom', en: 'Extra mushroom', ar: 'فطر إضافي', price: 30 },
+  { key: 'chiliFlakes', icon: 'chili', en: 'Chili flakes', ar: 'رقائق الفلفل الحار', price: 15 }
+];
+function ExtrasDropdown({ extrasList, selectedExtras, onToggle, lang, t }) {
+  const { getIngredientIcon } = window.MargreetaDesignSystem_35c101;
+  const [open, setOpen] = React.useState(false);
+  const count = selectedExtras.length;
+  return (
+    <div style={{ marginTop: 14 }}>
+      <button type="button" onClick={() => setOpen(o => !o)} aria-expanded={open}
+        style={{
+          width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
+          padding: '10px 12px', borderRadius: 10, border: '1px solid var(--border-hairline-soft)',
+          background: open ? 'rgba(0,0,0,.04)' : '#fff', cursor: 'pointer',
+          fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 700, color: 'var(--ink-black)', transition: 'background .15s ease'
+        }}
+      >
+        <span>{t('dish.extrasLabel')}{count > 0 ? ` (${count})` : ''}</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, transform: open ? 'rotate(180deg)' : 'none', transition: 'transform .2s ease' }}><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      {open && (
+        <div style={{ marginTop: 6, border: '1px solid var(--border-hairline-soft)', borderRadius: 10, padding: 4, background: 'rgba(0,0,0,.03)' }}>
+          {extrasList.map(extra => {
+            const icon = getIngredientIcon(extra.icon);
+            const checked = selectedExtras.includes(extra.key);
+            return (
+              <label key={extra.key} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 6px', borderRadius: 8, cursor: 'pointer' }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,0,0,.04)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+              >
+                <input type="checkbox" checked={checked} onChange={() => onToggle(extra.key)} style={{ width: 16, height: 16, accentColor: 'var(--gold-foil)', cursor: 'pointer', flexShrink: 0 }} />
+                {icon && (typeof icon === 'object'
+                  ? <img src={icon.img} alt="" aria-hidden="true" style={{ width: '1.2em', height: '1.2em', objectFit: 'cover', borderRadius: '50%', flexShrink: 0 }} />
+                  : <span aria-hidden="true" style={{ fontSize: '1.1em', lineHeight: 1 }}>{icon}</span>)}
+                <span style={{ flex: 1, fontFamily: 'var(--font-body)', fontSize: 13.5, color: 'var(--ink-black)' }}>{extra[lang] || extra.en}</span>
+                <span style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 12.5, color: '#B8860B', whiteSpace: 'nowrap' }}>+{extra.price} {t('dish.priceUnit')}</span>
+              </label>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
 const DATA = {
   italy: { number: '01', accent: 'italy', dishes: [
-    { slot: 'italy-1', image: 'italy-1.jpg', name: { en: 'Margherita', ar: 'مارجريتا' }, price: 250, tags: [TAGS.tomato, TAGS.parmesan, TAGS.buffaloMozz, TAGS.basil, TAGS.oliveOilExtra] },
-    { slot: 'italy-2', image: 'italy-2.jpg', name: { en: 'Diavola', ar: 'ديابولا' }, price: 350, tags: [TAGS.tomato, TAGS.parmesan, TAGS.buffaloMozz, TAGS.spicySalami, TAGS.oliveOil] },
-    { slot: 'italy-3', image: 'italy-3.jpg', name: { en: 'Veggi', ar: 'فيجي' }, price: 280, tags: [TAGS.tomato, TAGS.parmesan, TAGS.buffaloMozz, TAGS.basil, TAGS.oliveOilExtra, TAGS.onion, TAGS.greenPepper, TAGS.arugula] },
+    { slot: 'italy-1', image: 'italy-1.jpg', name: { en: 'Margherita', ar: 'مارجريتا' }, price: 250, tags: [TAGS.tomato, TAGS.parmesan, TAGS.buffaloMozz, TAGS.basil, TAGS.oliveOilExtra], extras: [{ key: 'dishBasil', icon: 'basil', en: 'Extra basil', ar: 'ريحان إضافي', price: 15 }] },
+    { slot: 'italy-2', image: 'italy-2.jpg', name: { en: 'Diavola', ar: 'ديابولا' }, price: 350, tags: [TAGS.tomato, TAGS.parmesan, TAGS.buffaloMozz, TAGS.spicySalami, TAGS.oliveOil], extras: [{ key: 'dishSalami', icon: 'salami', en: 'Extra spicy salami', ar: 'سلامي حار إضافي', price: 35 }] },
+    { slot: 'italy-3', image: 'italy-3.jpg', name: { en: 'Veggi', ar: 'فيجي' }, price: 280, tags: [TAGS.tomato, TAGS.parmesan, TAGS.buffaloMozz, TAGS.basil, TAGS.oliveOilExtra, TAGS.onion, TAGS.greenPepper, TAGS.arugula], extras: [{ key: 'dishArugula', icon: 'arugula', en: 'Extra arugula', ar: 'جرجير إضافي', price: 20 }] },
     { slot: 'italy-4', image: 'italy-4.jpg', name: { en: 'funghi', ar: 'فونجي' }, price: 330, recommended: true, tags: [TAGS.tomato, TAGS.parmesan, TAGS.buffaloMozz, TAGS.basil, TAGS.oliveOilExtra, TAGS.mushroom] },
-    { slot: 'italy-5', image: 'italy-5.jpg', name: { en: 'Marinara', ar: 'مارينارا' }, price: 205, tags: [TAGS.tomato, TAGS.parmesan, TAGS.basil, TAGS.oliveOilExtra, TAGS.garlic] }
+    { slot: 'italy-5', image: 'italy-5.jpg', name: { en: 'Marinara', ar: 'مارينارا' }, price: 205, tags: [TAGS.tomato, TAGS.parmesan, TAGS.basil, TAGS.oliveOilExtra, TAGS.garlic], extras: [{ key: 'dishGarlic', icon: 'garlic', en: 'Extra garlic', ar: 'ثوم إضافي', price: 15 }] }
   ]},
   america: { number: '02', accent: 'america', dishes: [
-    { slot: 'america-1', image: 'america-1.jpg', name: { en: 'hot honey pepperoni', ar: 'بيبروني بالعسل الحار' }, price: 380, spicy: true, recommended: true, tags: [TAGS.tomato, TAGS.parmesanCheese, TAGS.buffaloMozz, TAGS.pepperoni, TAGS.hotHoney] },
-    { slot: 'america-2', image: 'america-2.jpg', name: { en: 'cheese lovers', ar: 'عشاق الجبنة' }, price: 340, tags: [TAGS.tomato, TAGS.mozzarella, TAGS.parmesan, TAGS.blueCheese, TAGS.provolone] }
+    { slot: 'america-1', image: 'america-1.jpg', name: { en: 'hot honey pepperoni', ar: 'بيبروني بالعسل الحار' }, price: 380, spicy: true, recommended: true, tags: [TAGS.tomato, TAGS.parmesanCheese, TAGS.buffaloMozz, TAGS.pepperoni, TAGS.hotHoney], extras: [{ key: 'dishPepperoni', icon: 'pepperoni', en: 'Extra pepperoni', ar: 'بيبروني إضافي', price: 30 }] },
+    { slot: 'america-2', image: 'america-2.jpg', name: { en: 'cheese lovers', ar: 'عشاق الجبنة' }, price: 340, tags: [TAGS.tomato, TAGS.mozzarella, TAGS.parmesan, TAGS.blueCheese, TAGS.provolone], extras: [{ key: 'dishBlueCheese', icon: 'blue cheese', en: 'Extra blue cheese', ar: 'جبنة زرقاء إضافية', price: 35 }] }
   ]},
   egypt: { number: '03', accent: 'egypt', dishes: [
-    { slot: 'egypt-1', image: 'egypt-1.jpeg', name: { en: 'Pastrami', ar: 'باسترامي' }, price: 355, recommended: true, tags: [TAGS.tomato, TAGS.buffaloMozz, TAGS.premiumPastrami, TAGS.parsley, TAGS.oliveOilExtra] }
+    { slot: 'egypt-1', image: 'egypt-1.jpeg', name: { en: 'Pastrami', ar: 'باسترامي' }, price: 355, recommended: true, tags: [TAGS.tomato, TAGS.buffaloMozz, TAGS.premiumPastrami, TAGS.parsley, TAGS.oliveOilExtra], extras: [{ key: 'dishPastrami', icon: 'pastrami', en: 'Extra pastrami', ar: 'باسترامي إضافي', price: 40 }] }
   ]}
 };
 function GenZDishCard({ dish, country, isEgyptPastrami }) {
   const { Postcard, Tag } = window.MargreetaDesignSystem_35c101;
   const { t, lang, dir } = window.useGenZLang();
   const [added, setAdded] = React.useState(false);
+  const [selectedExtras, setSelectedExtras] = React.useState([]);
   const timeoutRef = React.useRef(null);
   React.useEffect(() => () => clearTimeout(timeoutRef.current), []);
+  const toggleExtra = (key) => setSelectedExtras(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]);
+  const allExtras = React.useMemo(() => [...EXTRAS, ...(dish.extras || [])], [dish]);
+  const chosenExtras = allExtras.filter(e => selectedExtras.includes(e.key));
+  const extrasTotal = chosenExtras.reduce((s, e) => s + e.price, 0);
+  const totalPrice = dish.price + extrasTotal;
   const handleAdd = () => {
-    window.GenZCartStore.add({ ...dish, name: dish.name.en }, country);
+    window.GenZCartStore.add({
+      ...dish,
+      name: dish.name.en,
+      price: totalPrice,
+      extras: chosenExtras.map(e => ({ key: e.key, name: e.en, nameAr: e.ar, price: e.price }))
+    }, country);
     setAdded(true);
     clearTimeout(timeoutRef.current);
     timeoutRef.current = setTimeout(() => setAdded(false), 1200);
@@ -76,11 +135,12 @@ function GenZDishCard({ dish, country, isEgyptPastrami }) {
             )}
             {dishName}
           </span>
-          <span className="gz-dish-price" style={{ color: 'var(--brand-red)', fontSize: 17, whiteSpace: 'nowrap' }}>{dish.price} {t('dish.priceUnit')}</span>
+          <span className="gz-dish-price" style={{ color: 'var(--brand-red)', fontSize: 17, whiteSpace: 'nowrap' }}>{totalPrice} {t('dish.priceUnit')}</span>
         </div>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 12 }}>
           {dish.tags.map(tag => <Tag key={tag.key + tag.en} iconKey={tag.key}>{tag[lang] || tag.en}</Tag>)}
         </div>
+        <ExtrasDropdown extrasList={allExtras} selectedExtras={selectedExtras} onToggle={toggleExtra} lang={lang} t={t} />
         <button className={`gz-dish-addbtn${added ? ' gz-dish-addbtn-added' : ''}`} onClick={handleAdd}
           style={{ marginTop: 14, width: '100%', padding: '11px', borderRadius: 10, border: 'none', background: added ? 'linear-gradient(135deg, var(--accent-italy), #12a866)' : 'var(--gold-foil)', color: added ? '#fff' : 'var(--ink-bordeaux-900)', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 14, cursor: 'pointer', transition: 'transform .15s ease, background .2s ease', boxShadow: added ? '0 0 16px -2px var(--accent-italy)' : 'none' }}
           onMouseEnter={e => { if (!added) e.currentTarget.style.transform = 'scale(1.02)'; }}
