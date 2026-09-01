@@ -29,28 +29,45 @@ const EXTRAS = [
   { key: 'extraMushroom', icon: 'mushroom', en: 'Extra mushroom', ar: 'فطر إضافي', price: 30 },
   { key: 'chiliFlakes', icon: 'chili', en: 'Chili flakes', ar: 'رقائق الفلفل الحار', price: 15 }
 ];
-function ExtraChip({ extra, selected, onToggle, lang, t }) {
+function ExtrasDropdown({ selectedExtras, onToggle, lang, t }) {
   const { getIngredientIcon } = window.MargreetaDesignSystem_35c101;
-  const icon = getIngredientIcon(extra.icon);
+  const [open, setOpen] = React.useState(false);
+  const count = selectedExtras.length;
   return (
-    <button type="button" onClick={onToggle} aria-pressed={selected}
-      style={{
-        display: 'inline-flex', alignItems: 'center', gap: 5, fontFamily: 'var(--font-body)', fontSize: 'var(--text-body-sm)', fontWeight: 500,
-        padding: 'var(--tag-pad)', borderRadius: 'var(--radius-sm)', cursor: 'pointer', letterSpacing: '0.01em',
-        border: selected ? '1px solid var(--gold-foil)' : '1px solid var(--border-hairline-soft)',
-        background: selected ? 'var(--gold-highlight)' : 'transparent',
-        color: 'var(--ink-bordeaux-900)', transition: 'background .15s ease, border-color .15s ease'
-      }}
-    >
-      {icon && (typeof icon === 'object'
-        ? <img src={icon.img} alt="" aria-hidden="true" style={{ width: '1.15em', height: '1.15em', objectFit: 'cover', borderRadius: '50%', flexShrink: 0 }} />
-        : <span aria-hidden="true" style={{ fontSize: '1.05em', lineHeight: 1 }}>{icon}</span>)}
-      {extra[lang] || extra.en}
-      <span style={{ opacity: 0.75 }}>+{extra.price} {t('dish.priceUnit')}</span>
-      {selected && (
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9 17.5L20 6.5" stroke="var(--ink-bordeaux-900)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/></svg>
+    <div style={{ marginTop: 14 }}>
+      <button type="button" onClick={() => setOpen(o => !o)} aria-expanded={open}
+        style={{
+          width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
+          padding: '10px 12px', borderRadius: 10, border: '1px solid var(--border-hairline-soft)',
+          background: open ? 'rgba(0,0,0,.04)' : '#fff', cursor: 'pointer',
+          fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 700, color: 'var(--ink-black)', transition: 'background .15s ease'
+        }}
+      >
+        <span>{t('dish.extrasLabel')}{count > 0 ? ` (${count})` : ''}</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, transform: open ? 'rotate(180deg)' : 'none', transition: 'transform .2s ease' }}><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      {open && (
+        <div style={{ marginTop: 6, border: '1px solid var(--border-hairline-soft)', borderRadius: 10, padding: 4, background: 'rgba(0,0,0,.03)' }}>
+          {EXTRAS.map(extra => {
+            const icon = getIngredientIcon(extra.icon);
+            const checked = selectedExtras.includes(extra.key);
+            return (
+              <label key={extra.key} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 6px', borderRadius: 8, cursor: 'pointer' }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,0,0,.04)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+              >
+                <input type="checkbox" checked={checked} onChange={() => onToggle(extra.key)} style={{ width: 16, height: 16, accentColor: 'var(--gold-foil)', cursor: 'pointer', flexShrink: 0 }} />
+                {icon && (typeof icon === 'object'
+                  ? <img src={icon.img} alt="" aria-hidden="true" style={{ width: '1.2em', height: '1.2em', objectFit: 'cover', borderRadius: '50%', flexShrink: 0 }} />
+                  : <span aria-hidden="true" style={{ fontSize: '1.1em', lineHeight: 1 }}>{icon}</span>)}
+                <span style={{ flex: 1, fontFamily: 'var(--font-body)', fontSize: 13.5, color: 'var(--ink-black)' }}>{extra[lang] || extra.en}</span>
+                <span style={{ fontFamily: 'var(--font-body)', fontSize: 12.5, color: 'var(--text-muted-on-light)', whiteSpace: 'nowrap' }}>+{extra.price} {t('dish.priceUnit')}</span>
+              </label>
+            );
+          })}
+        </div>
       )}
-    </button>
+    </div>
   );
 }
 const DATA = {
@@ -122,14 +139,7 @@ function GenZDishCard({ dish, country, isEgyptPastrami }) {
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 12 }}>
           {dish.tags.map(tag => <Tag key={tag.key + tag.en} iconKey={tag.key}>{tag[lang] || tag.en}</Tag>)}
         </div>
-        <div style={{ marginTop: 14 }}>
-          <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 12, color: 'var(--text-muted-on-light)', marginBottom: 6 }}>{t('dish.extrasLabel')}</div>
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            {EXTRAS.map(extra => (
-              <ExtraChip key={extra.key} extra={extra} lang={lang} t={t} selected={selectedExtras.includes(extra.key)} onToggle={() => toggleExtra(extra.key)} />
-            ))}
-          </div>
-        </div>
+        <ExtrasDropdown selectedExtras={selectedExtras} onToggle={toggleExtra} lang={lang} t={t} />
         <button className={`gz-dish-addbtn${added ? ' gz-dish-addbtn-added' : ''}`} onClick={handleAdd}
           style={{ marginTop: 14, width: '100%', padding: '11px', borderRadius: 10, border: 'none', background: added ? 'linear-gradient(135deg, var(--accent-italy), #12a866)' : 'var(--gold-foil)', color: added ? '#fff' : 'var(--ink-bordeaux-900)', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 14, cursor: 'pointer', transition: 'transform .15s ease, background .2s ease', boxShadow: added ? '0 0 16px -2px var(--accent-italy)' : 'none' }}
           onMouseEnter={e => { if (!added) e.currentTarget.style.transform = 'scale(1.02)'; }}
