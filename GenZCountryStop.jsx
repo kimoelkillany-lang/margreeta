@@ -17,7 +17,6 @@ const TAGS = {
   hotHoney: TAG('honey', 'Hot honey sauce', 'صلصة العسل الحار'),
   mozzarella: TAG('mozzarella', 'Mozzarella', 'موتزاريلا'),
   blueCheese: TAG('blue cheese', 'Blue cheese', 'جبنة زرقاء'),
-  provolone: TAG('provolone', 'Provolone', 'بروفولون'),
   premiumPastrami: TAG('pastrami', 'Premium pastrami', 'باسترامي فاخر'),
   parsley: TAG('parsley', 'Fresh parsley', 'بقدونس طازج'),
   garlic: TAG('garlic', 'Garlic', 'ثوم')
@@ -80,7 +79,7 @@ const DATA = {
   ]},
   america: { number: '02', accent: 'america', dishes: [
     { slot: 'america-1', image: 'america-1.jpg', name: { en: 'hot honey pepperoni', ar: 'بيبروني بالعسل الحار' }, price: 380, spicy: true, recommended: true, tags: [TAGS.tomato, TAGS.parmesanCheese, TAGS.buffaloMozz, TAGS.pepperoni, TAGS.hotHoney], extras: [{ key: 'dishPepperoni', icon: 'pepperoni', en: 'Extra pepperoni', ar: 'بيبروني إضافي', price: 30 }] },
-    { slot: 'america-2', image: 'america-2.jpg', name: { en: 'cheese lovers', ar: 'عشاق الجبنة' }, price: 340, tags: [TAGS.tomato, TAGS.mozzarella, TAGS.parmesan, TAGS.blueCheese, TAGS.provolone], extras: [{ key: 'dishBlueCheese', icon: 'blue cheese', en: 'Extra blue cheese', ar: 'جبنة زرقاء إضافية', price: 35 }] }
+    { slot: 'america-2', image: 'america-2.jpg', name: { en: 'cheese lovers', ar: 'عشاق الجبنة' }, price: 340, tags: [TAGS.tomato, TAGS.mozzarella, TAGS.parmesan, TAGS.blueCheese], extras: [{ key: 'dishBlueCheese', icon: 'blue cheese', en: 'Extra blue cheese', ar: 'جبنة زرقاء إضافية', price: 35 }] }
   ]},
   egypt: { number: '03', accent: 'egypt', dishes: [
     { slot: 'egypt-1', image: 'egypt-1.jpeg', name: { en: 'Pastrami', ar: 'باسترامي' }, price: 355, recommended: true, tags: [TAGS.tomato, TAGS.buffaloMozz, TAGS.premiumPastrami, TAGS.parsley, TAGS.oliveOilExtra], extras: [{ key: 'dishPastrami', icon: 'pastrami', en: 'Extra pastrami', ar: 'باسترامي إضافي', price: 40 }] }
