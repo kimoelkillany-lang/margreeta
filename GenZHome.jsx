@@ -1,5 +1,6 @@
-const STOP_NUMBERS = { italy: '01', america: '02', egypt: '03' };
-const STOP_BG = { italy: 'assets/italy-bg.jpg', america: 'assets/america-bg-nyc.webp', egypt: 'assets/egypt-bg.jpg' };
+const STOP_NUMBERS = { italy: '01', america: '02', egypt: '03', nutella: '04' };
+const COMING_SOON_STOPS = { nutella: true };
+const STOP_BG = { italy: 'assets/italy-bg.jpg', america: 'assets/america-bg-nyc.webp', egypt: 'assets/egypt-bg.jpg', nutella: 'assets/nutella-bg.jpg' };
 function GenZStopCard({ s, onNav, autoFlipped }) {
   const { JourneyStamp, Postcard, useIsMobile } = window.MargreetaDesignSystem_35c101;
   const { t } = window.useGenZLang();
@@ -21,6 +22,11 @@ function GenZStopCard({ s, onNav, autoFlipped }) {
     >
       <div style={{ position: 'relative', width: '100%', height: '100%', transformStyle: 'preserve-3d', transition: 'transform .6s var(--ease-bounce)', transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)' }}>
         <div style={{ position: 'absolute', inset: 0, backfaceVisibility: 'hidden' }}>
+          {COMING_SOON_STOPS[s.key] && (
+            <div style={{ position: 'absolute', top: -10, insetInlineEnd: 16, zIndex: 2, background: 'var(--ink-bordeaux-900)', color: 'var(--gold-highlight)', fontFamily: 'var(--font-stamp)', fontSize: 10, letterSpacing: '0.05em', textTransform: 'uppercase', padding: '4px 10px', borderRadius: 999, boxShadow: '0 3px 8px rgba(0,0,0,.25)' }}>
+              {t('dish.comingSoon')}
+            </div>
+          )}
           <Postcard eyebrow={`${t('common.stopNo')} ${s.number} — ${t('countries.' + s.key)}`} tone="white" style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', boxShadow: flipped ? 'var(--shadow-card)' : 'var(--shadow-rest)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
               <div>
@@ -109,7 +115,7 @@ function GenZHome({ onNav }) {
           <svg className="gz-swipe-arrow" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transform: dir === 'rtl' ? 'scaleX(-1)' : 'none' }}><path d="M5 12h14M13 6l6 6-6 6"/></svg>
         </div>
         <div className="gz-worldtour-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 28, maxWidth: 1080, margin: '0 auto', alignItems: 'stretch' }}>
-          {['italy', 'america', 'egypt'].map((key, i) => (
+          {['italy', 'america', 'egypt', 'nutella'].map((key, i) => (
             <GenZReveal key={key} delay={i * 0.08} className="gz-worldtour-item">
               <GenZStopCard s={{ key, number: STOP_NUMBERS[key] }} onNav={onNav} autoFlipped={autoFlipped} />
             </GenZReveal>

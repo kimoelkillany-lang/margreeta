@@ -1,4 +1,4 @@
-const ACCENTS_STAMP = { italy: 'var(--accent-italy)', america: 'var(--accent-america)', egypt: 'var(--accent-egypt)', dessert: 'var(--accent-dessert)' };
+const ACCENTS_STAMP = { italy: 'var(--accent-italy)', america: 'var(--accent-america)', egypt: 'var(--accent-egypt)', dessert: 'var(--accent-dessert)', nutella: 'var(--accent-dessert)' };
 function JourneyStamp({ country = 'italy', label, number = '01', size = 96 }) {
   const { t } = window.useGenZLang();
   const accent = ACCENTS_STAMP[country] || 'var(--gold-foil)';
@@ -78,7 +78,7 @@ function Input({ label, placeholder, type = 'text' }) {
   );
 }
 
-const EYEBROW_ACCENTS = { italy: 'var(--accent-italy)', america: 'var(--accent-america)', egypt: 'var(--ink-black)', dessert: 'var(--accent-dessert)', gold: 'var(--gold-foil)' };
+const EYEBROW_ACCENTS = { italy: 'var(--accent-italy)', america: 'var(--accent-america)', egypt: 'var(--ink-black)', dessert: 'var(--accent-dessert)', nutella: 'var(--accent-dessert)', gold: 'var(--gold-foil)' };
 function SectionEyebrow({ children, accent = 'gold' }) {
   const color = EYEBROW_ACCENTS[accent] || EYEBROW_ACCENTS.gold;
   return (
@@ -93,6 +93,7 @@ const INGREDIENT_ICONS = [
   ['pepperoni', { img: 'assets/icon-pepperoni.png' }], ['pastrami', '🥩'], ['salami', { img: 'assets/icon-pepperoni.png' }], ['mushroom', '🍄'],
   ['tomato', '🍅'], ['basil', { img: 'assets/icon-basil.png' }], ['parsley', '🌿'], ['arugula', { img: 'assets/icon-arugula.png' }],
   ['olive', { img: 'assets/icon-oliveoil.png' }], ['onion', '🧅'], ['pepper', '🫑'], ['honey', '🍯'], ['garlic', '🧄'], ['chili', '🌶️'],
+  ['nutella', '🍫'], ['pastry', '🥐'], ['sugar', '❄️'], ['dough', '🍞'], ['nuts', '🥜'], ['marshmallow', '🍡'], ['mnm', '🍬'],
   ['mozzarella', { img: 'assets/icon-mozzarella.png' }],
   ['blue cheese', { img: 'assets/icon-bluecheese.png' }],
   ['provolone', { img: 'assets/icon-provolone.png' }],
@@ -122,8 +123,10 @@ function Tag({ children, tone = 'outline', iconKey }) {
 const ORDER_NOW_COUNTRIES = [
   ['italy', 'assets/italy-bg.jpg', '-4deg'],
   ['america', 'assets/america-bg-nyc.webp', '2deg'],
-  ['egypt', 'assets/egypt-bg.jpg', '-2deg']
+  ['egypt', 'assets/egypt-bg.jpg', '-2deg'],
+  ['nutella', 'assets/nutella-bg.jpg', '3deg']
 ];
+const COMING_SOON_COUNTRIES = { nutella: true };
 function OrderNowMenu({ onNav, variant = 'primary', size = 'md', label, align = 'center' }) {
   const { t, dir } = window.useGenZLang();
   const displayLabel = label || t('common.orderNow');
@@ -158,7 +161,7 @@ function OrderNowMenu({ onNav, variant = 'primary', size = 'md', label, align = 
             position: (align === 'right' || align === 'left') ? 'absolute' : 'fixed',
             top: (align === 'right' || align === 'left') ? 'calc(100% + 16px)' : panelTop,
             ...menuPos, zIndex: 40,
-            display: 'flex', gap: 14, maxWidth: 'calc(100vw - 24px)',
+            display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 14, maxWidth: 'calc(100vw - 24px)',
             padding: '8px 16px', background: 'transparent', border: 'none', boxShadow: 'none'
           }}>
             {ORDER_NOW_COUNTRIES.map(([key, photo, tilt], i) => (
@@ -179,6 +182,9 @@ function OrderNowMenu({ onNav, variant = 'primary', size = 'md', label, align = 
                 >
                   <span style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0) 45%, rgba(0,0,0,.85) 100%)' }}></span>
                   <span style={{ position: 'absolute', top: 6, insetInlineEnd: 6, width: 22, height: 22, borderRadius: '50%', background: 'var(--gold-foil)', color: 'var(--ink-bordeaux-900)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-stamp)', fontSize: 10, fontWeight: 700 }}>0{i + 1}</span>
+                  {COMING_SOON_COUNTRIES[key] && (
+                    <span style={{ position: 'absolute', top: 6, insetInlineStart: 6, background: 'rgba(0,0,0,.55)', color: 'var(--gold-highlight)', fontFamily: 'var(--font-stamp)', fontSize: 8, letterSpacing: '0.03em', textTransform: 'uppercase', padding: '3px 6px', borderRadius: 999 }}>{t('dish.comingSoon')}</span>
+                  )}
                   <span style={{ position: 'absolute', bottom: 10, left: 10, right: 10, fontFamily: 'var(--font-stamp)', fontVariant: 'small-caps', letterSpacing: '0.02em', fontSize: 13 }}>{t('countries.' + key)}</span>
                 </button>
               </div>

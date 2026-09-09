@@ -1,4 +1,4 @@
-const NEXT_COUNTRY = { italy: 'america', america: 'egypt' };
+const NEXT_COUNTRY = { italy: 'america', america: 'egypt', egypt: 'nutella' };
 const TAG = (key, en, ar) => ({ key, en, ar });
 const TAGS = {
   tomato: TAG('tomato', 'Tomato sauce', 'صلصة الطماطم'),
@@ -19,7 +19,11 @@ const TAGS = {
   blueCheese: TAG('blue cheese', 'Blue cheese', 'جبنة زرقاء'),
   premiumPastrami: TAG('pastrami', 'Premium pastrami', 'باسترامي فاخر'),
   parsley: TAG('parsley', 'Fresh parsley', 'بقدونس طازج'),
-  garlic: TAG('garlic', 'Garlic', 'ثوم')
+  garlic: TAG('garlic', 'Garlic', 'ثوم'),
+  nutella: TAG('nutella', 'Nutella', 'نوتيلا'),
+  neapolitanDough: TAG('dough', 'Special Neapolitan-style dough', 'عجينة نابوليتانية خاصة'),
+  nutellaFilledCrust: TAG('pastry', 'Nutella-filled crust', 'قشرة محشوة بالنوتيلا من الداخل'),
+  powderedSugar: TAG('sugar', 'Powdered sugar', 'سكر بودرة')
 };
 const EXTRAS = [
   { key: 'extraMozz', icon: 'mozzarella', en: 'Extra buffalo mozzarella', ar: 'موتزاريلا إضافية', price: 30 },
@@ -83,38 +87,61 @@ const DATA = {
   ]},
   egypt: { number: '03', accent: 'egypt', dishes: [
     { slot: 'egypt-1', image: 'egypt-1.jpeg', name: { en: 'Pastrami', ar: 'باسترامي' }, price: 355, recommended: true, tags: [TAGS.tomato, TAGS.buffaloMozz, TAGS.premiumPastrami, TAGS.parsley, TAGS.oliveOilExtra], extras: [{ key: 'dishPastrami', icon: 'pastrami', en: 'Extra pastrami', ar: 'باسترامي إضافي', price: 40 }] }
+  ]},
+  nutella: { number: '04', accent: 'nutella', dishes: [
+    { slot: 'nutella-1', image: 'nutella-1.jpg', name: { en: 'Nutella Star', ar: 'نجمة نوتيلا' }, comingSoon: true, imageAspect: '1 / 1', tags: [TAGS.nutella, TAGS.nutellaFilledCrust, TAGS.neapolitanDough, TAGS.powderedSugar], sizes: [
+      { key: 'small', en: 'Small', ar: 'صغيرة', price: 160 },
+      { key: 'big', en: 'Big', ar: 'كبيرة', price: 260 }
+    ], extrasOverride: [
+      { key: 'nuts', icon: 'nuts', en: 'Nuts', ar: 'مكسرات', price: 45 },
+      { key: 'marshmallows', icon: 'marshmallow', en: 'Marshmallows', ar: 'مارشميلو', price: 45 },
+      { key: 'mnms', icon: 'mnm', en: "M&M's", ar: 'إم أند إمز', price: 45 }
+    ] }
   ]}
 };
-function GenZDishCard({ dish, country, isEgyptPastrami }) {
+function GenZDishCard({ dish, country, isSoloDish }) {
   const { Postcard, Tag } = window.MargreetaDesignSystem_35c101;
   const { t, lang, dir } = window.useGenZLang();
   const [added, setAdded] = React.useState(false);
   const [selectedExtras, setSelectedExtras] = React.useState([]);
+  const hasSizes = Array.isArray(dish.sizes) && dish.sizes.length > 0;
+  const [selectedSizeKey, setSelectedSizeKey] = React.useState(null);
+  const selectedSize = hasSizes ? dish.sizes.find(s => s.key === selectedSizeKey) : null;
   const timeoutRef = React.useRef(null);
   React.useEffect(() => () => clearTimeout(timeoutRef.current), []);
   const toggleExtra = (key) => setSelectedExtras(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]);
-  const allExtras = React.useMemo(() => [...EXTRAS, ...(dish.extras || [])], [dish]);
+  const allExtras = React.useMemo(() => dish.extrasOverride || [...EXTRAS, ...(dish.extras || [])], [dish]);
   const chosenExtras = allExtras.filter(e => selectedExtras.includes(e.key));
   const extrasTotal = chosenExtras.reduce((s, e) => s + e.price, 0);
-  const totalPrice = dish.price + extrasTotal;
+  const basePrice = hasSizes ? (selectedSize ? selectedSize.price : null) : dish.price;
+  const totalPrice = basePrice == null ? null : basePrice + extrasTotal;
+  const canAdd = (!hasSizes || !!selectedSize) && !dish.comingSoon;
+  const priceDisplay = totalPrice != null
+    ? `${totalPrice} ${t('dish.priceUnit')}`
+    : hasSizes
+      ? `${Math.min(...dish.sizes.map(s => s.price))}–${Math.max(...dish.sizes.map(s => s.price))} ${t('dish.priceUnit')}`
+      : '';
   const handleAdd = () => {
+    if (!canAdd) return;
+    const name = dish.name.en + (selectedSize ? ` (${selectedSize.en})` : '');
     window.GenZCartStore.add({
       ...dish,
-      name: dish.name.en,
+      name,
       price: totalPrice,
+      size: selectedSize ? { key: selectedSize.key, name: selectedSize.en, nameAr: selectedSize.ar } : undefined,
       extras: chosenExtras.map(e => ({ key: e.key, name: e.en, nameAr: e.ar, price: e.price }))
     }, country);
     setAdded(true);
     clearTimeout(timeoutRef.current);
     timeoutRef.current = setTimeout(() => setAdded(false), 1200);
   };
-  const wideStyle = isEgyptPastrami ? { width: 'min(336px, calc(100vw - 40px))' } : undefined;
+  const wideStyle = isSoloDish ? { width: 'min(336px, calc(100vw - 40px))' } : undefined;
   const dishName = dish.name[lang] || dish.name.en;
   return (
     <div
       onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-6px)'; e.currentTarget.style.boxShadow = dish.recommended ? '0 0 0 2px var(--gold-foil), var(--shadow-card)' : 'var(--shadow-card)'; }}
       onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = dish.recommended ? '0 0 0 2px var(--gold-foil)' : ''; }}
-      style={{ transition: 'transform .25s ease, box-shadow .25s ease', borderRadius: 'var(--radius-md)', position: 'relative', boxShadow: dish.recommended ? '0 0 0 2px var(--gold-foil)' : undefined }}
+      style={{ transition: 'transform .25s ease, box-shadow .25s ease', borderRadius: 'var(--radius-md)', position: 'relative', boxShadow: dish.recommended ? '0 0 0 2px var(--gold-foil)' : undefined, opacity: dish.comingSoon ? 0.92 : 1 }}
     >
       {dish.recommended && (
         <div className="gz-recommended-badge" style={{ position: 'absolute', top: -12, insetInlineStart: 20, zIndex: 2, display: 'inline-flex', alignItems: 'center', gap: 5, background: 'var(--gold-foil)', color: 'var(--ink-bordeaux-900)', fontFamily: 'var(--font-stamp)', fontSize: 11, letterSpacing: '0.05em', textTransform: 'uppercase', padding: '5px 10px', borderRadius: 999, boxShadow: '0 3px 8px rgba(0,0,0,.25)' }}>
@@ -123,8 +150,13 @@ function GenZDishCard({ dish, country, isEgyptPastrami }) {
           <span className="gz-recommended-shine"></span>
         </div>
       )}
+      {dish.comingSoon && (
+        <div className="gz-comingsoon-badge" style={{ position: 'absolute', top: -12, insetInlineStart: 20, zIndex: 2, display: 'inline-flex', alignItems: 'center', gap: 5, background: 'var(--ink-bordeaux-900)', color: 'var(--gold-highlight)', fontFamily: 'var(--font-stamp)', fontSize: 11, letterSpacing: '0.05em', textTransform: 'uppercase', padding: '5px 10px', borderRadius: 999, boxShadow: '0 3px 8px rgba(0,0,0,.25)' }}>
+          {t('dish.comingSoon')}
+        </div>
+      )}
       <Postcard tone="white" style={wideStyle}>
-        <image-slot id={dish.slot} src={`uploads/${dish.image}`} placeholder={`Photo of ${dishName}`} shape="rounded" style={isEgyptPastrami ? { width: 'min(287px, calc(100vw - 104px))', aspectRatio: '287 / 241', height: 'auto', display: 'block', marginBottom: 16 } : { width: '100%', height: 220, display: 'block', marginBottom: 16 }}></image-slot>
+        <image-slot id={dish.slot} src={`uploads/${dish.image}`} placeholder={`Photo of ${dishName}`} shape="rounded" style={isSoloDish ? { width: 'min(287px, calc(100vw - 104px))', aspectRatio: dish.imageAspect || '287 / 241', height: 'auto', display: 'block', marginBottom: 16 } : { width: '100%', height: 220, display: 'block', marginBottom: 16 }}></image-slot>
         <div className="gz-dish-name" style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 20, color: 'var(--ink-black)', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12 }}>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
             {dish.spicy && (
@@ -134,18 +166,44 @@ function GenZDishCard({ dish, country, isEgyptPastrami }) {
             )}
             {dishName}
           </span>
-          <span className="gz-dish-price" style={{ color: 'var(--brand-red)', fontSize: 17, whiteSpace: 'nowrap' }}>{totalPrice} {t('dish.priceUnit')}</span>
+          <span className="gz-dish-price" style={{ color: 'var(--brand-red)', fontSize: 17, whiteSpace: 'nowrap' }}>{priceDisplay}</span>
         </div>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 12 }}>
           {dish.tags.map(tag => <Tag key={tag.key + tag.en} iconKey={tag.key}>{tag[lang] || tag.en}</Tag>)}
         </div>
+        {hasSizes && (
+          <div style={{ marginTop: 14 }}>
+            <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 12, color: 'var(--text-muted-on-light)', marginBottom: 6 }}>{t('dish.sizeLabel')}</div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              {dish.sizes.map(size => {
+                const selected = selectedSizeKey === size.key;
+                return (
+                  <button key={size.key} type="button" onClick={() => setSelectedSizeKey(size.key)} aria-pressed={selected}
+                    style={{
+                      flex: 1, padding: '10px', borderRadius: 10, cursor: 'pointer',
+                      border: selected ? '2px solid var(--gold-foil)' : '1px solid var(--border-hairline-soft)',
+                      background: selected ? 'var(--gold-highlight)' : '#fff', color: 'var(--ink-black)',
+                      fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 13, transition: 'background .15s ease, border-color .15s ease'
+                    }}
+                  >
+                    {size[lang] || size.en}
+                    <div style={{ fontWeight: 500, fontSize: 12, color: 'var(--text-muted-on-light)', marginTop: 2 }}>{size.price} {t('dish.priceUnit')}</div>
+                  </button>
+                );
+              })}
+            </div>
+            {!selectedSize && !dish.comingSoon && (
+              <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--brand-red)', marginTop: 6 }}>{t('dish.chooseSizePrompt')}</div>
+            )}
+          </div>
+        )}
         <ExtrasDropdown extrasList={allExtras} selectedExtras={selectedExtras} onToggle={toggleExtra} lang={lang} t={t} />
-        <button className={`gz-dish-addbtn${added ? ' gz-dish-addbtn-added' : ''}`} onClick={handleAdd}
-          style={{ marginTop: 14, width: '100%', padding: '11px', borderRadius: 10, border: 'none', background: added ? 'linear-gradient(135deg, var(--accent-italy), #12a866)' : 'var(--gold-foil)', color: added ? '#fff' : 'var(--ink-bordeaux-900)', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 14, cursor: 'pointer', transition: 'transform .15s ease, background .2s ease', boxShadow: added ? '0 0 16px -2px var(--accent-italy)' : 'none' }}
-          onMouseEnter={e => { if (!added) e.currentTarget.style.transform = 'scale(1.02)'; }}
+        <button className={`gz-dish-addbtn${added ? ' gz-dish-addbtn-added' : ''}`} onClick={handleAdd} disabled={!canAdd}
+          style={{ marginTop: 14, width: '100%', padding: '11px', borderRadius: 10, border: 'none', background: added ? 'linear-gradient(135deg, var(--accent-italy), #12a866)' : (canAdd ? 'var(--gold-foil)' : '#ddd'), color: added ? '#fff' : 'var(--ink-bordeaux-900)', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 14, cursor: canAdd ? 'pointer' : 'not-allowed', transition: 'transform .15s ease, background .2s ease', boxShadow: added ? '0 0 16px -2px var(--accent-italy)' : 'none' }}
+          onMouseEnter={e => { if (!added && canAdd) e.currentTarget.style.transform = 'scale(1.02)'; }}
           onMouseLeave={e => { e.currentTarget.style.transform = ''; }}
         >
-          {added ? (
+          {dish.comingSoon ? t('dish.comingSoon') : added ? (
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, justifyContent: 'center' }}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9 17.5L20 6.5" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/></svg>
               {t('dish.added')}
@@ -181,9 +239,9 @@ function GenZCountryStop({ country, onNav }) {
       <section className="gz-dish-grid-section" style={{ background: 'var(--surface-cream)', padding: '64px 48px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 320px))', gap: 28, maxWidth: 1080, margin: '0 auto', justifyContent: 'center' }}>
         {d.dishes.map((dish, i) => (
           <GenZReveal key={dish.slot} delay={i * 0.08}
-            style={country === 'egypt' && dish.name.en === 'Pastrami' ? { width: 'min(336px, calc(100vw - 40px))' } : undefined}
+            style={d.dishes.length === 1 ? { width: 'min(336px, calc(100vw - 40px))' } : undefined}
           >
-            <GenZDishCard dish={dish} country={country} isEgyptPastrami={country === 'egypt' && dish.name.en === 'Pastrami'} />
+            <GenZDishCard dish={dish} country={country} isSoloDish={d.dishes.length === 1} />
           </GenZReveal>
         ))}
       </section>

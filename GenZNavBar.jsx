@@ -30,7 +30,7 @@ function GenZNavBar({ current, onNav }) {
       <div style={{ cursor: 'pointer' }} onClick={() => onNav('home')}><img className="gz-nav-logo" src="assets/logo-lockup-transparent.png" alt="Margreeta" style={{ height: 40 }} /></div>
       <div className="gz-nav-links" ref={linksRef} style={{ position: 'relative', display: 'flex', gap: 28, fontFamily: 'var(--font-stamp)', fontVariant: 'small-caps', letterSpacing: '0.06em', fontSize: 16, color: 'var(--ink-black)' }}>
         <span onClick={() => onNav('concept')} style={{ cursor: 'pointer', opacity: 0.85, borderBottom: '1px solid transparent', paddingBottom: 2, transition: 'opacity .2s ease, border-color .2s ease' }} onMouseEnter={e => { e.currentTarget.style.opacity = 1; e.currentTarget.style.borderColor = 'var(--gold-foil)'; }} onMouseLeave={e => { e.currentTarget.style.opacity = 0.85; e.currentTarget.style.borderColor = 'transparent'; }}>{t('nav.concept')}</span>
-        {['italy', 'america', 'egypt'].map(c => (
+        {['italy', 'america', 'egypt', 'nutella'].map(c => (
           <span key={c} ref={el => { itemRefs.current[c] = el; }} onClick={() => onNav(c)} onMouseEnter={() => setHoverKey(c)} onMouseLeave={() => setHoverKey(null)}
             style={{ cursor: 'pointer', opacity: activeKey === c ? 1 : 0.72, textTransform: 'capitalize', padding: '10px 20px', transition: 'opacity .25s ease' }}
           >{t('nav.' + c)}</span>
@@ -48,7 +48,7 @@ function GenZNavBar({ current, onNav }) {
       </div>
       {open && (
         <div className="gz-nav-mobile-menu" style={{ display: 'flex', position: 'absolute', top: '100%', left: 0, right: 0, background: 'var(--paper-white)', borderBottom: '1px solid var(--border-hairline-soft)', flexDirection: 'column', padding: '8px 20px 20px', gap: 4, fontFamily: 'var(--font-stamp)', fontVariant: 'small-caps', letterSpacing: '0.06em', fontSize: 16, color: 'var(--ink-black)', boxShadow: 'var(--shadow-card)' }}>
-          {['concept', 'italy', 'america', 'egypt'].map(key => (
+          {['concept', 'italy', 'america', 'egypt', 'nutella'].map(key => (
             <span key={key} onClick={() => go(key)} className="gz-nav-menu-item" style={{ cursor: 'pointer', padding: '12px 8px', borderBottom: '1px solid rgba(0,0,0,.08)' }}>{t('nav.' + key)}</span>
           ))}
         </div>
