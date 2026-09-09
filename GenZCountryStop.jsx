@@ -88,7 +88,7 @@ const DATA = {
     { slot: 'egypt-1', image: 'egypt-1.jpeg', name: { en: 'Pastrami', ar: 'باسترامي' }, price: 355, recommended: true, tags: [TAGS.tomato, TAGS.buffaloMozz, TAGS.premiumPastrami, TAGS.parsley, TAGS.oliveOilExtra], extras: [{ key: 'dishPastrami', icon: 'pastrami', en: 'Extra pastrami', ar: 'باسترامي إضافي', price: 40 }] }
   ]},
   nutella: { number: '04', accent: 'nutella', dishes: [
-    { slot: 'nutella-1', image: 'nutella-1.jpg', name: { en: 'Nutella Star', ar: 'نجمة نوتيلا' }, price: 160, recommended: true, tags: [TAGS.nutella, TAGS.puffPastry, TAGS.powderedSugar] }
+    { slot: 'nutella-1', image: 'nutella-1.jpg', name: { en: 'Nutella Star', ar: 'نجمة نوتيلا' }, price: 160, recommended: true, imageAspect: '1 / 1', tags: [TAGS.nutella, TAGS.puffPastry, TAGS.powderedSugar] }
   ]}
 };
 function GenZDishCard({ dish, country, isSoloDish }) {
@@ -130,7 +130,7 @@ function GenZDishCard({ dish, country, isSoloDish }) {
         </div>
       )}
       <Postcard tone="white" style={wideStyle}>
-        <image-slot id={dish.slot} src={`uploads/${dish.image}`} placeholder={`Photo of ${dishName}`} shape="rounded" style={isSoloDish ? { width: 'min(287px, calc(100vw - 104px))', aspectRatio: '287 / 241', height: 'auto', display: 'block', marginBottom: 16 } : { width: '100%', height: 220, display: 'block', marginBottom: 16 }}></image-slot>
+        <image-slot id={dish.slot} src={`uploads/${dish.image}`} placeholder={`Photo of ${dishName}`} shape="rounded" style={isSoloDish ? { width: 'min(287px, calc(100vw - 104px))', aspectRatio: dish.imageAspect || '287 / 241', height: 'auto', display: 'block', marginBottom: 16 } : { width: '100%', height: 220, display: 'block', marginBottom: 16 }}></image-slot>
         <div className="gz-dish-name" style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 20, color: 'var(--ink-black)', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12 }}>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
             {dish.spicy && (
