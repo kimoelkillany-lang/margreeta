@@ -126,6 +126,7 @@ const ORDER_NOW_COUNTRIES = [
   ['egypt', 'assets/egypt-bg.jpg', '-2deg'],
   ['nutella', 'assets/nutella-bg.jpg', '3deg']
 ];
+const COMING_SOON_COUNTRIES = { nutella: true };
 function OrderNowMenu({ onNav, variant = 'primary', size = 'md', label, align = 'center' }) {
   const { t, dir } = window.useGenZLang();
   const displayLabel = label || t('common.orderNow');
@@ -181,6 +182,9 @@ function OrderNowMenu({ onNav, variant = 'primary', size = 'md', label, align = 
                 >
                   <span style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0) 45%, rgba(0,0,0,.85) 100%)' }}></span>
                   <span style={{ position: 'absolute', top: 6, insetInlineEnd: 6, width: 22, height: 22, borderRadius: '50%', background: 'var(--gold-foil)', color: 'var(--ink-bordeaux-900)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-stamp)', fontSize: 10, fontWeight: 700 }}>0{i + 1}</span>
+                  {COMING_SOON_COUNTRIES[key] && (
+                    <span style={{ position: 'absolute', top: 6, insetInlineStart: 6, background: 'rgba(0,0,0,.55)', color: 'var(--gold-highlight)', fontFamily: 'var(--font-stamp)', fontSize: 8, letterSpacing: '0.03em', textTransform: 'uppercase', padding: '3px 6px', borderRadius: 999 }}>{t('dish.comingSoon')}</span>
+                  )}
                   <span style={{ position: 'absolute', bottom: 10, left: 10, right: 10, fontFamily: 'var(--font-stamp)', fontVariant: 'small-caps', letterSpacing: '0.02em', fontSize: 13 }}>{t('countries.' + key)}</span>
                 </button>
               </div>

@@ -1,4 +1,5 @@
 const STOP_NUMBERS = { italy: '01', america: '02', egypt: '03', nutella: '04' };
+const COMING_SOON_STOPS = { nutella: true };
 const STOP_BG = { italy: 'assets/italy-bg.jpg', america: 'assets/america-bg-nyc.webp', egypt: 'assets/egypt-bg.jpg', nutella: 'assets/nutella-bg.jpg' };
 function GenZStopCard({ s, onNav, autoFlipped }) {
   const { JourneyStamp, Postcard, useIsMobile } = window.MargreetaDesignSystem_35c101;
@@ -21,6 +22,11 @@ function GenZStopCard({ s, onNav, autoFlipped }) {
     >
       <div style={{ position: 'relative', width: '100%', height: '100%', transformStyle: 'preserve-3d', transition: 'transform .6s var(--ease-bounce)', transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)' }}>
         <div style={{ position: 'absolute', inset: 0, backfaceVisibility: 'hidden' }}>
+          {COMING_SOON_STOPS[s.key] && (
+            <div style={{ position: 'absolute', top: -10, insetInlineEnd: 16, zIndex: 2, background: 'var(--ink-bordeaux-900)', color: 'var(--gold-highlight)', fontFamily: 'var(--font-stamp)', fontSize: 10, letterSpacing: '0.05em', textTransform: 'uppercase', padding: '4px 10px', borderRadius: 999, boxShadow: '0 3px 8px rgba(0,0,0,.25)' }}>
+              {t('dish.comingSoon')}
+            </div>
+          )}
           <Postcard eyebrow={`${t('common.stopNo')} ${s.number} — ${t('countries.' + s.key)}`} tone="white" style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', boxShadow: flipped ? 'var(--shadow-card)' : 'var(--shadow-rest)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
               <div>

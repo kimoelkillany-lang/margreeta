@@ -51,6 +51,7 @@ window.GenZT = {
     dish: {
       spicy: 'Spicy',
       recommended: 'Recommended',
+      comingSoon: 'Coming soon',
       sizeLabel: 'Size',
       chooseSizePrompt: 'Choose a size to continue',
       extrasLabel: 'Extras',
@@ -155,6 +156,7 @@ window.GenZT = {
     dish: {
       spicy: 'حار',
       recommended: 'الأكثر طلبًا',
+      comingSoon: 'قريبًا',
       sizeLabel: 'الحجم',
       chooseSizePrompt: 'اختر الحجم للمتابعة',
       extrasLabel: 'إضافات',

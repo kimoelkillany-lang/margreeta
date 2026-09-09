@@ -88,7 +88,7 @@ const DATA = {
     { slot: 'egypt-1', image: 'egypt-1.jpeg', name: { en: 'Pastrami', ar: 'باسترامي' }, price: 355, recommended: true, tags: [TAGS.tomato, TAGS.buffaloMozz, TAGS.premiumPastrami, TAGS.parsley, TAGS.oliveOilExtra], extras: [{ key: 'dishPastrami', icon: 'pastrami', en: 'Extra pastrami', ar: 'باسترامي إضافي', price: 40 }] }
   ]},
   nutella: { number: '04', accent: 'nutella', dishes: [
-    { slot: 'nutella-1', image: 'nutella-1.jpg', name: { en: 'Nutella Star', ar: 'نجمة نوتيلا' }, recommended: true, imageAspect: '1 / 1', tags: [TAGS.nutella, TAGS.neapolitanDough, TAGS.powderedSugar], sizes: [
+    { slot: 'nutella-1', image: 'nutella-1.jpg', name: { en: 'Nutella Star', ar: 'نجمة نوتيلا' }, comingSoon: true, imageAspect: '1 / 1', tags: [TAGS.nutella, TAGS.neapolitanDough, TAGS.powderedSugar], sizes: [
       { key: 'small', en: 'Small', ar: 'صغيرة', price: 160 },
       { key: 'big', en: 'Big', ar: 'كبيرة', price: 260 }
     ], extrasOverride: [
@@ -114,7 +114,7 @@ function GenZDishCard({ dish, country, isSoloDish }) {
   const extrasTotal = chosenExtras.reduce((s, e) => s + e.price, 0);
   const basePrice = hasSizes ? (selectedSize ? selectedSize.price : null) : dish.price;
   const totalPrice = basePrice == null ? null : basePrice + extrasTotal;
-  const canAdd = !hasSizes || !!selectedSize;
+  const canAdd = (!hasSizes || !!selectedSize) && !dish.comingSoon;
   const priceDisplay = totalPrice != null
     ? `${totalPrice} ${t('dish.priceUnit')}`
     : hasSizes
@@ -140,13 +140,18 @@ function GenZDishCard({ dish, country, isSoloDish }) {
     <div
       onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-6px)'; e.currentTarget.style.boxShadow = dish.recommended ? '0 0 0 2px var(--gold-foil), var(--shadow-card)' : 'var(--shadow-card)'; }}
       onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = dish.recommended ? '0 0 0 2px var(--gold-foil)' : ''; }}
-      style={{ transition: 'transform .25s ease, box-shadow .25s ease', borderRadius: 'var(--radius-md)', position: 'relative', boxShadow: dish.recommended ? '0 0 0 2px var(--gold-foil)' : undefined }}
+      style={{ transition: 'transform .25s ease, box-shadow .25s ease', borderRadius: 'var(--radius-md)', position: 'relative', boxShadow: dish.recommended ? '0 0 0 2px var(--gold-foil)' : undefined, opacity: dish.comingSoon ? 0.92 : 1 }}
     >
       {dish.recommended && (
         <div className="gz-recommended-badge" style={{ position: 'absolute', top: -12, insetInlineStart: 20, zIndex: 2, display: 'inline-flex', alignItems: 'center', gap: 5, background: 'var(--gold-foil)', color: 'var(--ink-bordeaux-900)', fontFamily: 'var(--font-stamp)', fontSize: 11, letterSpacing: '0.05em', textTransform: 'uppercase', padding: '5px 10px', borderRadius: 999, boxShadow: '0 3px 8px rgba(0,0,0,.25)' }}>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="#7A1128"><path d="M12 2l2.9 6.26L21.8 9l-5 4.87L18 21l-6-3.5L6 21l1.2-7.13-5-4.87 6.9-.74z"/></svg>
           {t('dish.recommended')}
           <span className="gz-recommended-shine"></span>
+        </div>
+      )}
+      {dish.comingSoon && (
+        <div className="gz-comingsoon-badge" style={{ position: 'absolute', top: -12, insetInlineStart: 20, zIndex: 2, display: 'inline-flex', alignItems: 'center', gap: 5, background: 'var(--ink-bordeaux-900)', color: 'var(--gold-highlight)', fontFamily: 'var(--font-stamp)', fontSize: 11, letterSpacing: '0.05em', textTransform: 'uppercase', padding: '5px 10px', borderRadius: 999, boxShadow: '0 3px 8px rgba(0,0,0,.25)' }}>
+          {t('dish.comingSoon')}
         </div>
       )}
       <Postcard tone="white" style={wideStyle}>
@@ -186,7 +191,7 @@ function GenZDishCard({ dish, country, isSoloDish }) {
                 );
               })}
             </div>
-            {!selectedSize && (
+            {!selectedSize && !dish.comingSoon && (
               <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--brand-red)', marginTop: 6 }}>{t('dish.chooseSizePrompt')}</div>
             )}
           </div>
@@ -197,7 +202,7 @@ function GenZDishCard({ dish, country, isSoloDish }) {
           onMouseEnter={e => { if (!added && canAdd) e.currentTarget.style.transform = 'scale(1.02)'; }}
           onMouseLeave={e => { e.currentTarget.style.transform = ''; }}
         >
-          {added ? (
+          {dish.comingSoon ? t('dish.comingSoon') : added ? (
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, justifyContent: 'center' }}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9 17.5L20 6.5" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/></svg>
               {t('dish.added')}
