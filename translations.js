@@ -1,12 +1,12 @@
 window.GenZT = {
   en: {
-    nav: { concept: 'Concept', italy: 'Italy', america: 'America', egypt: 'Egypt' },
+    nav: { concept: 'Concept', italy: 'Italy', america: 'America', egypt: 'Egypt', nutella: 'Nutella World' },
     common: {
       orderNow: 'Order now',
       stopNo: 'Stop No.',
       stopNoLabel: 'Stop No. {number}'
     },
-    countries: { italy: 'Italy', america: 'America', egypt: 'Egypt' },
+    countries: { italy: 'Italy', america: 'America', egypt: 'Egypt', nutella: 'Nutella World' },
     hero: {
       headline: "The dough honors Naples — pizza's original home. The toppings explore the globe.",
       copy: 'Authentic 48-hour fermented Neapolitan dough, topped with premium ingredients. No shortcuts. Just honest flavor.',
@@ -16,7 +16,7 @@ window.GenZT = {
     worldTour: {
       eyebrow: 'Explore the flavors of each country',
       heading: 'Same dough. Every stamp a different country.',
-      swipeHint: 'Swipe to see all 3',
+      swipeHint: 'Swipe to see all 4',
       clickToExplore: 'Click to explore',
       tapToExplore: 'Tap to explore',
       clickHint: 'Click to explore',
@@ -25,7 +25,8 @@ window.GenZT = {
     stops: {
       italy: { title: 'The classics, done properly.', line: "Cause we're as authentic as you are.", hintTarget: 'the Italian pizzas' },
       america: { title: 'Bold, indulgent, done right.', line: 'Subtlety was never the American way.', hintTarget: 'the American pizzas' },
-      egypt: { title: 'The local-favorite flavors.', line: 'Home turf, done right.', hintTarget: 'the Egyptian pizzas' }
+      egypt: { title: 'The local-favorite flavors.', line: 'Home turf, done right.', hintTarget: 'the Egyptian pizzas' },
+      nutella: { title: 'The sweet finale everyone saves room for.', line: "Because the tour isn't complete without dessert.", hintTarget: 'the Nutella Star' }
     },
     anchor: {
       eyebrow: 'The anchor',
@@ -41,7 +42,8 @@ window.GenZT = {
       stopLine: {
         italy: "The classics, done properly, cause we're as authentic as you are.",
         america: 'Bolder, because subtlety was never the American way.',
-        egypt: 'The local-favorite flavors, home turf done right.'
+        egypt: 'The local-favorite flavors, home turf done right.',
+        nutella: 'A sweet finale to the tour — because every journey deserves a sweet ending.'
       },
       exploreNext: 'Explore {country}',
       backToTour: 'Back to the tour'
@@ -100,13 +102,13 @@ window.GenZT = {
     }
   },
   ar: {
-    nav: { concept: 'الفكرة', italy: 'إيطاليا', america: 'أمريكا', egypt: 'مصر' },
+    nav: { concept: 'الفكرة', italy: 'إيطاليا', america: 'أمريكا', egypt: 'مصر', nutella: 'عالم نوتيلا' },
     common: {
       orderNow: 'اطلب الآن',
       stopNo: 'محطة رقم',
       stopNoLabel: 'محطة رقم {number}'
     },
-    countries: { italy: 'إيطاليا', america: 'أمريكا', egypt: 'مصر' },
+    countries: { italy: 'إيطاليا', america: 'أمريكا', egypt: 'مصر', nutella: 'عالم نوتيلا' },
     hero: {
       headline: 'العجينة أصلها من نابولي، موطن البيتزا الأصلي. أما المكونات فتجوب العالم كله.',
       copy: 'عجينة نابوليتانية أصيلة تتخمر 48 ساعة، وتُغطى بأجود المكونات. بلا اختصارات. طعم أصيل فقط.',
@@ -116,7 +118,7 @@ window.GenZT = {
     worldTour: {
       eyebrow: 'اكتشف نكهات كل بلد',
       heading: 'العجينة نفسها، وكل ختم من بلد مختلفة.',
-      swipeHint: 'مرّر لرؤية الثلاثة جميعًا',
+      swipeHint: 'مرّر لرؤية الأربعة جميعًا',
       clickToExplore: 'اضغط لاستكشاف',
       tapToExplore: 'اضغط لاستكشاف',
       clickHint: 'اضغط للاستكشاف',
@@ -125,7 +127,8 @@ window.GenZT = {
     stops: {
       italy: { title: 'الأطباق الكلاسيكية، بإتقان.', line: 'لأننا أصيلون تمامًا مثلك.', hintTarget: 'بيتزا إيطاليا' },
       america: { title: 'جريئة وغنية، ومُتقنة الصنع.', line: 'فالرقة ليست أسلوب أمريكا على الإطلاق.', hintTarget: 'بيتزا أمريكا' },
-      egypt: { title: 'النكهات المحلية المفضلة لدينا.', line: 'أرضنا، ونقدّمها كما ينبغي.', hintTarget: 'بيتزا مصر' }
+      egypt: { title: 'النكهات المحلية المفضلة لدينا.', line: 'أرضنا، ونقدّمها كما ينبغي.', hintTarget: 'بيتزا مصر' },
+      nutella: { title: 'الختام الحلو الذي يترك الجميع مكانًا له.', line: 'لأن الجولة لا تكتمل من دون حلوى.', hintTarget: 'نجمة نوتيلا' }
     },
     anchor: {
       eyebrow: 'الأساس',
@@ -141,7 +144,8 @@ window.GenZT = {
       stopLine: {
         italy: 'الأطباق الكلاسيكية بإتقان، لأننا أصيلون تمامًا مثلك.',
         america: 'أكثر جرأة، لأن الرقة ليست أسلوب أمريكا على الإطلاق.',
-        egypt: 'النكهات المحلية المفضلة لدينا، أرضنا ونقدّمها كما ينبغي.'
+        egypt: 'النكهات المحلية المفضلة لدينا، أرضنا ونقدّمها كما ينبغي.',
+        nutella: 'ختام حلو للجولة — لأن كل رحلة تستحق نهاية حلوة.'
       },
       exploreNext: 'استكشف {country}',
       backToTour: 'العودة إلى الجولة'

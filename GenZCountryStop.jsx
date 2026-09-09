@@ -1,4 +1,4 @@
-const NEXT_COUNTRY = { italy: 'america', america: 'egypt' };
+const NEXT_COUNTRY = { italy: 'america', america: 'egypt', egypt: 'nutella' };
 const TAG = (key, en, ar) => ({ key, en, ar });
 const TAGS = {
   tomato: TAG('tomato', 'Tomato sauce', 'صلصة الطماطم'),
@@ -19,7 +19,10 @@ const TAGS = {
   blueCheese: TAG('blue cheese', 'Blue cheese', 'جبنة زرقاء'),
   premiumPastrami: TAG('pastrami', 'Premium pastrami', 'باسترامي فاخر'),
   parsley: TAG('parsley', 'Fresh parsley', 'بقدونس طازج'),
-  garlic: TAG('garlic', 'Garlic', 'ثوم')
+  garlic: TAG('garlic', 'Garlic', 'ثوم'),
+  nutella: TAG('nutella', 'Nutella', 'نوتيلا'),
+  puffPastry: TAG('pastry', 'Puff pastry', 'عجينة مورقة'),
+  powderedSugar: TAG('sugar', 'Powdered sugar', 'سكر بودرة')
 };
 const EXTRAS = [
   { key: 'extraMozz', icon: 'mozzarella', en: 'Extra buffalo mozzarella', ar: 'موتزاريلا إضافية', price: 30 },
@@ -83,9 +86,12 @@ const DATA = {
   ]},
   egypt: { number: '03', accent: 'egypt', dishes: [
     { slot: 'egypt-1', image: 'egypt-1.jpeg', name: { en: 'Pastrami', ar: 'باسترامي' }, price: 355, recommended: true, tags: [TAGS.tomato, TAGS.buffaloMozz, TAGS.premiumPastrami, TAGS.parsley, TAGS.oliveOilExtra], extras: [{ key: 'dishPastrami', icon: 'pastrami', en: 'Extra pastrami', ar: 'باسترامي إضافي', price: 40 }] }
+  ]},
+  nutella: { number: '04', accent: 'nutella', dishes: [
+    { slot: 'nutella-1', image: 'nutella-1.jpg', name: { en: 'Nutella Star', ar: 'نجمة نوتيلا' }, price: 160, recommended: true, tags: [TAGS.nutella, TAGS.puffPastry, TAGS.powderedSugar] }
   ]}
 };
-function GenZDishCard({ dish, country, isEgyptPastrami }) {
+function GenZDishCard({ dish, country, isSoloDish }) {
   const { Postcard, Tag } = window.MargreetaDesignSystem_35c101;
   const { t, lang, dir } = window.useGenZLang();
   const [added, setAdded] = React.useState(false);
@@ -108,7 +114,7 @@ function GenZDishCard({ dish, country, isEgyptPastrami }) {
     clearTimeout(timeoutRef.current);
     timeoutRef.current = setTimeout(() => setAdded(false), 1200);
   };
-  const wideStyle = isEgyptPastrami ? { width: 'min(336px, calc(100vw - 40px))' } : undefined;
+  const wideStyle = isSoloDish ? { width: 'min(336px, calc(100vw - 40px))' } : undefined;
   const dishName = dish.name[lang] || dish.name.en;
   return (
     <div
@@ -124,7 +130,7 @@ function GenZDishCard({ dish, country, isEgyptPastrami }) {
         </div>
       )}
       <Postcard tone="white" style={wideStyle}>
-        <image-slot id={dish.slot} src={`uploads/${dish.image}`} placeholder={`Photo of ${dishName}`} shape="rounded" style={isEgyptPastrami ? { width: 'min(287px, calc(100vw - 104px))', aspectRatio: '287 / 241', height: 'auto', display: 'block', marginBottom: 16 } : { width: '100%', height: 220, display: 'block', marginBottom: 16 }}></image-slot>
+        <image-slot id={dish.slot} src={`uploads/${dish.image}`} placeholder={`Photo of ${dishName}`} shape="rounded" style={isSoloDish ? { width: 'min(287px, calc(100vw - 104px))', aspectRatio: '287 / 241', height: 'auto', display: 'block', marginBottom: 16 } : { width: '100%', height: 220, display: 'block', marginBottom: 16 }}></image-slot>
         <div className="gz-dish-name" style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 20, color: 'var(--ink-black)', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12 }}>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
             {dish.spicy && (
@@ -181,9 +187,9 @@ function GenZCountryStop({ country, onNav }) {
       <section className="gz-dish-grid-section" style={{ background: 'var(--surface-cream)', padding: '64px 48px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 320px))', gap: 28, maxWidth: 1080, margin: '0 auto', justifyContent: 'center' }}>
         {d.dishes.map((dish, i) => (
           <GenZReveal key={dish.slot} delay={i * 0.08}
-            style={country === 'egypt' && dish.name.en === 'Pastrami' ? { width: 'min(336px, calc(100vw - 40px))' } : undefined}
+            style={d.dishes.length === 1 ? { width: 'min(336px, calc(100vw - 40px))' } : undefined}
           >
-            <GenZDishCard dish={dish} country={country} isEgyptPastrami={country === 'egypt' && dish.name.en === 'Pastrami'} />
+            <GenZDishCard dish={dish} country={country} isSoloDish={d.dishes.length === 1} />
           </GenZReveal>
         ))}
       </section>

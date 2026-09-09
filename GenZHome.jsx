@@ -1,5 +1,5 @@
-const STOP_NUMBERS = { italy: '01', america: '02', egypt: '03' };
-const STOP_BG = { italy: 'assets/italy-bg.jpg', america: 'assets/america-bg-nyc.webp', egypt: 'assets/egypt-bg.jpg' };
+const STOP_NUMBERS = { italy: '01', america: '02', egypt: '03', nutella: '04' };
+const STOP_BG = { italy: 'assets/italy-bg.jpg', america: 'assets/america-bg-nyc.webp', egypt: 'assets/egypt-bg.jpg', nutella: 'assets/nutella-bg.jpg' };
 function GenZStopCard({ s, onNav, autoFlipped }) {
   const { JourneyStamp, Postcard, useIsMobile } = window.MargreetaDesignSystem_35c101;
   const { t } = window.useGenZLang();
@@ -109,7 +109,7 @@ function GenZHome({ onNav }) {
           <svg className="gz-swipe-arrow" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transform: dir === 'rtl' ? 'scaleX(-1)' : 'none' }}><path d="M5 12h14M13 6l6 6-6 6"/></svg>
         </div>
         <div className="gz-worldtour-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 28, maxWidth: 1080, margin: '0 auto', alignItems: 'stretch' }}>
-          {['italy', 'america', 'egypt'].map((key, i) => (
+          {['italy', 'america', 'egypt', 'nutella'].map((key, i) => (
             <GenZReveal key={key} delay={i * 0.08} className="gz-worldtour-item">
               <GenZStopCard s={{ key, number: STOP_NUMBERS[key] }} onNav={onNav} autoFlipped={autoFlipped} />
             </GenZReveal>
