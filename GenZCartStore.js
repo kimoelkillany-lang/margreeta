@@ -2,7 +2,7 @@
   const KEY = 'margreeta_genz_cart_v1';
   function read(){ try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch(e){ return []; } }
   function write(items){ try { localStorage.setItem(KEY, JSON.stringify(items)); } catch(e){} listeners.forEach(fn => fn(items)); }
-  function cartKeyFor(dish){ return dish.slot + '::' + (dish.extras || []).map(e => e.key).sort().join(','); }
+  function cartKeyFor(dish){ return dish.slot + '::' + (dish.size ? dish.size.key : '') + '::' + (dish.extras || []).map(e => e.key).sort().join(','); }
   let listeners = [];
   const Store = {
     getItems(){ return read(); },
@@ -12,7 +12,7 @@
       const cartKey = cartKeyFor(dish);
       const existing = items.find(i => i.cartKey === cartKey);
       if (existing) existing.qty += 1;
-      else items.push({ cartKey, slot: dish.slot, name: dish.name, price: dish.price, extras, country, qty: 1 });
+      else items.push({ cartKey, slot: dish.slot, name: dish.name, price: dish.price, size: dish.size, extras, country, qty: 1 });
       write(items);
     },
     setQty(cartKey, qty){

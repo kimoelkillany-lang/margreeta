@@ -51,6 +51,8 @@ window.GenZT = {
     dish: {
       spicy: 'Spicy',
       recommended: 'Recommended',
+      sizeLabel: 'Size',
+      chooseSizePrompt: 'Choose a size to continue',
       extrasLabel: 'Extras',
       addToOrder: 'Add to order',
       added: 'Added',
@@ -153,6 +155,8 @@ window.GenZT = {
     dish: {
       spicy: 'حار',
       recommended: 'الأكثر طلبًا',
+      sizeLabel: 'الحجم',
+      chooseSizePrompt: 'اختر الحجم للمتابعة',
       extrasLabel: 'إضافات',
       addToOrder: 'أضفها إلى الطلب',
       added: 'أُضيفت',

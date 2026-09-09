@@ -88,7 +88,10 @@ const DATA = {
     { slot: 'egypt-1', image: 'egypt-1.jpeg', name: { en: 'Pastrami', ar: 'باسترامي' }, price: 355, recommended: true, tags: [TAGS.tomato, TAGS.buffaloMozz, TAGS.premiumPastrami, TAGS.parsley, TAGS.oliveOilExtra], extras: [{ key: 'dishPastrami', icon: 'pastrami', en: 'Extra pastrami', ar: 'باسترامي إضافي', price: 40 }] }
   ]},
   nutella: { number: '04', accent: 'nutella', dishes: [
-    { slot: 'nutella-1', image: 'nutella-1.jpg', name: { en: 'Nutella Star', ar: 'نجمة نوتيلا' }, price: 160, recommended: true, imageAspect: '1 / 1', tags: [TAGS.nutella, TAGS.puffPastry, TAGS.powderedSugar] }
+    { slot: 'nutella-1', image: 'nutella-1.jpg', name: { en: 'Nutella Star', ar: 'نجمة نوتيلا' }, recommended: true, imageAspect: '1 / 1', tags: [TAGS.nutella, TAGS.puffPastry, TAGS.powderedSugar], sizes: [
+      { key: 'small', en: 'Small', ar: 'صغيرة', price: 160 },
+      { key: 'big', en: 'Big', ar: 'كبيرة', price: 260 }
+    ] }
   ]}
 };
 function GenZDishCard({ dish, country, isSoloDish }) {
@@ -96,18 +99,31 @@ function GenZDishCard({ dish, country, isSoloDish }) {
   const { t, lang, dir } = window.useGenZLang();
   const [added, setAdded] = React.useState(false);
   const [selectedExtras, setSelectedExtras] = React.useState([]);
+  const hasSizes = Array.isArray(dish.sizes) && dish.sizes.length > 0;
+  const [selectedSizeKey, setSelectedSizeKey] = React.useState(null);
+  const selectedSize = hasSizes ? dish.sizes.find(s => s.key === selectedSizeKey) : null;
   const timeoutRef = React.useRef(null);
   React.useEffect(() => () => clearTimeout(timeoutRef.current), []);
   const toggleExtra = (key) => setSelectedExtras(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]);
   const allExtras = React.useMemo(() => [...EXTRAS, ...(dish.extras || [])], [dish]);
   const chosenExtras = allExtras.filter(e => selectedExtras.includes(e.key));
   const extrasTotal = chosenExtras.reduce((s, e) => s + e.price, 0);
-  const totalPrice = dish.price + extrasTotal;
+  const basePrice = hasSizes ? (selectedSize ? selectedSize.price : null) : dish.price;
+  const totalPrice = basePrice == null ? null : basePrice + extrasTotal;
+  const canAdd = !hasSizes || !!selectedSize;
+  const priceDisplay = totalPrice != null
+    ? `${totalPrice} ${t('dish.priceUnit')}`
+    : hasSizes
+      ? `${Math.min(...dish.sizes.map(s => s.price))}–${Math.max(...dish.sizes.map(s => s.price))} ${t('dish.priceUnit')}`
+      : '';
   const handleAdd = () => {
+    if (!canAdd) return;
+    const name = dish.name.en + (selectedSize ? ` (${selectedSize.en})` : '');
     window.GenZCartStore.add({
       ...dish,
-      name: dish.name.en,
+      name,
       price: totalPrice,
+      size: selectedSize ? { key: selectedSize.key, name: selectedSize.en, nameAr: selectedSize.ar } : undefined,
       extras: chosenExtras.map(e => ({ key: e.key, name: e.en, nameAr: e.ar, price: e.price }))
     }, country);
     setAdded(true);
@@ -140,15 +156,41 @@ function GenZDishCard({ dish, country, isSoloDish }) {
             )}
             {dishName}
           </span>
-          <span className="gz-dish-price" style={{ color: 'var(--brand-red)', fontSize: 17, whiteSpace: 'nowrap' }}>{totalPrice} {t('dish.priceUnit')}</span>
+          <span className="gz-dish-price" style={{ color: 'var(--brand-red)', fontSize: 17, whiteSpace: 'nowrap' }}>{priceDisplay}</span>
         </div>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 12 }}>
           {dish.tags.map(tag => <Tag key={tag.key + tag.en} iconKey={tag.key}>{tag[lang] || tag.en}</Tag>)}
         </div>
+        {hasSizes && (
+          <div style={{ marginTop: 14 }}>
+            <div style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 12, color: 'var(--text-muted-on-light)', marginBottom: 6 }}>{t('dish.sizeLabel')}</div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              {dish.sizes.map(size => {
+                const selected = selectedSizeKey === size.key;
+                return (
+                  <button key={size.key} type="button" onClick={() => setSelectedSizeKey(size.key)} aria-pressed={selected}
+                    style={{
+                      flex: 1, padding: '10px', borderRadius: 10, cursor: 'pointer',
+                      border: selected ? '2px solid var(--gold-foil)' : '1px solid var(--border-hairline-soft)',
+                      background: selected ? 'var(--gold-highlight)' : '#fff', color: 'var(--ink-black)',
+                      fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 13, transition: 'background .15s ease, border-color .15s ease'
+                    }}
+                  >
+                    {size[lang] || size.en}
+                    <div style={{ fontWeight: 500, fontSize: 12, color: 'var(--text-muted-on-light)', marginTop: 2 }}>{size.price} {t('dish.priceUnit')}</div>
+                  </button>
+                );
+              })}
+            </div>
+            {!selectedSize && (
+              <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--brand-red)', marginTop: 6 }}>{t('dish.chooseSizePrompt')}</div>
+            )}
+          </div>
+        )}
         <ExtrasDropdown extrasList={allExtras} selectedExtras={selectedExtras} onToggle={toggleExtra} lang={lang} t={t} />
-        <button className={`gz-dish-addbtn${added ? ' gz-dish-addbtn-added' : ''}`} onClick={handleAdd}
-          style={{ marginTop: 14, width: '100%', padding: '11px', borderRadius: 10, border: 'none', background: added ? 'linear-gradient(135deg, var(--accent-italy), #12a866)' : 'var(--gold-foil)', color: added ? '#fff' : 'var(--ink-bordeaux-900)', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 14, cursor: 'pointer', transition: 'transform .15s ease, background .2s ease', boxShadow: added ? '0 0 16px -2px var(--accent-italy)' : 'none' }}
-          onMouseEnter={e => { if (!added) e.currentTarget.style.transform = 'scale(1.02)'; }}
+        <button className={`gz-dish-addbtn${added ? ' gz-dish-addbtn-added' : ''}`} onClick={handleAdd} disabled={!canAdd}
+          style={{ marginTop: 14, width: '100%', padding: '11px', borderRadius: 10, border: 'none', background: added ? 'linear-gradient(135deg, var(--accent-italy), #12a866)' : (canAdd ? 'var(--gold-foil)' : '#ddd'), color: added ? '#fff' : 'var(--ink-bordeaux-900)', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 14, cursor: canAdd ? 'pointer' : 'not-allowed', transition: 'transform .15s ease, background .2s ease', boxShadow: added ? '0 0 16px -2px var(--accent-italy)' : 'none' }}
+          onMouseEnter={e => { if (!added && canAdd) e.currentTarget.style.transform = 'scale(1.02)'; }}
           onMouseLeave={e => { e.currentTarget.style.transform = ''; }}
         >
           {added ? (
