@@ -21,7 +21,7 @@ const TAGS = {
   parsley: TAG('parsley', 'Fresh parsley', 'بقدونس طازج'),
   garlic: TAG('garlic', 'Garlic', 'ثوم'),
   nutella: TAG('nutella', 'Nutella', 'نوتيلا'),
-  puffPastry: TAG('pastry', 'Puff pastry', 'عجينة مورقة'),
+  neapolitanDough: TAG('dough', 'Special Neapolitan-style dough', 'عجينة نابوليتانية خاصة'),
   powderedSugar: TAG('sugar', 'Powdered sugar', 'سكر بودرة')
 };
 const EXTRAS = [
@@ -88,9 +88,13 @@ const DATA = {
     { slot: 'egypt-1', image: 'egypt-1.jpeg', name: { en: 'Pastrami', ar: 'باسترامي' }, price: 355, recommended: true, tags: [TAGS.tomato, TAGS.buffaloMozz, TAGS.premiumPastrami, TAGS.parsley, TAGS.oliveOilExtra], extras: [{ key: 'dishPastrami', icon: 'pastrami', en: 'Extra pastrami', ar: 'باسترامي إضافي', price: 40 }] }
   ]},
   nutella: { number: '04', accent: 'nutella', dishes: [
-    { slot: 'nutella-1', image: 'nutella-1.jpg', name: { en: 'Nutella Star', ar: 'نجمة نوتيلا' }, recommended: true, imageAspect: '1 / 1', tags: [TAGS.nutella, TAGS.puffPastry, TAGS.powderedSugar], sizes: [
+    { slot: 'nutella-1', image: 'nutella-1.jpg', name: { en: 'Nutella Star', ar: 'نجمة نوتيلا' }, recommended: true, imageAspect: '1 / 1', tags: [TAGS.nutella, TAGS.neapolitanDough, TAGS.powderedSugar], sizes: [
       { key: 'small', en: 'Small', ar: 'صغيرة', price: 160 },
       { key: 'big', en: 'Big', ar: 'كبيرة', price: 260 }
+    ], extrasOverride: [
+      { key: 'nuts', icon: 'nuts', en: 'Nuts', ar: 'مكسرات', price: 45 },
+      { key: 'marshmallows', icon: 'marshmallow', en: 'Marshmallows', ar: 'مارشميلو', price: 45 },
+      { key: 'mnms', icon: 'mnm', en: "M&M's", ar: 'إم أند إمز', price: 45 }
     ] }
   ]}
 };
@@ -105,7 +109,7 @@ function GenZDishCard({ dish, country, isSoloDish }) {
   const timeoutRef = React.useRef(null);
   React.useEffect(() => () => clearTimeout(timeoutRef.current), []);
   const toggleExtra = (key) => setSelectedExtras(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]);
-  const allExtras = React.useMemo(() => [...EXTRAS, ...(dish.extras || [])], [dish]);
+  const allExtras = React.useMemo(() => dish.extrasOverride || [...EXTRAS, ...(dish.extras || [])], [dish]);
   const chosenExtras = allExtras.filter(e => selectedExtras.includes(e.key));
   const extrasTotal = chosenExtras.reduce((s, e) => s + e.price, 0);
   const basePrice = hasSizes ? (selectedSize ? selectedSize.price : null) : dish.price;

@@ -93,7 +93,7 @@ const INGREDIENT_ICONS = [
   ['pepperoni', { img: 'assets/icon-pepperoni.png' }], ['pastrami', '🥩'], ['salami', { img: 'assets/icon-pepperoni.png' }], ['mushroom', '🍄'],
   ['tomato', '🍅'], ['basil', { img: 'assets/icon-basil.png' }], ['parsley', '🌿'], ['arugula', { img: 'assets/icon-arugula.png' }],
   ['olive', { img: 'assets/icon-oliveoil.png' }], ['onion', '🧅'], ['pepper', '🫑'], ['honey', '🍯'], ['garlic', '🧄'], ['chili', '🌶️'],
-  ['nutella', '🍫'], ['pastry', '🥐'], ['sugar', '❄️'],
+  ['nutella', '🍫'], ['pastry', '🥐'], ['sugar', '❄️'], ['dough', '🍞'], ['nuts', '🥜'], ['marshmallow', '🍡'], ['mnm', '🍬'],
   ['mozzarella', { img: 'assets/icon-mozzarella.png' }],
   ['blue cheese', { img: 'assets/icon-bluecheese.png' }],
   ['provolone', { img: 'assets/icon-provolone.png' }],
