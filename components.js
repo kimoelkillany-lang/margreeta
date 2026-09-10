@@ -161,11 +161,12 @@ function OrderNowMenu({ onNav, variant = 'primary', size = 'md', label, align = 
             position: (align === 'right' || align === 'left') ? 'absolute' : 'fixed',
             top: (align === 'right' || align === 'left') ? 'calc(100% + 16px)' : panelTop,
             ...menuPos, zIndex: 40,
-            display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 14, maxWidth: 'calc(100vw - 24px)',
+            display: 'flex', flexWrap: 'nowrap', gap: 14, maxWidth: 'calc(100vw - 24px)',
+            overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none',
             padding: '8px 16px', background: 'transparent', border: 'none', boxShadow: 'none'
           }}>
             {ORDER_NOW_COUNTRIES.map(([key, photo, tilt], i) => (
-              <div key={key} className="gz-ordernow-chip-in" style={{ animation: 'gzChipIn .5s var(--ease-bounce) both', animationDelay: `${i * 0.06}s` }}>
+              <div key={key} className="gz-ordernow-chip-in" style={{ flexShrink: 0, animation: 'gzChipIn .5s var(--ease-bounce) both', animationDelay: `${i * 0.06}s` }}>
                 <button onClick={() => { setOpen(false); onNav(key); }}
                   className="gz-ordernow-chip"
                   style={{
