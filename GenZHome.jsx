@@ -21,9 +21,9 @@ function GenZStopCard({ s, onNav, autoFlipped }) {
       style={{ cursor: 'pointer', height: 280, perspective: 1200 }}
     >
       <div style={{ position: 'relative', width: '100%', height: '100%', transformStyle: 'preserve-3d', transition: 'transform .6s var(--ease-bounce)', transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)' }}>
-        <div style={{ position: 'absolute', inset: 0, backfaceVisibility: 'hidden' }}>
+        <div style={{ position: 'absolute', inset: 0, backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}>
           {COMING_SOON_STOPS[s.key] && (
-            <div style={{ position: 'absolute', top: -10, insetInlineEnd: 16, zIndex: 2, background: 'var(--ink-bordeaux-900)', color: 'var(--gold-highlight)', fontFamily: 'var(--font-stamp)', fontSize: 10, letterSpacing: '0.05em', textTransform: 'uppercase', padding: '4px 10px', borderRadius: 999, boxShadow: '0 3px 8px rgba(0,0,0,.25)' }}>
+            <div style={{ position: 'absolute', top: -10, insetInlineEnd: 16, zIndex: 2, backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', background: 'var(--ink-bordeaux-900)', color: 'var(--gold-highlight)', fontFamily: 'var(--font-stamp)', fontSize: 10, letterSpacing: '0.05em', textTransform: 'uppercase', padding: '4px 10px', borderRadius: 999, boxShadow: '0 3px 8px rgba(0,0,0,.25)' }}>
               {t('dish.comingSoon')}
             </div>
           )}
@@ -49,7 +49,7 @@ function GenZStopCard({ s, onNav, autoFlipped }) {
             </div>
           </Postcard>
         </div>
-        <div style={{ position: 'absolute', inset: 0, backfaceVisibility: 'hidden', transform: 'rotateY(180deg)', borderRadius: 'var(--radius-md)', overflow: 'hidden', boxShadow: 'var(--shadow-card)' }}>
+        <div style={{ position: 'absolute', inset: 0, backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', transform: 'rotateY(180deg)', borderRadius: 'var(--radius-md)', overflow: 'hidden', boxShadow: 'var(--shadow-card)' }}>
           {STOP_BG[s.key]
             ? <img src={STOP_BG[s.key]} alt={s.key} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
             : <image-slot id={`stop-back-${s.key}`} placeholder={`Photo of ${s.key}`} style={{ width: '100%', height: '100%', display: 'block' }}></image-slot>}
