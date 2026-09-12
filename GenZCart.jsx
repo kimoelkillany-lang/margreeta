@@ -1,8 +1,8 @@
 const WHATSAPP_NUMBER = '201055788000';
 const PICKUP_LOCATION = 'E1-4B Mountain View Chillout Park';
 const COMPOUNDS = ['Mountain View Chillout Park', 'Grand Heights', 'Nyoum', 'Mountain View iCity', 'Green 5', 'SODIC October Plaza', 'Kayan'];
-// TODO: replace with your Netlify site's function URL once created, e.g. 'https://margreeta-orders.netlify.app/.netlify/functions/log-order'
-const ORDER_LOG_ENDPOINT = 'https://YOUR-NETLIFY-SITE.netlify.app/.netlify/functions/log-order';
+// TODO: replace with your Google Apps Script Web App URL (Deploy > New deployment > Web app), see google-apps-script/order-logger.gs
+const ORDER_LOG_ENDPOINT = 'https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec';
 
 function GenZCart(){
   const Store = window.GenZCartStore;
@@ -116,7 +116,8 @@ function GenZCart(){
       };
       fetch(ORDER_LOG_ENDPOINT, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify(payload),
         keepalive: true,
       }).catch(() => {});
