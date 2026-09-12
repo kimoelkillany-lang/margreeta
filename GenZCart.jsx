@@ -1,6 +1,8 @@
 const WHATSAPP_NUMBER = '201055788000';
 const PICKUP_LOCATION = 'E1-4B Mountain View Chillout Park';
 const COMPOUNDS = ['Mountain View Chillout Park', 'Grand Heights', 'Nyoum', 'Mountain View iCity', 'Green 5', 'SODIC October Plaza', 'Kayan'];
+// TODO: replace with your Netlify site's function URL once created, e.g. 'https://margreeta-orders.netlify.app/.netlify/functions/log-order'
+const ORDER_LOG_ENDPOINT = 'https://YOUR-NETLIFY-SITE.netlify.app/.netlify/functions/log-order';
 
 function GenZCart(){
   const Store = window.GenZCartStore;
@@ -94,7 +96,34 @@ function GenZCart(){
     setOrderRef('MG-' + Math.random().toString(36).slice(2,8).toUpperCase());
     setStep('payment');
   };
+  const logOrderToServer = (ref) => {
+    try {
+      const payload = {
+        orderId: ref,
+        dateTime: new Date().toISOString(),
+        customerName: `${form.firstName} ${form.lastName}`.trim(),
+        phone: form.phone,
+        items: items.map(i => ({ name: i.name, qty: i.qty, price: i.price, extras: (i.extras || []).map(e => e.name) })),
+        total,
+        fulfillment,
+        address: form.address,
+        compound: form.compound,
+        pickupLocation: form.pickupLocation,
+        pickupTime: form.pickupTime,
+        paymentMethod: fulfillment === 'delivery' ? 'Cash on delivery' : 'Cash on pickup',
+        notes: form.notes,
+        lang,
+      };
+      fetch(ORDER_LOG_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        keepalive: true,
+      }).catch(() => {});
+    } catch (e) {}
+  };
   const confirmOrder = () => {
+    logOrderToServer(orderRef);
     setWhatsappUrl(orderUrl);
     setStep('confirmed');
     Store.clear();
