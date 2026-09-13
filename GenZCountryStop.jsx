@@ -20,7 +20,7 @@ const TAGS = {
   premiumPastrami: TAG('pastrami', 'Premium pastrami', 'باسترامي فاخر'),
   parsley: TAG('parsley', 'Fresh parsley', 'بقدونس طازج'),
   garlic: TAG('garlic', 'Garlic', 'ثوم'),
-  nutella: TAG('nutella', 'Nutella', 'نوتيلا'),
+  nutella: TAG('nutella', 'Authentic Nutella spread', 'نوتيلا الأصلية'),
   neapolitanDough: TAG('dough', 'Special Neapolitan-style dough', 'عجينة نابوليتانية خاصة'),
   nutellaFilledCrust: TAG('pastry', 'Nutella-filled crust', 'قشرة محشوة بالنوتيلا من الداخل'),
   powderedSugar: TAG('sugar', 'Powdered sugar', 'سكر بودرة')
