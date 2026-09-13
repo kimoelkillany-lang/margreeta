@@ -20,7 +20,7 @@ function JourneyStamp({ country = 'italy', label, number = '01', size = 96 }) {
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
         <span style={{ fontFamily: 'var(--font-stamp)', fontVariant: 'small-caps', letterSpacing: 'var(--ls-stamp)', fontSize: size * 0.14, color: accent, textTransform: 'uppercase' }}>{t('common.stopNo')}</span>
         <span style={{ fontFamily: 'var(--font-stamp)', fontSize: size * 0.28, color: accent, lineHeight: 1 }}>{number}</span>
-        <span style={{ fontFamily: 'var(--font-stamp)', fontVariant: 'small-caps', letterSpacing: 'var(--ls-stamp)', fontSize: size * 0.13, color: accent }}>{displayLabel}</span>
+        <span style={{ fontFamily: 'var(--font-stamp)', fontVariant: 'small-caps', letterSpacing: 'var(--ls-stamp)', fontSize: size * 0.13, color: accent, textAlign: 'center', lineHeight: 1.15, maxWidth: size * 0.72 }}>{displayLabel}</span>
       </div>
     </div>
   );
