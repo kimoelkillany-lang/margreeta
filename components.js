@@ -126,7 +126,7 @@ const ORDER_NOW_COUNTRIES = [
   ['egypt', 'assets/egypt-bg.jpg', '-2deg'],
   ['nutella', 'assets/nutella-bg.jpg', '3deg']
 ];
-const COMING_SOON_COUNTRIES = { nutella: true };
+const COMING_SOON_COUNTRIES = {};
 function OrderNowMenu({ onNav, variant = 'primary', size = 'md', label, align = 'center' }) {
   const { t, dir } = window.useGenZLang();
   const displayLabel = label || t('common.orderNow');

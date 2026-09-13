@@ -1,5 +1,5 @@
 const STOP_NUMBERS = { italy: '01', america: '02', egypt: '03', nutella: '04' };
-const COMING_SOON_STOPS = { nutella: true };
+const COMING_SOON_STOPS = {};
 const STOP_BG = { italy: 'assets/italy-bg.jpg', america: 'assets/america-bg-nyc.webp', egypt: 'assets/egypt-bg.jpg', nutella: 'assets/nutella-bg.jpg' };
 function GenZStopCard({ s, onNav, autoFlipped }) {
   const { JourneyStamp, Postcard, useIsMobile } = window.MargreetaDesignSystem_35c101;
