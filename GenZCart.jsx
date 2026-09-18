@@ -1,4 +1,5 @@
 const WHATSAPP_NUMBER = '201055788000';
+const INSTAPAY_NUMBER = '01005770677';
 const PICKUP_LOCATION = 'E1-4B Mountain View Chillout Park';
 const COMPOUNDS = ['Mountain View Chillout Park', 'Grand Heights', 'Nyoum', 'Mountain View iCity', 'Green 5', 'SODIC October Plaza', 'Kayan'];
 // TODO: replace with your Google Apps Script Web App URL (Deploy > New deployment > Web app), see google-apps-script/order-logger.gs
@@ -11,6 +12,7 @@ function GenZCart(){
   const [open, setOpen] = React.useState(false);
   const [step, setStep] = React.useState('cart');
   const [fulfillment, setFulfillment] = React.useState('delivery');
+  const [paymentMethod, setPaymentMethod] = React.useState('cash');
   const [form, setForm] = React.useState({ firstName: '', lastName: '', phone: '', address: '', compound: '', pickupLocation: PICKUP_LOCATION, pickupTime: '', notes: '' });
   const [orderRef, setOrderRef] = React.useState(null);
   const [whatsappUrl, setWhatsappUrl] = React.useState(null);
@@ -74,6 +76,8 @@ function GenZCart(){
   const compoundInputStyle = invalidStyle(true, isCompoundValid);
   const pickupTimeInputStyle = invalidStyle(form.pickupTime, isPickupTimeValid);
   const errorText = (msg) => <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--brand-red)', marginTop: 4 }}>{msg}</div>;
+  const cashLabel = fulfillment === 'delivery' ? t('cart.cashOnDelivery') : t('cart.cashOnPickup');
+  const paymentMethodLabel = paymentMethod === 'instapay' ? `InstaPay (${INSTAPAY_NUMBER})` : (fulfillment === 'delivery' ? 'Cash on delivery' : 'Cash on pickup');
   const buildOrderMessage = (ref) => {
     const lines = [`New order ${ref}`, ''];
     items.forEach(i => {
@@ -85,7 +89,7 @@ function GenZCart(){
     lines.push(`Phone: ${form.phone}`);
     if (fulfillment === 'delivery') { lines.push(`Delivery to: ${form.address}`); lines.push(`Compound: ${form.compound}`); }
     else { lines.push(`Pickup at: ${form.pickupLocation}`); lines.push(`Pickup time: ${form.pickupTime}`); }
-    lines.push(`Payment: ${fulfillment === 'delivery' ? 'Cash on delivery' : 'Cash on pickup'}`);
+    lines.push(`Payment: ${paymentMethodLabel}`);
     if (form.notes) lines.push(`Notes: ${form.notes}`);
     if (lang === 'ar') lines.push('', '(Ordered via Arabic site)');
     return lines.join('\n');
@@ -110,7 +114,7 @@ function GenZCart(){
         compound: form.compound,
         pickupLocation: form.pickupLocation,
         pickupTime: form.pickupTime,
-        paymentMethod: fulfillment === 'delivery' ? 'Cash on delivery' : 'Cash on pickup',
+        paymentMethod: paymentMethodLabel,
         notes: form.notes,
         lang,
       };
@@ -129,7 +133,7 @@ function GenZCart(){
     setStep('confirmed');
     Store.clear();
   };
-  const resetAndClose = () => { setOpen(false); setStep('cart'); setOrderRef(null); setWhatsappUrl(null); setForm({ firstName: '', lastName: '', phone: '', address: '', compound: '', pickupLocation: PICKUP_LOCATION, pickupTime: '', notes: '' }); };
+  const resetAndClose = () => { setOpen(false); setStep('cart'); setOrderRef(null); setWhatsappUrl(null); setPaymentMethod('cash'); setForm({ firstName: '', lastName: '', phone: '', address: '', compound: '', pickupLocation: PICKUP_LOCATION, pickupTime: '', notes: '' }); };
   return (
     <div>
       <button ref={fabRef} onClick={() => setOpen(true)} onAnimationEnd={() => fabRef.current && fabRef.current.classList.remove('gz-cart-fab-bump')} aria-label={t('cart.openCart')} className="gz-cart-fab" style={{ position: 'fixed', bottom: 24, insetInlineEnd: 24, zIndex: 40, width: 62, height: 62, borderRadius: '50%', background: 'var(--gold-foil)', border: 'none', boxShadow: 'var(--shadow-card)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
@@ -228,10 +232,14 @@ function GenZCart(){
             {step === 'payment' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 <div>
-                  <div style={labelStyle}>{t('cart.paymentMethod')}</div>
-                  <div style={{ ...inputStyle, background: 'var(--gold-highlight)', color: 'var(--ink-black)', fontWeight: 700 }}>{fulfillment === 'delivery' ? t('cart.cashOnDelivery') : t('cart.cashOnPickup')}</div>
-                  {fulfillment === 'delivery' && (
-                    <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--text-muted-on-light)', marginTop: 6 }}>{t('cart.instapayNote')}</div>
+                  <label style={labelStyle}>{t('cart.paymentMethod')}
+                    <select style={inputStyle} value={paymentMethod} onChange={e => setPaymentMethod(e.target.value)}>
+                      <option value="cash">{cashLabel}</option>
+                      <option value="instapay">{t('cart.instapay')}</option>
+                    </select>
+                  </label>
+                  {paymentMethod === 'instapay' && (
+                    <div style={{ ...inputStyle, background: 'var(--gold-highlight)', color: 'var(--ink-black)', fontWeight: 700, textAlign: 'center', letterSpacing: '0.02em' }}>{INSTAPAY_NUMBER}</div>
                   )}
                 </div>
                 <div className="gz-cart-total" style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 16, color: 'var(--ink-black)' }}>
