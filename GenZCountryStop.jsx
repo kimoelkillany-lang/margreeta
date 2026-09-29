@@ -89,10 +89,7 @@ const DATA = {
     { slot: 'egypt-1', image: 'egypt-1.jpeg', name: { en: 'Pastrami', ar: 'باسترامي' }, price: 355, recommended: true, tags: [TAGS.tomato, TAGS.buffaloMozz, TAGS.premiumPastrami, TAGS.parsley, TAGS.oliveOilExtra], extras: [{ key: 'dishPastrami', icon: 'pastrami', en: 'Extra pastrami', ar: 'باسترامي إضافي', price: 40 }] }
   ]},
   nutella: { number: '04', accent: 'nutella', dishes: [
-    { slot: 'nutella-1', image: 'nutella-1.jpg', name: { en: 'Nutella Star', ar: 'نجمة نوتيلا' }, imageAspect: '1 / 1', tags: [TAGS.nutella, TAGS.nutellaFilledCrust, TAGS.neapolitanDough, TAGS.powderedSugar], sizes: [
-      { key: 'small', en: 'Small', ar: 'صغيرة', price: 160 },
-      { key: 'big', en: 'Big', ar: 'كبيرة', price: 260 }
-    ], extrasOverride: [
+    { slot: 'nutella-1', image: 'nutella-1.jpg', name: { en: 'Nutella Star', ar: 'نجمة نوتيلا' }, imageAspect: '1 / 1', tags: [TAGS.nutella, TAGS.nutellaFilledCrust, TAGS.neapolitanDough, TAGS.powderedSugar], price: 260, extrasOverride: [
       { key: 'nuts', icon: 'nuts', en: 'Nuts', ar: 'مكسرات', price: 45 },
       { key: 'marshmallows', icon: 'marshmallow', en: 'Marshmallows', ar: 'مارشميلو', price: 45 },
       { key: 'mnms', icon: 'mnm', en: "M&M's", ar: 'إم أند إمز', price: 45 }
