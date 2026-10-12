@@ -1,6 +1,8 @@
 const WHATSAPP_NUMBER = '201055788000';
 const INSTAPAY_NUMBER = '01005770677';
 const PICKUP_LOCATION = 'E1-4B Mountain View Chillout Park';
+const PROMO_CODE = 'LOYAL20';
+const PROMO_DISCOUNT_PCT = 0.2;
 const COMPOUNDS = ['Mountain View Chillout Park', 'Grand Heights', 'Nyoum', 'Mountain View iCity', 'Green 5', 'SODIC October Plaza', 'Kayan'];
 // TODO: replace with your Google Apps Script Web App URL (Deploy > New deployment > Web app), see google-apps-script/order-logger.gs
 const ORDER_LOG_ENDPOINT = 'https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec';
@@ -56,6 +58,9 @@ function GenZCart(){
     prevCountRef.current = newCount;
   }), []);
   const total = items.reduce((s,i) => s + i.price * i.qty, 0);
+  const promoApplied = new RegExp('\\b' + PROMO_CODE + '\\b', 'i').test(form.notes);
+  const discount = promoApplied ? Math.round(total * PROMO_DISCOUNT_PCT) : 0;
+  const finalTotal = total - discount;
   const count = items.reduce((s,i) => s + i.qty, 0);
   const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
   const inputStyle = { width: '100%', padding: '12px 14px', borderRadius: 10, border: '1px solid var(--border-hairline-soft)', fontFamily: 'var(--font-body)', fontSize: 15, background: '#fff', color: 'var(--ink-black)', marginTop: 6 };
@@ -84,7 +89,11 @@ function GenZCart(){
       lines.push(`${i.qty}x ${i.name} — ${i.price * i.qty} EGP`);
       if (i.extras && i.extras.length > 0) lines.push(`   + ${i.extras.map(e => e.name).join(', ')}`);
     });
-    lines.push('', `Total: ${total} EGP`, '');
+    if (promoApplied) {
+      lines.push('', `Subtotal: ${total} EGP`, `Promo ${PROMO_CODE} (-20%): -${discount} EGP`, `Total: ${finalTotal} EGP`, '');
+    } else {
+      lines.push('', `Total: ${total} EGP`, '');
+    }
     lines.push(`Name: ${form.firstName} ${form.lastName}`);
     lines.push(`Phone: ${form.phone}`);
     if (fulfillment === 'delivery') { lines.push(`Delivery to: ${form.address}`); lines.push(`Compound: ${form.compound}`); }
@@ -108,7 +117,10 @@ function GenZCart(){
         customerName: `${form.firstName} ${form.lastName}`.trim(),
         phone: form.phone,
         items: items.map(i => ({ name: i.name, qty: i.qty, price: i.price, extras: (i.extras || []).map(e => e.name) })),
-        total,
+        subtotal: total,
+        promoCode: promoApplied ? PROMO_CODE : '',
+        discount,
+        total: finalTotal,
         fulfillment,
         address: form.address,
         compound: form.compound,
@@ -242,8 +254,18 @@ function GenZCart(){
                     <div style={{ ...inputStyle, background: 'var(--gold-highlight)', color: 'var(--ink-black)', fontWeight: 700, textAlign: 'center', letterSpacing: '0.02em' }}>{INSTAPAY_NUMBER}</div>
                   )}
                 </div>
-                <div className="gz-cart-total" style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 16, color: 'var(--ink-black)' }}>
-                  <span>{t('cart.total')}</span><span>{total} {t('dish.priceUnit')}</span>
+                {promoApplied && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--brand-red)', fontWeight: 600 }}>
+                    <span>{t('cart.promoApplied', { code: PROMO_CODE })}</span>
+                    <span>−{discount} {t('dish.priceUnit')}</span>
+                  </div>
+                )}
+                <div className="gz-cart-total" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '10px 0', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 16, color: 'var(--ink-black)' }}>
+                  <span>{t('cart.total')}</span>
+                  <span>
+                    {promoApplied && <span style={{ textDecoration: 'line-through', opacity: 0.5, fontWeight: 400, fontSize: 13, marginInlineEnd: 6 }}>{total} {t('dish.priceUnit')}</span>}
+                    {finalTotal} {t('dish.priceUnit')}
+                  </span>
                 </div>
                 <div style={{ display: 'flex', gap: 10 }}>
                   <button onClick={() => setStep('details')} style={{ flex: 1, padding: '12px', borderRadius: 10, border: '1px solid var(--border-hairline-soft)', background: '#fff', color: 'var(--ink-black)', fontFamily: 'var(--font-body)', fontWeight: 700, cursor: 'pointer' }}>{t('cart.back')}</button>
