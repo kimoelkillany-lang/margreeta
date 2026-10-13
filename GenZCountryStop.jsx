@@ -89,7 +89,7 @@ const DATA = {
     { slot: 'egypt-1', image: 'egypt-1.jpeg', name: { en: 'Pastrami', ar: 'باسترامي' }, price: 355, recommended: true, tags: [TAGS.tomato, TAGS.buffaloMozz, TAGS.premiumPastrami, TAGS.parsley, TAGS.oliveOilExtra], extras: [{ key: 'dishPastrami', icon: 'pastrami', en: 'Extra pastrami', ar: 'باسترامي إضافي', price: 40 }] }
   ]},
   nutella: { number: '04', accent: 'nutella', dishes: [
-    { slot: 'nutella-1', image: 'nutella-1.jpg', name: { en: 'Nutella Star', ar: 'نجمة نوتيلا' }, imageAspect: '1 / 1', tags: [TAGS.nutella, TAGS.nutellaFilledCrust, TAGS.neapolitanDough, TAGS.powderedSugar], price: 260, extrasOverride: [
+    { slot: 'nutella-1', image: 'nutella-1.jpg', name: { en: 'Nutella Star', ar: 'نجمة نوتيلا' }, imageAspect: '1 / 1', outOfStock: true, tags: [TAGS.nutella, TAGS.nutellaFilledCrust, TAGS.neapolitanDough, TAGS.powderedSugar], price: 260, extrasOverride: [
       { key: 'nuts', icon: 'nuts', en: 'Nuts', ar: 'مكسرات', price: 45 },
       { key: 'marshmallows', icon: 'marshmallow', en: 'Marshmallows', ar: 'مارشميلو', price: 45 },
       { key: 'mnms', icon: 'mnm', en: "M&M's", ar: 'إم أند إمز', price: 45 }
@@ -112,7 +112,7 @@ function GenZDishCard({ dish, country, isSoloDish }) {
   const extrasTotal = chosenExtras.reduce((s, e) => s + e.price, 0);
   const basePrice = hasSizes ? (selectedSize ? selectedSize.price : null) : dish.price;
   const totalPrice = basePrice == null ? null : basePrice + extrasTotal;
-  const canAdd = (!hasSizes || !!selectedSize) && !dish.comingSoon;
+  const canAdd = (!hasSizes || !!selectedSize) && !dish.comingSoon && !dish.outOfStock;
   const priceDisplay = totalPrice != null
     ? `${totalPrice} ${t('dish.priceUnit')}`
     : hasSizes
@@ -138,7 +138,7 @@ function GenZDishCard({ dish, country, isSoloDish }) {
     <div
       onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-6px)'; e.currentTarget.style.boxShadow = dish.recommended ? '0 0 0 2px var(--gold-foil), var(--shadow-card)' : 'var(--shadow-card)'; }}
       onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = dish.recommended ? '0 0 0 2px var(--gold-foil)' : ''; }}
-      style={{ transition: 'transform .25s ease, box-shadow .25s ease', borderRadius: 'var(--radius-md)', position: 'relative', boxShadow: dish.recommended ? '0 0 0 2px var(--gold-foil)' : undefined, opacity: dish.comingSoon ? 0.92 : 1 }}
+      style={{ transition: 'transform .25s ease, box-shadow .25s ease', borderRadius: 'var(--radius-md)', position: 'relative', boxShadow: dish.recommended ? '0 0 0 2px var(--gold-foil)' : undefined, opacity: (dish.comingSoon || dish.outOfStock) ? 0.92 : 1 }}
     >
       {dish.recommended && (
         <div className="gz-recommended-badge" style={{ position: 'absolute', top: -12, insetInlineStart: 20, zIndex: 2, display: 'inline-flex', alignItems: 'center', gap: 5, background: 'var(--gold-foil)', color: 'var(--ink-bordeaux-900)', fontFamily: 'var(--font-stamp)', fontSize: 11, letterSpacing: '0.05em', textTransform: 'uppercase', padding: '5px 10px', borderRadius: 999, boxShadow: '0 3px 8px rgba(0,0,0,.25)' }}>
@@ -150,6 +150,11 @@ function GenZDishCard({ dish, country, isSoloDish }) {
       {dish.comingSoon && (
         <div className="gz-comingsoon-badge" style={{ position: 'absolute', top: -12, insetInlineStart: 20, zIndex: 2, display: 'inline-flex', alignItems: 'center', gap: 5, background: 'var(--ink-bordeaux-900)', color: 'var(--gold-highlight)', fontFamily: 'var(--font-stamp)', fontSize: 11, letterSpacing: '0.05em', textTransform: 'uppercase', padding: '5px 10px', borderRadius: 999, boxShadow: '0 3px 8px rgba(0,0,0,.25)' }}>
           {t('dish.comingSoon')}
+        </div>
+      )}
+      {dish.outOfStock && (
+        <div className="gz-outofstock-badge" style={{ position: 'absolute', top: -12, insetInlineStart: 20, zIndex: 2, display: 'inline-flex', alignItems: 'center', gap: 5, background: 'var(--ink-bordeaux-900)', color: 'var(--gold-highlight)', fontFamily: 'var(--font-stamp)', fontSize: 11, letterSpacing: '0.05em', textTransform: 'uppercase', padding: '5px 10px', borderRadius: 999, boxShadow: '0 3px 8px rgba(0,0,0,.25)' }}>
+          {t('dish.outOfStock')}
         </div>
       )}
       <Postcard tone="white" style={wideStyle}>
@@ -189,7 +194,7 @@ function GenZDishCard({ dish, country, isSoloDish }) {
                 );
               })}
             </div>
-            {!selectedSize && !dish.comingSoon && (
+            {!selectedSize && !dish.comingSoon && !dish.outOfStock && (
               <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--brand-red)', marginTop: 6 }}>{t('dish.chooseSizePrompt')}</div>
             )}
           </div>
@@ -200,7 +205,7 @@ function GenZDishCard({ dish, country, isSoloDish }) {
           onMouseEnter={e => { if (!added && canAdd) e.currentTarget.style.transform = 'scale(1.02)'; }}
           onMouseLeave={e => { e.currentTarget.style.transform = ''; }}
         >
-          {dish.comingSoon ? t('dish.comingSoon') : added ? (
+          {dish.comingSoon ? t('dish.comingSoon') : dish.outOfStock ? t('dish.outOfStock') : added ? (
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, justifyContent: 'center' }}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9 17.5L20 6.5" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/></svg>
               {t('dish.added')}
