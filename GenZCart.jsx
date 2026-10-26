@@ -1,8 +1,10 @@
 const WHATSAPP_NUMBER = '201055788000';
 const INSTAPAY_NUMBER = '01005770677';
 const PICKUP_LOCATION = 'E1-4B Mountain View Chillout Park';
-const PROMO_CODE = 'LOYAL20';
-const PROMO_DISCOUNT_PCT = 0.2;
+const PROMO_CODES = [
+  { code: 'LOYAL20', pct: 0.2 },
+  { code: 'LOYAL10', pct: 0.1 },
+];
 const COMPOUNDS = ['Mountain View Chillout Park', 'Grand Heights', 'Nyoum', 'Mountain View iCity', 'Green 5', 'SODIC October Plaza', 'Kayan'];
 // TODO: replace with your Google Apps Script Web App URL (Deploy > New deployment > Web app), see google-apps-script/order-logger.gs
 const ORDER_LOG_ENDPOINT = 'https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec';
@@ -58,8 +60,9 @@ function GenZCart(){
     prevCountRef.current = newCount;
   }), []);
   const total = items.reduce((s,i) => s + i.price * i.qty, 0);
-  const promoApplied = new RegExp('\\b' + PROMO_CODE + '\\b', 'i').test(form.notes);
-  const discount = promoApplied ? Math.round(total * PROMO_DISCOUNT_PCT) : 0;
+  const matchedPromo = PROMO_CODES.find(p => new RegExp('\\b' + p.code + '\\b', 'i').test(form.notes));
+  const promoApplied = !!matchedPromo;
+  const discount = promoApplied ? Math.round(total * matchedPromo.pct) : 0;
   const finalTotal = total - discount;
   const count = items.reduce((s,i) => s + i.qty, 0);
   const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
@@ -90,7 +93,7 @@ function GenZCart(){
       if (i.extras && i.extras.length > 0) lines.push(`   + ${i.extras.map(e => e.name).join(', ')}`);
     });
     if (promoApplied) {
-      lines.push('', `Subtotal: ${total} EGP`, `Promo ${PROMO_CODE} (-20%): -${discount} EGP`, `Total: ${finalTotal} EGP`, '');
+      lines.push('', `Subtotal: ${total} EGP`, `Promo ${matchedPromo.code} (-${Math.round(matchedPromo.pct * 100)}%): -${discount} EGP`, `Total: ${finalTotal} EGP`, '');
     } else {
       lines.push('', `Total: ${total} EGP`, '');
     }
@@ -118,7 +121,7 @@ function GenZCart(){
         phone: form.phone,
         items: items.map(i => ({ name: i.name, qty: i.qty, price: i.price, extras: (i.extras || []).map(e => e.name) })),
         subtotal: total,
-        promoCode: promoApplied ? PROMO_CODE : '',
+        promoCode: promoApplied ? matchedPromo.code : '',
         discount,
         total: finalTotal,
         fulfillment,
@@ -256,7 +259,7 @@ function GenZCart(){
                 </div>
                 {promoApplied && (
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--brand-red)', fontWeight: 600 }}>
-                    <span>{t('cart.promoApplied', { code: PROMO_CODE })}</span>
+                    <span>{t('cart.promoApplied', { code: matchedPromo.code, pct: Math.round(matchedPromo.pct * 100) })}</span>
                     <span>−{discount} {t('dish.priceUnit')}</span>
                   </div>
                 )}
