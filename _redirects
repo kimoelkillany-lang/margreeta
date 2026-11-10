@@ -1,0 +1,4 @@
+# Margreeta POS on its own subdomain: pos.margreeta.com shows the files in /pos.
+# Keep these lines at the top of this file.
+https://pos.margreeta.com/*  /pos/:splat  200!
+http://pos.margreeta.com/*   /pos/:splat  200!

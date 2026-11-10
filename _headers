@@ -1,0 +1,3 @@
+# Keep the POS out of search engines (the page also has a noindex meta tag).
+/pos/*
+  X-Robots-Tag: noindex, nofollow
