@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Margreeta POS</title>
+<script>/* margreeta.com/pos without the final slash would break the relative file links */ if (/\/pos$/.test(location.pathname)) location.replace(location.pathname + '/' + location.search + location.hash);</script>
+<meta name="theme-color" content="#fc0000">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Margreeta POS">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icons/favicon-64.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Caveat:wght@700&family=Lilita+One&family=Noto+Kufi+Arabic:wght@400;500&family=Space+Grotesk:wght@400;500&family=Space+Mono:wght@400;700&display=swap">
+<link rel="stylesheet" href="pos.css">
+</head>
+<body>
+<div id="pos-root"></div>
+<script src="vendor/react.production.min.js"></script>
+<script src="vendor/react-dom.production.min.js"></script>
+<script src="vendor/firebase-app-compat.js"></script>
+<script src="vendor/firebase-auth-compat.js"></script>
+<script src="vendor/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="components.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
