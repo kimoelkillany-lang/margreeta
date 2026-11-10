@@ -9,6 +9,40 @@ const COMPOUNDS = ['Mountain View Chillout Park', 'Grand Heights', 'Nyoum', 'Mou
 // TODO: replace with your Google Apps Script Web App URL (Deploy > New deployment > Web app), see google-apps-script/order-logger.gs
 const ORDER_LOG_ENDPOINT = 'https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec';
 
+// ---- Margreeta POS: website orders go straight to the kitchen screen (see firebase/SETUP.md).
+// Uses the same Firebase details as the POS (pos/firebase-config.js). Does nothing until those are filled in.
+// Website dish slot -> POS menu item [itemId, name, short name for kitchen tickets]
+const POS_ITEMS = {
+  'italy-1': ['margherita', 'Margherita'], 'italy-2': ['diavola', 'Diavola'], 'italy-3': ['veggi', 'Veggi'],
+  'italy-4': ['funghi', 'Funghi'], 'italy-5': ['marinara', 'Marinara'],
+  'america-1': ['hot-honey-pepperoni', 'Hot Honey Pepperoni', 'Hot Honey Pep'], 'america-2': ['cheese-lovers', 'Cheese Lovers'],
+  'egypt-1': ['pastrami', 'Pastrami'], 'nutella-1': ['nutella-star', 'Nutella Star'],
+};
+const newOrderRef = () => { const c = 'ABCDEFGHJKLMNPQRSTUVWXYZ0123456789'; let s = 'MG-'; for (let i = 0; i < 6; i++) s += c[Math.floor(Math.random() * c.length)]; return s; };
+const toFirestoreValue = (v) => {
+  if (v === null || v === undefined) return { nullValue: null };
+  if (typeof v === 'boolean') return { booleanValue: v };
+  if (typeof v === 'number') return Number.isInteger(v) ? { integerValue: String(v) } : { doubleValue: v };
+  if (typeof v === 'string') return { stringValue: v };
+  if (Array.isArray(v)) return { arrayValue: { values: v.map(toFirestoreValue) } };
+  const fields = {}; Object.keys(v).forEach(k => { if (v[k] !== undefined) fields[k] = toFirestoreValue(v[k]); });
+  return { mapValue: { fields } };
+};
+const sendOrderToPos = (order) => {
+  const cfg = window.MARGREETA_FIREBASE;
+  if (!cfg || !cfg.apiKey || /PASTE/i.test(cfg.apiKey)) return Promise.resolve(false);
+  const base = cfg.emulator ? `http://${cfg.emulator.firestore}/v1` : 'https://firestore.googleapis.com/v1';
+  const db = `projects/${cfg.projectId}/databases/(default)/documents`;
+  const body = JSON.stringify({ writes: [{
+    update: { name: `${db}/orders/${order.id}`, fields: toFirestoreValue(order).mapValue.fields },
+    updateTransforms: [{ fieldPath: 'receivedAt', setToServerValue: 'REQUEST_TIME' }], // Firebase's own clock, in case the phone's clock is off
+    currentDocument: { exists: false },
+  }] });
+  const send = () => fetch(`${base}/${db}:commit?key=${encodeURIComponent(cfg.apiKey)}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body, keepalive: true })
+    .then(r => { if (r.status >= 500) throw new Error('retry'); return r.ok; });
+  return send().catch(() => new Promise(res => setTimeout(res, 2000)).then(send)).catch(() => false);
+};
+
 function GenZCart(){
   const Store = window.GenZCartStore;
   const { t, lang, dir } = window.useGenZLang();
@@ -109,7 +143,7 @@ function GenZCart(){
   const pendingRef = orderRef || 'MG-PENDING';
   const orderUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(buildOrderMessage(pendingRef))}`;
   const goToPayment = () => {
-    setOrderRef('MG-' + Math.random().toString(36).slice(2,8).toUpperCase());
+    setOrderRef(newOrderRef());
     setStep('payment');
   };
   const logOrderToServer = (ref) => {
@@ -142,8 +176,28 @@ function GenZCart(){
       }).catch(() => {});
     } catch (e) {}
   };
+  const sendToPos = (ref) => {
+    try {
+      const now = Date.now();
+      const isDelivery = fulfillment === 'delivery';
+      const lines = items.map((i, n) => {
+        const m = POS_ITEMS[i.slot] || [i.slot || 'item', i.name];
+        return { key: ref + '-' + n, itemId: m[0], name: m[1], short: m[2] || m[1], size: (i.size && i.size.name) || 'Regular',
+          extras: (i.extras || []).map(e => ({ name: e.name, price: e.price })), note: '', qty: i.qty, unit: i.price, state: 'sent', firedAt: now };
+      });
+      if (form.notes.trim() && lines.length) lines[0].note = 'Order note: ' + form.notes.trim().slice(0, 280);
+      sendOrderToPos({
+        id: ref, createdAt: now, firedAt: now, updatedAt: now, channel: 'website', status: 'kitchen', paid: false,
+        customer: `${form.firstName} ${form.lastName}`.trim().slice(0, 80), phone: form.phone.trim().slice(0, 20),
+        compound: isDelivery ? form.compound.slice(0, 80) : '', unit: isDelivery ? form.address.trim().slice(0, 200) : '',
+        fulfillment, pickupTime: isDelivery ? '' : form.pickupTime.trim().slice(0, 40), notes: form.notes.trim().slice(0, 300),
+        websitePayment: paymentMethod, promoCode: promoApplied ? matchedPromo.code : '', discount, total: finalTotal, lang, lines,
+      });
+    } catch (e) {}
+  };
   const confirmOrder = () => {
     logOrderToServer(orderRef);
+    sendToPos(orderRef);
     setWhatsappUrl(orderUrl);
     setStep('confirmed');
     Store.clear();

@@ -41,6 +41,17 @@ The free "Spark" plan is enough: about 50,000 reads and 20,000 writes per day.
 3. Wait for Netlify to show the HTTPS certificate as active (usually minutes).
    The `_redirects` file already sends pos.margreeta.com to the `/pos` folder.
 
+## Website orders (margreeta.com order form → kitchen screen)
+Nothing extra to set up: once steps 1–5 are done, the website reads the same `pos/firebase-config.js`.
+- When a customer taps **Place order**, the order still opens WhatsApp as before, **and** lands in the POS
+  as channel "margreeta.com", status "in kitchen", **not paid**. It pops up on the Kitchen screen right away.
+- The ticket shows the customer, delivery compound or pickup time, and the customer's note.
+  The Orders screen shows the full address, how the customer said they'd pay (cash or InstaPay), and any promo code.
+- Promo codes (LOYAL10 / LOYAL20) come in as a discount, so the POS asks for the same amount the website showed.
+- When the money comes in, take payment in **Orders → Take payment**, as for any unpaid order.
+- The rules let the public website **only add new, unpaid kitchen orders**. It can't read, change or delete any order.
+- Website orders use Firebase's own clock, so a customer's phone with the wrong time doesn't mess up the kitchen timer.
+
 ## Notes
 - Orders are stored in `orders/{id}` and the sold-out list in `menu/state`, with the same fields as before.
   The one difference: Firestore can't store a list inside a list, so a line's `extras` are saved as

@@ -12,9 +12,36 @@ service cloud.firestore {
         && request.auth.token.email in ['staff@margreeta.com'];
     }
 
+    // Short text field check: missing, or text no longer than n characters.
+    function shortText(d, k, n) {
+      return !(k in d) || (d[k] is string && d[k].size() <= n);
+    }
+
+    // An order placed on margreeta.com's order form (no login). It may only ADD a new order that
+    // goes straight to the kitchen, unpaid. The website can't read, change or delete any order.
+    function isWebsiteOrder(orderId) {
+      let d = request.resource.data;
+      return orderId.matches('^MG-[A-Z0-9]{6}$') && d.id == orderId
+        && d.keys().hasOnly(['id', 'createdAt', 'firedAt', 'updatedAt', 'receivedAt', 'channel', 'status', 'paid',
+             'customer', 'phone', 'compound', 'unit', 'fulfillment', 'pickupTime', 'notes', 'websitePayment',
+             'promoCode', 'discount', 'total', 'lang', 'lines'])
+        && d.keys().hasAll(['createdAt', 'receivedAt', 'lines', 'total'])
+        && d.channel == 'website' && d.status == 'kitchen' && d.paid == false
+        && d.receivedAt == request.time
+        && d.createdAt is int && math.abs(d.createdAt - request.time.toMillis()) < 86400000
+        && d.lines is list && d.lines.size() >= 1 && d.lines.size() <= 40
+        && d.total is number && d.total >= 0 && d.total <= 50000
+        && (!('discount' in d) || (d.discount is number && d.discount >= 0 && d.discount <= d.total + 50000))
+        && shortText(d, 'customer', 80) && shortText(d, 'phone', 20) && shortText(d, 'compound', 80)
+        && shortText(d, 'unit', 200) && shortText(d, 'pickupTime', 40) && shortText(d, 'notes', 300)
+        && shortText(d, 'promoCode', 20) && shortText(d, 'websitePayment', 20) && shortText(d, 'fulfillment', 20)
+        && shortText(d, 'lang', 5);
+    }
+
     // One document per order.
     match /orders/{orderId} {
-      allow read, write: if isStaff();
+      allow read, update, delete: if isStaff();
+      allow create: if isStaff() || isWebsiteOrder(orderId);
     }
 
     // menu/state holds the sold-out list.

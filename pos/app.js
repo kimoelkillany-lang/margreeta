@@ -55,9 +55,12 @@
   function fmt(n) { return M.formatMoney(n); }
   function egp(n) { return 'EGP ' + fmt(n); }
   function lineTotal(l) { return l.state === 'void' ? 0 : l.unit * l.qty; }
-  function orderTotal(o) { return (o.lines || []).reduce(function (a, l) { return a + lineTotal(l); }, 0); }
+  function grossTotal(o) { return (o.lines || []).reduce(function (a, l) { return a + lineTotal(l); }, 0); }
+  // Website promo codes (LOYAL10/LOYAL20) arrive as an order-level discount.
+  function orderTotal(o) { return Math.max(0, grossTotal(o) - (Number(o.discount) || 0)); }
   function chanLabel(id) { var c = CHANNELS.filter(function (x) { return x[0] === id; })[0]; return c ? c[1] : id; }
   function source(o) {
+    if (o.channel === 'website' && o.fulfillment) return 'margreeta.com' + (o.customer ? ' · ' + o.customer : '') + (o.fulfillment === 'delivery' ? ' · Delivery ' + (o.compound ? o.compound.replace('Mountain View ', '') : '') : ' · Pickup' + (o.pickupTime ? ' ' + o.pickupTime : ''));
     if (o.channel === 'delivery') return 'Delivery · ' + (o.compound ? o.compound.replace('Mountain View ', '') : '') + (o.unit ? ' ' + o.unit : '');
     if (o.channel === 'pickup') return 'Pickup' + (o.customer ? ' · ' + o.customer : '');
     return chanLabel(o.channel) + (o.customer ? ' · ' + o.customer : '');
@@ -73,7 +76,16 @@
   /* Firestore can't store arrays inside arrays, so a line's extras ([[name, price]] in the app)
      are stored as [{name, price}] in the database and turned back into pairs when read. */
   function toDb(o) { o = clone(o); (o.lines || []).forEach(function (l) { l.extras = (l.extras || []).map(function (e) { return Array.isArray(e) ? { name: e[0], price: e[1] } : e; }); }); return o; }
-  function fromDb(o) { (o.lines || []).forEach(function (l) { l.extras = (l.extras || []).map(function (e) { return Array.isArray(e) ? e : [e.name, e.price]; }); }); return o; }
+  function fromDb(o) {
+    (o.lines || []).forEach(function (l) { l.extras = (l.extras || []).map(function (e) { return Array.isArray(e) ? e : [e.name, e.price]; }); });
+    // Website orders carry Firebase's own receive time. Use it instead of the customer's phone clock, which may be off.
+    if (o.receivedAt && typeof o.receivedAt.toMillis === 'function') {
+      var r = o.receivedAt.toMillis(), sent = o.createdAt;
+      o.receivedAt = r;
+      if (o.channel === 'website') { o.createdAt = r; if (o.firedAt === sent) o.firedAt = r; (o.lines || []).forEach(function (l) { if (l.firedAt === sent) l.firedAt = r; }); }
+    }
+    return o;
+  }
   function monthStart(y, m) { return new Date(y, m, 1).getTime(); }
 
   /* Live listener covers this month and last month (Today, Kitchen and the recent Month reports).
@@ -322,7 +334,7 @@
           sel0.state === 'new' ? h(M.Button, { variant: 'danger', icon: 'x', onClick: function () { set({ lines: draft.lines.filter(function (l) { return l.key !== sel[0]; }) }); sel[1](null); } }, 'Remove') :
             sel0.state !== 'void' ? h(M.Button, { variant: 'danger', icon: 'x', onClick: function () { changeSel(function (l) { l.state = 'void'; return l; }); sel[1](null); toast(sel0.name + ' voided'); } }, 'Void') : null) : null,
         h('div', { className: 'rail-foot' },
-          h(M.OrderTotals, { subtotal: total, total: total }),
+          h(M.OrderTotals, { subtotal: grossTotal(draft), discount: draft.discount || 0, discountLabel: draft.promoCode ? 'Promo ' + draft.promoCode : 'Discount', total: total }),
           err[0] ? h('div', { className: 'meta', role: 'alert', style: { color: 'var(--red-ink)' } }, err[0]) : null,
           h('div', { className: 'foot-btns' },
             h(M.Button, { variant: 'send', size: 'lg', icon: 'send', disabled: !unsent, onClick: send }, unsent ? 'Send to kitchen' : 'Nothing to send'),
@@ -506,6 +518,7 @@
           isOpen ? h('div', { className: 'orow-detail' },
             h('ul', { className: 'body o-lines' }, (o.lines || []).map(function (l) { return h('li', { key: l.key, style: l.state === 'void' ? { textDecoration: 'line-through', color: 'var(--ink-muted)' } : null }, l.qty + '× ' + l.name + ' · ' + l.size + (l.extras.length ? ' · ' + l.extras.map(function (e) { return e[0]; }).join(', ') : '') + (l.note ? ' — “' + l.note + '”' : '') + '  ' + fmt(l.unit * l.qty)); })),
             o.phone ? h('div', { className: 'meta' }, 'Phone: ' + o.phone) : null,
+            o.channel === 'website' && o.fulfillment ? h('div', { className: 'meta' }, 'Website order · ' + (o.fulfillment === 'delivery' ? 'Delivery to ' + [o.unit, o.compound].filter(Boolean).join(', ') : 'Pickup' + (o.pickupTime ? ' at ' + o.pickupTime : '')) + ' · Customer pays ' + (o.websitePayment === 'instapay' ? 'by InstaPay' : 'cash') + (o.discount ? ' · Promo ' + (o.promoCode || '') + ' −' + fmt(o.discount) : '') + (o.notes ? ' · Note: ' + o.notes : '')) : null,
             h('div', { className: 'o-actions' },
               !o.paid && o.status !== 'void' ? h(M.Button, { onClick: function () { props.openInCounter(o); } }, 'Open in counter') : null,
               !o.paid && o.status !== 'void' ? h(M.Button, { variant: 'primary', onClick: function () { paying[1](o); } }, 'Take payment') : null,
@@ -543,7 +556,7 @@
     function go(v) { view[1](v); try { history.replaceState(null, '', '#' + v); } catch (e) {} window.scrollTo(0, 0); }
     var firing = Object.keys(S.orders).filter(function (k) { return S.orders[k].status === 'kitchen'; }).length;
     var ready = Object.keys(S.orders).filter(function (k) { return S.orders[k].status === 'ready'; }).length;
-    function openInCounter(o) { draft[1]({ id: o.id, channel: o.channel, customer: o.customer || '', phone: o.phone || '', compound: o.compound || '', unit: o.unit || '', lines: clone(o.lines || []) }); go('counter'); }
+    function openInCounter(o) { draft[1]({ id: o.id, channel: o.channel, customer: o.customer || '', phone: o.phone || '', compound: o.compound || '', unit: o.unit || '', discount: o.discount || 0, promoCode: o.promoCode || '', lines: clone(o.lines || []) }); go('counter'); }
     var mode = S.mode === 'live' ? ['Live · synced', 'ready'] : S.mode === 'offline' ? ['Offline · will sync', 'held'] : S.mode === 'local' ? ['This device only', 'held'] : ['Connecting…', 'neutral'];
     return h('div', { className: 'app', 'data-theme': view[0] === 'kitchen' ? 'dark' : 'light' },
       h('header', { className: 'bar' },
