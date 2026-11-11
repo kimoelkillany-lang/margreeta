@@ -112,7 +112,8 @@ function GenZDishCard({ dish, country, isSoloDish }) {
   const extrasTotal = chosenExtras.reduce((s, e) => s + e.price, 0);
   const basePrice = hasSizes ? (selectedSize ? selectedSize.price : null) : dish.price;
   const totalPrice = basePrice == null ? null : basePrice + extrasTotal;
-  const canAdd = (!hasSizes || !!selectedSize) && !dish.comingSoon && !dish.outOfStock;
+  const orderingClosed = window.MARGREETA_ORDERING_OPEN === false; // site-status.js
+  const canAdd = (!hasSizes || !!selectedSize) && !dish.comingSoon && !dish.outOfStock && !orderingClosed;
   const priceDisplay = totalPrice != null
     ? `${totalPrice} ${t('dish.priceUnit')}`
     : hasSizes
@@ -205,7 +206,7 @@ function GenZDishCard({ dish, country, isSoloDish }) {
           onMouseEnter={e => { if (!added && canAdd) e.currentTarget.style.transform = 'scale(1.02)'; }}
           onMouseLeave={e => { e.currentTarget.style.transform = ''; }}
         >
-          {dish.comingSoon ? t('dish.comingSoon') : dish.outOfStock ? t('dish.outOfStock') : added ? (
+          {orderingClosed ? t('dish.temporarilyClosed') : dish.comingSoon ? t('dish.comingSoon') : dish.outOfStock ? t('dish.outOfStock') : added ? (
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, justifyContent: 'center' }}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9 17.5L20 6.5" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/></svg>
               {t('dish.added')}

@@ -44,6 +44,7 @@ const sendOrderToPos = (order) => {
 };
 
 function GenZCart(){
+  if (window.MARGREETA_ORDERING_OPEN === false) return null; // ordering closed (site-status.js)
   const Store = window.GenZCartStore;
   const { t, lang, dir } = window.useGenZLang();
   const [items, setItems] = React.useState(Store.getItems());
