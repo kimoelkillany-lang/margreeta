@@ -75,21 +75,21 @@ function ExtrasDropdown({ extrasList, selectedExtras, onToggle, lang, t }) {
 }
 const DATA = {
   italy: { number: '01', accent: 'italy', dishes: [
-    { slot: 'italy-1', image: 'italy-1.jpg', name: { en: 'Margherita', ar: 'مارجريتا' }, price: 250, tags: [TAGS.tomato, TAGS.parmesan, TAGS.buffaloMozz, TAGS.basil, TAGS.oliveOilExtra], extras: [{ key: 'dishBasil', icon: 'basil', en: 'Extra basil', ar: 'ريحان إضافي', price: 15 }] },
-    { slot: 'italy-2', image: 'italy-2.jpg', name: { en: 'Diavola', ar: 'ديابولا' }, price: 350, tags: [TAGS.tomato, TAGS.parmesan, TAGS.buffaloMozz, TAGS.spicySalami, TAGS.oliveOil], extras: [{ key: 'dishSalami', icon: 'salami', en: 'Extra spicy salami', ar: 'سلامي حار إضافي', price: 35 }] },
-    { slot: 'italy-3', image: 'italy-3.jpg', name: { en: 'Veggi', ar: 'فيجي' }, price: 280, tags: [TAGS.tomato, TAGS.parmesan, TAGS.buffaloMozz, TAGS.basil, TAGS.oliveOilExtra, TAGS.onion, TAGS.greenPepper, TAGS.arugula], extras: [{ key: 'dishArugula', icon: 'arugula', en: 'Extra arugula', ar: 'جرجير إضافي', price: 20 }] },
-    { slot: 'italy-4', image: 'italy-4.jpg', name: { en: 'funghi', ar: 'فونجي' }, price: 330, recommended: true, tags: [TAGS.tomato, TAGS.parmesan, TAGS.buffaloMozz, TAGS.basil, TAGS.oliveOilExtra, TAGS.mushroom] },
-    { slot: 'italy-5', image: 'italy-5.jpg', name: { en: 'Marinara', ar: 'مارينارا' }, price: 205, tags: [TAGS.tomato, TAGS.parmesan, TAGS.basil, TAGS.oliveOilExtra, TAGS.garlic], extras: [{ key: 'dishGarlic', icon: 'garlic', en: 'Extra garlic', ar: 'ثوم إضافي', price: 15 }] }
+    { slot: 'italy-1', image: 'italy-1.jpg', name: { en: 'Margherita', ar: 'مارجريتا' }, price: 260, tags: [TAGS.tomato, TAGS.parmesan, TAGS.buffaloMozz, TAGS.basil, TAGS.oliveOilExtra], extras: [{ key: 'dishBasil', icon: 'basil', en: 'Extra basil', ar: 'ريحان إضافي', price: 15 }] },
+    { slot: 'italy-2', image: 'italy-2.jpg', name: { en: 'Diavola', ar: 'ديابولا' }, price: 360, tags: [TAGS.tomato, TAGS.parmesan, TAGS.buffaloMozz, TAGS.spicySalami, TAGS.oliveOil], extras: [{ key: 'dishSalami', icon: 'salami', en: 'Extra spicy salami', ar: 'سلامي حار إضافي', price: 35 }] },
+    { slot: 'italy-3', image: 'italy-3.jpg', name: { en: 'Veggi', ar: 'فيجي' }, price: 290, tags: [TAGS.tomato, TAGS.parmesan, TAGS.buffaloMozz, TAGS.basil, TAGS.oliveOilExtra, TAGS.onion, TAGS.greenPepper, TAGS.arugula], extras: [{ key: 'dishArugula', icon: 'arugula', en: 'Extra arugula', ar: 'جرجير إضافي', price: 20 }] },
+    { slot: 'italy-4', image: 'italy-4.jpg', name: { en: 'funghi', ar: 'فونجي' }, price: 340, recommended: true, tags: [TAGS.tomato, TAGS.parmesan, TAGS.buffaloMozz, TAGS.basil, TAGS.oliveOilExtra, TAGS.mushroom] },
+    { slot: 'italy-5', image: 'italy-5.jpg', name: { en: 'Marinara', ar: 'مارينارا' }, price: 215, tags: [TAGS.tomato, TAGS.parmesan, TAGS.basil, TAGS.oliveOilExtra, TAGS.garlic], extras: [{ key: 'dishGarlic', icon: 'garlic', en: 'Extra garlic', ar: 'ثوم إضافي', price: 15 }] }
   ]},
   america: { number: '02', accent: 'america', dishes: [
-    { slot: 'america-1', image: 'america-1.jpg', name: { en: 'hot honey pepperoni', ar: 'بيبروني بالعسل الحار' }, price: 380, spicy: true, recommended: true, tags: [TAGS.tomato, TAGS.parmesanCheese, TAGS.buffaloMozz, TAGS.pepperoni, TAGS.hotHoney], extras: [{ key: 'dishPepperoni', icon: 'pepperoni', en: 'Extra pepperoni', ar: 'بيبروني إضافي', price: 30 }] },
-    { slot: 'america-2', image: 'america-2.jpg', name: { en: 'cheese lovers', ar: 'عشاق الجبنة' }, price: 340, tags: [TAGS.tomato, TAGS.mozzarella, TAGS.parmesan, TAGS.blueCheese], extras: [{ key: 'dishBlueCheese', icon: 'blue cheese', en: 'Extra blue cheese', ar: 'جبنة زرقاء إضافية', price: 35 }] }
+    { slot: 'america-1', image: 'america-1.jpg', name: { en: 'hot honey pepperoni', ar: 'بيبروني بالعسل الحار' }, price: 390, spicy: true, recommended: true, tags: [TAGS.tomato, TAGS.parmesanCheese, TAGS.buffaloMozz, TAGS.pepperoni, TAGS.hotHoney], extras: [{ key: 'dishPepperoni', icon: 'pepperoni', en: 'Extra pepperoni', ar: 'بيبروني إضافي', price: 30 }] },
+    { slot: 'america-2', image: 'america-2.jpg', name: { en: 'cheese lovers', ar: 'عشاق الجبنة' }, price: 350, tags: [TAGS.tomato, TAGS.mozzarella, TAGS.parmesan, TAGS.blueCheese], extras: [{ key: 'dishBlueCheese', icon: 'blue cheese', en: 'Extra blue cheese', ar: 'جبنة زرقاء إضافية', price: 35 }] }
   ]},
   egypt: { number: '03', accent: 'egypt', dishes: [
-    { slot: 'egypt-1', image: 'egypt-1.jpeg', name: { en: 'Pastrami', ar: 'باسترامي' }, price: 355, recommended: true, tags: [TAGS.tomato, TAGS.buffaloMozz, TAGS.premiumPastrami, TAGS.parsley, TAGS.oliveOilExtra], extras: [{ key: 'dishPastrami', icon: 'pastrami', en: 'Extra pastrami', ar: 'باسترامي إضافي', price: 40 }] }
+    { slot: 'egypt-1', image: 'egypt-1.jpeg', name: { en: 'Pastrami', ar: 'باسترامي' }, price: 365, recommended: true, tags: [TAGS.tomato, TAGS.buffaloMozz, TAGS.premiumPastrami, TAGS.parsley, TAGS.oliveOilExtra], extras: [{ key: 'dishPastrami', icon: 'pastrami', en: 'Extra pastrami', ar: 'باسترامي إضافي', price: 40 }] }
   ]},
   nutella: { number: '04', accent: 'nutella', dishes: [
-    { slot: 'nutella-1', image: 'nutella-1.jpg', name: { en: 'Nutella Star', ar: 'نجمة نوتيلا' }, imageAspect: '1 / 1', outOfStock: true, tags: [TAGS.nutella, TAGS.nutellaFilledCrust, TAGS.neapolitanDough, TAGS.powderedSugar], price: 260, extrasOverride: [
+    { slot: 'nutella-1', image: 'nutella-1.jpg', name: { en: 'Nutella Star', ar: 'نجمة نوتيلا' }, imageAspect: '1 / 1', outOfStock: true, tags: [TAGS.nutella, TAGS.nutellaFilledCrust, TAGS.neapolitanDough, TAGS.powderedSugar], price: 270, extrasOverride: [
       { key: 'nuts', icon: 'nuts', en: 'Nuts', ar: 'مكسرات', price: 45 },
       { key: 'marshmallows', icon: 'marshmallow', en: 'Marshmallows', ar: 'مارشميلو', price: 45 },
       { key: 'mnms', icon: 'mnm', en: "M&M's", ar: 'إم أند إمز', price: 45 }
