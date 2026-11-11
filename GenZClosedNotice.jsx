@@ -16,7 +16,7 @@ function GenZClosedNotice(){
       <div role="dialog" aria-modal="true" aria-labelledby="gz-closed-title" className="gz-closed-card"
         style={{ width: 'min(460px, 100%)', background: 'var(--paper-white)', borderRadius: 'var(--radius-md)', boxShadow: 'var(--shadow-card)', overflow: 'hidden', textAlign: 'center', animation: 'gzClosedIn .45s var(--ease-bounce)' }}>
         <div style={{ background: 'var(--surface-deep-red)', padding: '26px 24px 20px' }}>
-          <img src="assets/logo-lockup-transparent.png" alt="Margreeta" style={{ height: 52, width: 'auto', maxWidth: '100%' }} />
+          <img src="assets/logo-margreeta.png" alt="Margreeta" style={{ height: 52, width: 'auto', maxWidth: '100%' }} />
         </div>
         <div style={{ padding: '24px 26px 26px', display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'center' }}>
           <span style={{ fontFamily: 'var(--font-stamp)', fontSize: 12, letterSpacing: '0.08em', color: 'var(--ink-black)', background: 'var(--gold-foil)', borderRadius: 999, padding: '6px 14px' }}>TEMPORARILY CLOSED</span>

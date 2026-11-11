@@ -27,7 +27,7 @@ function GenZNavBar({ current, onNav }) {
   const go = (target) => { setOpen(false); onNav(target); };
   return (
     <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 48px', position: 'sticky', top: 0, background: 'var(--paper-white)', zIndex: 10, borderBottom: '1px solid var(--border-hairline-soft)' }}>
-      <div style={{ cursor: 'pointer' }} onClick={() => onNav('home')}><img className="gz-nav-logo" src="assets/logo-lockup-transparent.png" alt="Margreeta" style={{ height: 40 }} /></div>
+      <div style={{ cursor: 'pointer' }} onClick={() => onNav('home')}><img className="gz-nav-logo" src="assets/logo-margreeta.png" alt="Margreeta" style={{ height: 40 }} /></div>
       <div className="gz-nav-links" ref={linksRef} style={{ position: 'relative', display: 'flex', gap: 28, fontFamily: 'var(--font-stamp)', fontVariant: 'small-caps', letterSpacing: '0.06em', fontSize: 16, color: 'var(--ink-black)' }}>
         <span onClick={() => onNav('concept')} style={{ cursor: 'pointer', opacity: 0.85, borderBottom: '1px solid transparent', paddingBottom: 2, transition: 'opacity .2s ease, border-color .2s ease' }} onMouseEnter={e => { e.currentTarget.style.opacity = 1; e.currentTarget.style.borderColor = 'var(--gold-foil)'; }} onMouseLeave={e => { e.currentTarget.style.opacity = 0.85; e.currentTarget.style.borderColor = 'transparent'; }}>{t('nav.concept')}</span>
         {['italy', 'america', 'egypt', 'nutella'].map(c => (

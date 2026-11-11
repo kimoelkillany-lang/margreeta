@@ -88,7 +88,7 @@ function GenZHome({ onNav }) {
   return (
     <div>
       <section className="gz-hero-section" style={{ background: 'var(--surface-cream)', padding: '96px 48px 120px', textAlign: 'center' }}>
-        <img className="gz-hero-logo" src="assets/logo-lockup-transparent.png" alt="Margreeta" style={{ width: 340, maxWidth: '100%', height: 'auto', marginBottom: 8 }} />
+        <img className="gz-hero-logo" src="assets/logo-margreeta.png" alt="Margreeta" style={{ width: 340, maxWidth: '100%', height: 'auto', marginBottom: 8 }} />
         <div className="gz-hero-headline" style={{ maxWidth: 640, margin: '40px auto 0', fontFamily: 'var(--font-display)', fontWeight: 400, fontSize: 36, color: 'var(--text-on-red)', lineHeight: 1.25 }}>
           {t('hero.headline')}
         </div>
