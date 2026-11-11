@@ -31,19 +31,19 @@
   var MAKE_IT_YOURS = [['Buffalo mozzarella', 30], ['Parmesan', 35], ['Mushroom', 30], ['Olive oil', 20], ['Chili flakes', 15]];
   var NUTELLA_TOPS = [['Nuts', 45], ['Marshmallows', 45], ["M&M's", 45]];
   var MENU = [
-    { id: 'margherita', cat: 'italy', name: 'Margherita', ar: 'مارجريتا', prices: [50, 150, 250], extra: ['Extra basil', 15], desc: 'Tomato sauce · Parmesan · Buffalo mozzarella · Fresh basil · Extra virgin olive oil' },
-    { id: 'diavola', cat: 'italy', name: 'Diavola', ar: 'ديابولا', prices: [70, 210, 350], extra: ['Extra spicy salami', 35], tags: ['spicy'], desc: 'Tomato sauce · Parmesan · Buffalo mozzarella · Spicy salami · Olive oil' },
-    { id: 'veggi', cat: 'italy', name: 'Veggi', ar: 'فيجي', prices: [55, 170, 280], extra: ['Extra arugula', 20], desc: 'Tomato sauce · Parmesan · Buffalo mozzarella · Fresh basil · Olive oil · Onion · Green pepper · Arugula' },
-    { id: 'funghi', cat: 'italy', name: 'Funghi', ar: 'فونجي', prices: [65, 200, 330], tags: ['chefs'], desc: 'Tomato sauce · Parmesan · Buffalo mozzarella · Fresh basil · Extra virgin olive oil · Fresh mushroom' },
-    { id: 'marinara', cat: 'italy', name: 'Marinara', ar: 'مارينارا', prices: [40, 125, 205], extra: ['Extra garlic', 15], desc: 'Tomato sauce · Parmesan · Fresh basil · Extra virgin olive oil · Garlic' },
-    { id: 'hot-honey-pepperoni', cat: 'america', name: 'Hot Honey Pepperoni', short: 'Hot Honey Pep', ar: 'بيبروني بالعسل الحار', prices: [75, 230, 380], extra: ['Extra pepperoni', 30], tags: ['chefs', 'spicy'], desc: 'Tomato sauce · Parmesan · Buffalo mozzarella · Pepperoni · Hot honey sauce' },
-    { id: 'cheese-lovers', cat: 'america', name: 'Cheese Lovers', ar: 'عشاق الجبنة', prices: [70, 205, 340], extra: ['Extra blue cheese', 35], desc: 'Tomato sauce · Mozzarella · Parmesan · Blue cheese' },
-    { id: 'pastrami', cat: 'egypt', name: 'Pastrami', ar: 'باسترامي', prices: [70, 215, 355], extra: ['Extra pastrami', 40], tags: ['chefs'], desc: 'Tomato sauce · Buffalo mozzarella · Premium pastrami · Fresh parsley · Extra virgin olive oil' },
-    { id: 'nutella-star', cat: 'nutella', name: 'Nutella Star', ar: 'نجمة نوتيلا', prices: [null, 155, 260], toppings: true, desc: 'Authentic Nutella · Nutella-filled crust · Neapolitan-style dough · Powdered sugar' },
-    { id: 'sodas', cat: 'drinks', name: 'Sodas', ar: 'مشروبات غازية', price: 30, variants: ['Pepsi', 'Pepsi Diet', '7Up', 'Coca-Cola', 'Coca-Cola Zero', 'Sprite'], desc: '330ml can' },
-    { id: 'schweppes', cat: 'drinks', name: 'Schweppes', ar: 'شويبس', price: 35, variants: ['Pomegranate', 'Tangerine'], desc: 'Sparkling · can' },
-    { id: 'fayrouz', cat: 'drinks', name: 'Fayrouz', ar: 'فيروز', price: 35, variants: ['Pineapple', 'Apple', 'Pear'], desc: 'Malt drink · 330ml' },
-    { id: 'water', cat: 'drinks', name: 'Water', ar: 'مياه معدنية', price: 15, variants: ['Still'], desc: 'Mineral · 600ml' }
+    { id: 'margherita', cat: 'italy', name: 'Margherita', ar: 'مارجريتا', prices: [60, 160, 260], extra: ['Extra basil', 15], desc: 'Tomato sauce · Parmesan · Buffalo mozzarella · Fresh basil · Extra virgin olive oil' },
+    { id: 'diavola', cat: 'italy', name: 'Diavola', ar: 'ديابولا', prices: [80, 220, 360], extra: ['Extra spicy salami', 35], tags: ['spicy'], desc: 'Tomato sauce · Parmesan · Buffalo mozzarella · Spicy salami · Olive oil' },
+    { id: 'veggi', cat: 'italy', name: 'Veggi', ar: 'فيجي', prices: [65, 180, 290], extra: ['Extra arugula', 20], desc: 'Tomato sauce · Parmesan · Buffalo mozzarella · Fresh basil · Olive oil · Onion · Green pepper · Arugula' },
+    { id: 'funghi', cat: 'italy', name: 'Funghi', ar: 'فونجي', prices: [75, 210, 340], tags: ['chefs'], desc: 'Tomato sauce · Parmesan · Buffalo mozzarella · Fresh basil · Extra virgin olive oil · Fresh mushroom' },
+    { id: 'marinara', cat: 'italy', name: 'Marinara', ar: 'مارينارا', prices: [50, 135, 215], extra: ['Extra garlic', 15], desc: 'Tomato sauce · Parmesan · Fresh basil · Extra virgin olive oil · Garlic' },
+    { id: 'hot-honey-pepperoni', cat: 'america', name: 'Hot Honey Pepperoni', short: 'Hot Honey Pep', ar: 'بيبروني بالعسل الحار', prices: [85, 240, 390], extra: ['Extra pepperoni', 30], tags: ['chefs', 'spicy'], desc: 'Tomato sauce · Parmesan · Buffalo mozzarella · Pepperoni · Hot honey sauce' },
+    { id: 'cheese-lovers', cat: 'america', name: 'Cheese Lovers', ar: 'عشاق الجبنة', prices: [80, 215, 350], extra: ['Extra blue cheese', 35], desc: 'Tomato sauce · Mozzarella · Parmesan · Blue cheese' },
+    { id: 'pastrami', cat: 'egypt', name: 'Pastrami', ar: 'باسترامي', prices: [80, 225, 365], extra: ['Extra pastrami', 40], tags: ['chefs'], desc: 'Tomato sauce · Buffalo mozzarella · Premium pastrami · Fresh parsley · Extra virgin olive oil' },
+    { id: 'nutella-star', cat: 'nutella', name: 'Nutella Star', ar: 'نجمة نوتيلا', prices: [null, 165, 270], toppings: true, desc: 'Authentic Nutella · Nutella-filled crust · Neapolitan-style dough · Powdered sugar' },
+    { id: 'sodas', cat: 'drinks', name: 'Sodas', ar: 'مشروبات غازية', price: 40, variants: ['Pepsi', 'Pepsi Diet', '7Up', 'Coca-Cola', 'Coca-Cola Zero', 'Sprite'], desc: '330ml can' },
+    { id: 'schweppes', cat: 'drinks', name: 'Schweppes', ar: 'شويبس', price: 45, variants: ['Pomegranate', 'Tangerine'], desc: 'Sparkling · can' },
+    { id: 'fayrouz', cat: 'drinks', name: 'Fayrouz', ar: 'فيروز', price: 45, variants: ['Pineapple', 'Apple', 'Pear'], desc: 'Malt drink · 330ml' },
+    { id: 'water', cat: 'drinks', name: 'Water', ar: 'مياه معدنية', price: 25, variants: ['Still'], desc: 'Mineral · 600ml' }
   ];
   var BY_ID = {}; MENU.forEach(function (m) { BY_ID[m.id] = m; });
   var CHANNELS = [['pickup', 'Pickup'], ['delivery', 'Delivery'], ['website', 'margreeta.com'], ['talabat', 'Talabat'], ['clubhouse', 'Clubhouse']];
