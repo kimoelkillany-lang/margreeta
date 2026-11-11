@@ -20,15 +20,15 @@ function GenZClosedNotice(){
         </div>
         <div style={{ padding: '24px 26px 26px', display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'center' }}>
           <span style={{ fontFamily: 'var(--font-stamp)', fontSize: 12, letterSpacing: '0.08em', color: 'var(--ink-black)', background: 'var(--gold-foil)', borderRadius: 999, padding: '6px 14px' }}>TEMPORARILY CLOSED</span>
-          <h2 id="gz-closed-title" style={{ fontFamily: 'var(--font-display)', fontWeight: 400, fontSize: 30, lineHeight: 1.1, margin: '6px 0 0', color: 'var(--ink-black)' }}>Something big is in the oven</h2>
+          <h2 id="gz-closed-title" style={{ fontFamily: 'var(--font-display)', fontWeight: 400, fontSize: 30, lineHeight: 1.1, margin: '6px 0 0', color: 'var(--ink-black)' }}>Opening soon at Grand Heights Clubhouse</h2>
           <p style={{ fontFamily: 'var(--font-body)', fontSize: 16, lineHeight: 1.5, margin: 0, color: 'var(--text-muted-on-light)' }}>
-            Online ordering is paused for now. We're making something big at <strong style={{ color: 'var(--ink-black)' }}>Grand Heights Clubhouse</strong>, inshallah. See you very soon!
+            Online ordering is paused for a short while as we prepare our new spot at <strong style={{ color: 'var(--ink-black)' }}>Grand Heights Clubhouse</strong>, inshallah.
           </p>
           <div aria-hidden="true" style={{ width: 48, height: 2, background: 'var(--border-hairline-soft)', margin: '6px 0' }}></div>
           <div lang="ar" dir="rtl" style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             <div style={{ fontFamily: 'var(--font-display)', fontSize: 24, color: 'var(--ink-black)' }}>مغلق مؤقتًا</div>
             <p style={{ fontFamily: 'var(--font-body)', fontSize: 16, lineHeight: 1.7, margin: 0, color: 'var(--text-muted-on-light)' }}>
-              الطلب أونلاين متوقف مؤقتًا، لأننا بنحضّر لحاجة كبيرة في <strong style={{ color: 'var(--ink-black)' }}>كلوب هاوس جراند هايتس</strong>، إن شاء الله. نشوفكم قريب جدًا!
+              الطلب أونلاين متوقف لفترة قصيرة لأننا بنجهّز مكاننا الجديد في <strong style={{ color: 'var(--ink-black)' }}>كلوب هاوس جراند هايتس</strong>، إن شاء الله.
             </p>
           </div>
           <button type="button" autoFocus onClick={() => setOpen(false)}
