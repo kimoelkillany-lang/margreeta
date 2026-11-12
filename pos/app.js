@@ -58,6 +58,18 @@
   function grossTotal(o) { return (o.lines || []).reduce(function (a, l) { return a + lineTotal(l); }, 0); }
   // Website promo codes (LOYAL10/LOYAL20) arrive as an order-level discount.
   function orderTotal(o) { return Math.max(0, grossTotal(o) - (Number(o.discount) || 0)); }
+  // Checkout discounts (Take payment): none, 10%, 15% or 20% of the items. Website promo codes (LOYAL10/LOYAL20) map onto the same choices.
+  var DISCOUNTS = [0, 10, 15, 20];
+  function promoPct(code) { var m = /(\d+)$/.exec(code || ''); return m ? Number(m[1]) : 0; }
+  function startPct(o) { var p = o.discountPct != null ? Number(o.discountPct) : promoPct(o.promoCode); return DISCOUNTS.indexOf(p) >= 0 ? p : 0; }
+  function discountFor(gross, pct) { return Math.round(gross * pct / 100); }
+  function discountLabel(o) { var p = o.discountPct != null ? Number(o.discountPct) : promoPct(o.promoCode); return (p ? 'Discount ' + p + '%' : 'Discount') + (o.promoCode && promoPct(o.promoCode) === p ? ' · ' + o.promoCode : ''); }
+  // Record the discount chosen at payment on the order.
+  function applyDiscount(o, d) {
+    o.discountPct = d.pct; o.discount = d.amount;
+    if (o.promoCode && promoPct(o.promoCode) !== d.pct) o.promoCode = '';
+    o.total = orderTotal(o); return o;
+  }
   function chanLabel(id) { var c = CHANNELS.filter(function (x) { return x[0] === id; })[0]; return c ? c[1] : id; }
   function source(o) {
     if (o.channel === 'website' && o.fulfillment) return 'margreeta.com' + (o.customer ? ' · ' + o.customer : '') + (o.fulfillment === 'delivery' ? ' · Delivery ' + (o.compound ? o.compound.replace('Mountain View ', '') : '') : ' · Pickup' + (o.pickupTime ? ' ' + o.pickupTime : ''));
@@ -213,12 +225,14 @@
 
   /* ------------------------------------------------------------------ pay sheet */
   function PaySheet(props) {
-    var total = props.total;
+    var gross = grossTotal(props.order);
+    var pct = useState(startPct(props.order));
+    var discount = discountFor(gross, pct[0]), total = gross - discount;
     var method = useState('cash'), cash = useState(''), done = useState(null);
     var r50 = Math.ceil(total / 50) * 50, r100 = Math.ceil(total / 100) * 100, r200 = Math.ceil((total + 1) / 200) * 200;
     var quick = [total, r50 === total ? r50 + 50 : r50, r100 > r50 ? r100 : r100 + 100, r200].filter(function (v, i, a) { return a.indexOf(v) === i; }).slice(0, 3);
     var tendered = Number(cash[0] || 0);
-    function finish(m, t) { var res = { method: m, tendered: t, change: Math.max(0, t - total) }; done[1](res); props.onPaid(res); }
+    function finish(m, t) { var res = { method: m, tendered: t, change: Math.max(0, t - total) }; done[1](Object.assign({ total: total }, res)); props.onPaid(res, { pct: pct[0], amount: discount }); }
     useEffect(function () { var f = function (e) { if (e.key === 'Escape' && !done[0]) props.onClose(); }; window.addEventListener('keydown', f); return function () { window.removeEventListener('keydown', f); }; }, [done[0]]);
     if (done[0]) {
       return h('div', { className: 'scrim' }, h('div', { className: 'sheet ps-card paid', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Paid' },
@@ -228,8 +242,8 @@
           done[0].method === 'cash' ? h(React.Fragment, null,
             h('div', { className: 'sticker', style: { color: 'var(--ink-muted)' } }, 'CHANGE DUE'),
             h('div', { className: 'amount big-change' }, egp(done[0].change)),
-            h('div', { className: 'body', style: { color: 'var(--ink-muted)' } }, 'Received ' + egp(done[0].tendered) + ' for ' + egp(total))) :
-            h('div', { className: 'title' }, egp(total) + ' by ' + (done[0].method === 'card' ? 'card' : 'InstaPay')),
+            h('div', { className: 'body', style: { color: 'var(--ink-muted)' } }, 'Received ' + egp(done[0].tendered) + ' for ' + egp(done[0].total))) :
+            h('div', { className: 'title' }, egp(done[0].total) + ' by ' + (done[0].method === 'card' ? 'card' : 'InstaPay')),
           h('div', { className: 'body' }, props.sentNote)),
         h('div', { className: 'sheet-foot' }, h(M.Button, { variant: 'send', size: 'lg', block: true, onClick: props.onClose, icon: 'send' }, 'New order'))));
     }
@@ -240,7 +254,12 @@
           h('button', { className: 'close ps-press', onClick: props.onClose, 'aria-label': 'Close' }, h(M.Icon, { name: 'x', large: true }))),
         h('div', { className: 'pay-grid' },
           h('div', { className: 'ps-col', style: { gap: '16px' } },
-            h(M.OrderTotals, { subtotal: total, total: total }),
+            h('div', { className: 'ps-col', style: { gap: '6px' } },
+              h('span', { className: 'sticker sec-label' }, 'Discount'),
+              h('div', { className: 'ps-sizes', role: 'radiogroup', 'aria-label': 'Discount' }, DISCOUNTS.map(function (p) {
+                return h('button', { key: p, role: 'radio', 'aria-checked': pct[0] === p ? 'true' : 'false', className: 'ps-size ps-press', onClick: function () { pct[1](p); } }, h('span', { className: 'price' }, p ? p + '%' : 'None'));
+              }))),
+            h(M.OrderTotals, { subtotal: gross, discount: discount, discountLabel: discountLabel({ discountPct: pct[0], promoCode: props.order.promoCode }), total: total }),
             h('div', { className: 'ps-sizes', role: 'radiogroup', 'aria-label': 'Payment method' }, [['cash', 'Cash'], ['card', 'Card'], ['instapay', 'InstaPay']].map(function (m) {
               return h('button', { key: m[0], role: 'radio', 'aria-checked': method[0] === m[0] ? 'true' : 'false', className: 'ps-size ps-press', onClick: function () { method[1](m[0]); } }, h('span', { className: 'price' }, m[1]));
             })),
@@ -294,8 +313,8 @@
       toast(o.id + ' sent to the kitchen'); lsSet('mg-pos-draft-meta', { channel: draft.channel }); setDraft(emptyDraft()); sel[1](null);
     }
     function charge() { if (!validate()) return; var o = buildOrder(false); if (!draft.id) set({ id: o.id }); pay[1](o); }
-    function onPaid(res) {
-      var o = buildOrder(true); o.paid = true; o.paidAt = Date.now(); o.payment = res;
+    function onPaid(res, d) {
+      var o = applyDiscount(buildOrder(true), d); o.paid = true; o.paidAt = Date.now(); o.payment = res;
       if (o.status === 'open') o.status = 'done';
       saveOrder(o);
     }
@@ -334,7 +353,7 @@
           sel0.state === 'new' ? h(M.Button, { variant: 'danger', icon: 'x', onClick: function () { set({ lines: draft.lines.filter(function (l) { return l.key !== sel[0]; }) }); sel[1](null); } }, 'Remove') :
             sel0.state !== 'void' ? h(M.Button, { variant: 'danger', icon: 'x', onClick: function () { changeSel(function (l) { l.state = 'void'; return l; }); sel[1](null); toast(sel0.name + ' voided'); } }, 'Void') : null) : null,
         h('div', { className: 'rail-foot' },
-          h(M.OrderTotals, { subtotal: grossTotal(draft), discount: draft.discount || 0, discountLabel: draft.promoCode ? 'Promo ' + draft.promoCode : 'Discount', total: total }),
+          h(M.OrderTotals, { subtotal: grossTotal(draft), discount: draft.discount || 0, discountLabel: discountLabel(draft), total: total }),
           err[0] ? h('div', { className: 'meta', role: 'alert', style: { color: 'var(--red-ink)' } }, err[0]) : null,
           h('div', { className: 'foot-btns' },
             h(M.Button, { variant: 'send', size: 'lg', icon: 'send', disabled: !unsent, onClick: send }, unsent ? 'Send to kitchen' : 'Nothing to send'),
@@ -343,7 +362,7 @@
           draft.lines.length || draft.id ? h('button', { className: 'link', onClick: function () { setDraft(emptyDraft()); sel[1](null); err[1](''); } }, draft.id ? 'Close this order' : 'Clear order') : null)),
       total ? h('button', { className: 'jump ps-press', onClick: function () { railRef.current && railRef.current.scrollIntoView({ behavior: 'smooth' }); } }, h('span', null, draft.lines.length + ' items'), h('span', { className: 'price' }, egp(total))) : null,
       sheet[0] ? h(ItemSheet, { item: sheet[0].item, line: sheet[0].line, onAdd: addLine, onClose: function () { sheet[1](null); } }) : null,
-      pay[0] ? h(PaySheet, { total: orderTotal(pay[0]), orderId: pay[0].id, sourceText: source(pay[0]), sentNote: unsent ? 'Unsent items went to the kitchen.' : '', onPaid: onPaid, onClose: function () { var wasPaid = Store.orders[pay[0].id] && Store.orders[pay[0].id].paid; pay[1](null); if (wasPaid) { lsSet('mg-pos-draft-meta', { channel: draft.channel }); setDraft(emptyDraft()); } } }) : null);
+      pay[0] ? h(PaySheet, { order: pay[0], orderId: pay[0].id, sourceText: source(pay[0]), sentNote: unsent ? 'Unsent items went to the kitchen.' : '', onPaid: onPaid, onClose: function () { var wasPaid = Store.orders[pay[0].id] && Store.orders[pay[0].id].paid; pay[1](null); if (wasPaid) { lsSet('mg-pos-draft-meta', { channel: draft.channel }); setDraft(emptyDraft()); } } }) : null);
   }
 
   /* ------------------------------------------------------------------ kitchen */
@@ -456,12 +475,12 @@
   }
   function csvFor(list) {
     var esc = function (v) { v = v == null ? '' : String(v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
-    var rows = [['Date', 'Time', 'Order ID', 'Channel', 'Customer', 'Phone', 'Compound', 'Unit', 'Order status', 'Paid', 'Payment method', 'Item', 'Size / flavour', 'Extras', 'Note', 'Qty', 'Unit price (EGP)', 'Line total (EGP)', 'Line voided', 'Order total (EGP)']];
+    var rows = [['Date', 'Time', 'Order ID', 'Channel', 'Customer', 'Phone', 'Compound', 'Unit', 'Order status', 'Paid', 'Payment method', 'Item', 'Size / flavour', 'Extras', 'Note', 'Qty', 'Unit price (EGP)', 'Line total (EGP)', 'Line voided', 'Order total (EGP)', 'Order discount (EGP)']];
     list.slice().sort(function (a, b) { return a.createdAt - b.createdAt; }).forEach(function (o) {
       var d = new Date(o.createdAt), date = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
       (o.lines || []).forEach(function (l) {
         rows.push([date, clock(o.createdAt), o.id, chanLabel(o.channel), o.customer, o.phone, o.compound, o.unit, o.status === 'void' ? 'Void' : o.status === 'done' ? 'Done' : o.status === 'ready' ? 'Ready' : o.status === 'kitchen' ? 'In kitchen' : 'Open',
-          o.paid ? 'Yes' : 'No', o.paid ? PAY_LABEL[(o.payment && o.payment.method) || 'cash'] : '', l.name, l.size, l.extras.map(function (e) { return e[0] + ' +' + e[1]; }).join('; '), l.note, l.qty, l.unit, l.state === 'void' ? 0 : l.unit * l.qty, l.state === 'void' ? 'Yes' : 'No', orderTotal(o)]);
+          o.paid ? 'Yes' : 'No', o.paid ? PAY_LABEL[(o.payment && o.payment.method) || 'cash'] : '', l.name, l.size, l.extras.map(function (e) { return e[0] + ' +' + e[1]; }).join('; '), l.note, l.qty, l.unit, l.state === 'void' ? 0 : l.unit * l.qty, l.state === 'void' ? 'Yes' : 'No', orderTotal(o), Number(o.discount) || 0]);
       });
     });
     return '﻿' + rows.map(function (r) { return r.map(esc).join(','); }).join('\r\n');
@@ -518,7 +537,8 @@
           isOpen ? h('div', { className: 'orow-detail' },
             h('ul', { className: 'body o-lines' }, (o.lines || []).map(function (l) { return h('li', { key: l.key, style: l.state === 'void' ? { textDecoration: 'line-through', color: 'var(--ink-muted)' } : null }, l.qty + '× ' + l.name + ' · ' + l.size + (l.extras.length ? ' · ' + l.extras.map(function (e) { return e[0]; }).join(', ') : '') + (l.note ? ' — “' + l.note + '”' : '') + '  ' + fmt(l.unit * l.qty)); })),
             o.phone ? h('div', { className: 'meta' }, 'Phone: ' + o.phone) : null,
-            o.channel === 'website' && o.fulfillment ? h('div', { className: 'meta' }, 'Website order · ' + (o.fulfillment === 'delivery' ? 'Delivery to ' + [o.unit, o.compound].filter(Boolean).join(', ') : 'Pickup' + (o.pickupTime ? ' at ' + o.pickupTime : '')) + ' · Customer pays ' + (o.websitePayment === 'instapay' ? 'by InstaPay' : 'cash') + (o.discount ? ' · Promo ' + (o.promoCode || '') + ' −' + fmt(o.discount) : '') + (o.notes ? ' · Note: ' + o.notes : '')) : null,
+            o.discount ? h('div', { className: 'meta', style: { color: 'var(--basil)' } }, discountLabel(o) + ' · −' + egp(o.discount) + ' (items ' + egp(grossTotal(o)) + ')') : null,
+            o.channel === 'website' && o.fulfillment ? h('div', { className: 'meta' }, 'Website order · ' + (o.fulfillment === 'delivery' ? 'Delivery to ' + [o.unit, o.compound].filter(Boolean).join(', ') : 'Pickup' + (o.pickupTime ? ' at ' + o.pickupTime : '')) + ' · Customer pays ' + (o.websitePayment === 'instapay' ? 'by InstaPay' : 'cash') + (o.notes ? ' · Note: ' + o.notes : '')) : null,
             h('div', { className: 'o-actions' },
               !o.paid && o.status !== 'void' ? h(M.Button, { onClick: function () { props.openInCounter(o); } }, 'Open in counter') : null,
               !o.paid && o.status !== 'void' ? h(M.Button, { variant: 'primary', onClick: function () { paying[1](o); } }, 'Take payment') : null,
@@ -528,7 +548,7 @@
         h(React.Fragment, null, h('span', { className: 'body' }, 'Delete all ' + list.length + ' orders, from every month and every screen? This can\'t be undone.'), h(M.Button, { variant: 'danger', onClick: function () { deleteAll(); confirm[1](false); toast('All test orders cleared'); } }, 'Delete all'), h(M.Button, { variant: 'quiet', onClick: function () { confirm[1](false); } }, 'Keep them')) :
         list.length ? h('button', { className: 'link', onClick: function () { confirm[1](true); } }, 'Clear all test orders') : null),
       props.user ? h('div', { className: 'danger-zone' }, h('span', { className: 'meta', style: { color: 'var(--ink-muted)' } }, 'Signed in as ' + props.user), h('button', { className: 'link', onClick: props.onSignOut }, 'Sign out')) : null,
-      paying[0] ? h(PaySheet, { total: orderTotal(paying[0]), orderId: paying[0].id, sourceText: source(paying[0]), sentNote: '', onPaid: function (res) { var n = clone(paying[0]); n.paid = true; n.paidAt = Date.now(); n.payment = res; if (n.status === 'open') n.status = 'done'; saveOrder(n); }, onClose: function () { paying[1](null); } }) : null);
+      paying[0] ? h(PaySheet, { order: paying[0], orderId: paying[0].id, sourceText: source(paying[0]), sentNote: '', onPaid: function (res, d) { var n = applyDiscount(clone(paying[0]), d); n.paid = true; n.paidAt = Date.now(); n.payment = res; if (n.status === 'open') n.status = 'done'; saveOrder(n); }, onClose: function () { paying[1](null); } }) : null);
   }
 
   /* ------------------------------------------------------------------ app shell */
@@ -556,7 +576,7 @@
     function go(v) { view[1](v); try { history.replaceState(null, '', '#' + v); } catch (e) {} window.scrollTo(0, 0); }
     var firing = Object.keys(S.orders).filter(function (k) { return S.orders[k].status === 'kitchen'; }).length;
     var ready = Object.keys(S.orders).filter(function (k) { return S.orders[k].status === 'ready'; }).length;
-    function openInCounter(o) { draft[1]({ id: o.id, channel: o.channel, customer: o.customer || '', phone: o.phone || '', compound: o.compound || '', unit: o.unit || '', discount: o.discount || 0, promoCode: o.promoCode || '', lines: clone(o.lines || []) }); go('counter'); }
+    function openInCounter(o) { draft[1]({ id: o.id, channel: o.channel, customer: o.customer || '', phone: o.phone || '', compound: o.compound || '', unit: o.unit || '', discount: o.discount || 0, discountPct: o.discountPct, promoCode: o.promoCode || '', lines: clone(o.lines || []) }); go('counter'); }
     var mode = S.mode === 'live' ? ['Live · synced', 'ready'] : S.mode === 'offline' ? ['Offline · will sync', 'held'] : S.mode === 'local' ? ['This device only', 'held'] : ['Connecting…', 'neutral'];
     return h('div', { className: 'app', 'data-theme': view[0] === 'kitchen' ? 'dark' : 'light' },
       h('header', { className: 'bar' },
