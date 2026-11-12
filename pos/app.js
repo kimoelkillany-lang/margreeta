@@ -107,10 +107,10 @@
 
   /* Live listener covers this month and last month (Today, Kitchen and the recent Month reports).
      Older months are fetched once when you open them in the Month report, so the app stays fast as orders pile up. */
-  var Store = { mode: 'connecting', orders: {}, soldOut: {}, db: null, subs: [], live: {}, older: {}, loaded: {}, since: 0, fromCache: true, unsub: [] };
+  var Store = { mode: 'connecting', orders: {}, soldOut: {}, dough: null, payOpen: 0, db: null, subs: [], live: {}, older: {}, loaded: {}, since: 0, fromCache: true, unsub: [] };
   function emit() { Store.subs.forEach(function (f) { f(); }); }
   function useStore() { var s = useState(0); useEffect(function () { var f = function () { s[1](function (x) { return x + 1; }); }; Store.subs.push(f); return function () { Store.subs = Store.subs.filter(function (g) { return g !== f; }); }; }, []); return Store; }
-  function loadLocal() { Store.orders = lsGet('mg-pos-orders', {}); Store.soldOut = lsGet('mg-pos-soldout', {}); }
+  function loadLocal() { Store.orders = lsGet('mg-pos-orders', {}); Store.soldOut = lsGet('mg-pos-soldout', {}); Store.dough = lsGet('mg-pos-dough', null); }
   function goLocal() { stopStore(); Store.db = null; Store.mode = 'local'; loadLocal(); emit(); }
   function mergeOrders() { Store.orders = Object.assign({}, Store.older, Store.live); }
   function updateMode() { if (!Store.db) return; Store.mode = navigator.onLine && !Store.fromCache ? 'live' : 'offline'; }
@@ -133,6 +133,8 @@
       Store.live = o; Store.fromCache = snap.metadata.fromCache; mergeOrders(); updateMode(); emit();
     }, storeError));
     Store.unsub.push(db.doc('menu/state').onSnapshot(function (s) { Store.soldOut = (s.exists && s.data().soldOut) || {}; emit(); }, function () {}));
+    Store.dough = null;
+    Store.unsub.push(db.doc('menu/dough').onSnapshot(function (s) { Store.dough = s.exists ? s.data() : null; emit(); }, function () {}));
   }
   /* Load an older month (before the live window) for the Month report. */
   function ensureMonth(ym) {
@@ -164,6 +166,31 @@
     }
     lsSet('mg-pos-orders', {}); return Promise.resolve();
   }
+  /* ------------------------------------------------------------------ dough stock (menu/dough: { Mini, Medium, Regular }) */
+  var DOUGH_SIZES = ['Mini', 'Medium', 'Regular'], DOUGH_LOW = 5;
+  function doughLeft(size) { return Store.dough && Store.dough[size] != null ? Number(Store.dough[size]) : null; }
+  // Pizzas in an order by dough size (voided lines and drinks don't use dough).
+  function doughOf(o) { var u = {}; (o.lines || []).forEach(function (l) { if (l.state === 'void' || !isPizza(l) || DOUGH_SIZES.indexOf(l.size) < 0) return; u[l.size] = (u[l.size] || 0) + l.qty; }); return u; }
+  // Change stock by a delta per size. Uses Firestore's atomic increment, so two tablets can't overwrite each other.
+  function changeDough(delta) {
+    var keys = Object.keys(delta).filter(function (k) { return delta[k]; }); if (!keys.length) return;
+    var d = Object.assign({ Mini: 0, Medium: 0, Regular: 0 }, Store.dough); keys.forEach(function (k) { d[k] = Number(d[k] || 0) + delta[k]; });
+    Store.dough = d; emit();
+    if (Store.db) { var patch = { updatedAt: Date.now() }; keys.forEach(function (k) { patch[k] = firebase.firestore.FieldValue.increment(delta[k]); }); Store.db.doc('menu/dough').set(patch, { merge: true }).catch(function () { toast('Could not update the dough stock.'); }); }
+    else lsSet('mg-pos-dough', d);
+  }
+  function setDough(size, n) {
+    var d = Object.assign({ Mini: 0, Medium: 0, Regular: 0 }, Store.dough); d[size] = n; Store.dough = d; emit();
+    if (Store.db) { var patch = { updatedAt: Date.now() }; patch[size] = n; Store.db.doc('menu/dough').set(patch, { merge: true }).catch(function () { toast('Could not update the dough stock.'); }); }
+    else lsSet('mg-pos-dough', d);
+  }
+  // Called when payment is taken: subtracts the order's dough once (the order remembers it in doughUsed).
+  function takeDough(o) {
+    if (o.doughUsed || !Store.dough) return o;
+    var u = doughOf(o), neg = {}; Object.keys(u).forEach(function (k) { neg[k] = -u[k]; });
+    o.doughUsed = u; changeDough(neg); return o;
+  }
+
   function setSoldOut(id, on) {
     var s = Object.assign({}, Store.soldOut); if (on) s[id] = true; else delete s[id]; Store.soldOut = s; emit();
     if (Store.db) Store.db.doc('menu/state').set({ soldOut: s }).catch(function () { toast('Could not update sold-out list.'); });
@@ -234,6 +261,8 @@
     var pct = useState(startPct(props.order));
     var discount = discountFor(gross, pct[0]), total = gross - discount;
     var method = useState('cash'), cash = useState(''), done = useState(null);
+    // While this payment screen is open, the out-of-dough alarm waits so it doesn't cover the change due.
+    useEffect(function () { Store.payOpen++; emit(); return function () { Store.payOpen--; emit(); }; }, []);
     var r50 = Math.ceil(total / 50) * 50, r100 = Math.ceil(total / 100) * 100, r200 = Math.ceil((total + 1) / 200) * 200;
     var quick = [total, r50 === total ? r50 + 50 : r50, r100 > r50 ? r100 : r100 + 100, r200].filter(function (v, i, a) { return a.indexOf(v) === i; }).slice(0, 3);
     var tendered = Number(cash[0] || 0);
@@ -274,6 +303,71 @@
               tendered > 0 && tendered < total ? h('span', { className: 'meta', style: { color: 'var(--red-ink)' } }, 'Short by ' + egp(total - tendered)) : null) :
               h(M.Button, { variant: 'primary', size: 'lg', block: true, onClick: function () { finish(method[0], total); } }, 'Confirm ' + (method[0] === 'card' ? 'card' : 'InstaPay') + ' paid')),
           method[0] === 'cash' ? h(M.Keypad, { value: cash[0], onChange: function (v) { cash[1](v.replace(/\..*/, '')); }, quick: quick, label: 'Cash received', submitLabel: 'Take cash', onSubmit: function () { if (tendered < total) { toast('Cash received is less than the total.'); return; } finish('cash', tendered); } }) : null)));
+  }
+
+  /* ------------------------------------------------------------------ dough stock row, edit sheet and out-of-dough alarm */
+  function DoughBar() {
+    var S = useStore(), edit = useState(null);
+    return h('div', { className: 'dough-bar' },
+      h('span', { className: 'sticker sec-label' }, 'Dough in stock · tap to update'),
+      h('div', { className: 'dough-row' }, DOUGH_SIZES.map(function (size) {
+        var n = doughLeft(size), st = n == null ? '' : n <= 0 ? 'out' : n <= DOUGH_LOW ? 'low' : '';
+        return h('button', { key: size, type: 'button', className: 'dough ps-card ps-press' + (st ? ' dough-' + st : ''), onClick: function () { edit[1](size); }, 'aria-label': size + ' dough, ' + (n == null ? 'not set' : n + ' left') + '. Tap to update.' },
+          h('span', { className: 'sticker' }, size),
+          h('span', { className: 'amount dough-n' }, n == null ? '—' : n),
+          h('span', { className: 'meta' }, n == null ? 'tap to set' : n <= 0 ? 'out of stock' : n <= DOUGH_LOW ? 'running low' : 'left'));
+      })),
+      edit[0] ? h(DoughSheet, { size: edit[0], onClose: function () { edit[1](null); } }) : null);
+  }
+  function DoughSheet(props) {
+    var v = useState(''), n = Number(v[0] || 0), now = doughLeft(props.size);
+    useEffect(function () { var f = function (e) { if (e.key === 'Escape') props.onClose(); }; window.addEventListener('keydown', f); return function () { window.removeEventListener('keydown', f); }; }, []);
+    return h('div', { className: 'scrim', onClick: function (e) { if (e.target === e.currentTarget) props.onClose(); } },
+      h('div', { className: 'sheet ps-card dough-sheet', role: 'dialog', 'aria-modal': 'true', 'aria-label': props.size + ' dough' },
+        h('div', { className: 'sheet-head' },
+          h('div', { className: 'ps-col', style: { gap: '2px' } }, h('h2', { className: 'title ps-up', style: { margin: 0 } }, props.size + ' dough'),
+            h('span', { className: 'meta', style: { color: 'var(--ink-muted)' } }, 'In stock now: ' + (now == null ? 'not set yet' : now))),
+          h('button', { className: 'close ps-press', onClick: props.onClose, 'aria-label': 'Close' }, h(M.Icon, { name: 'x', large: true }))),
+        h('div', { className: 'sheet-sec' }, h(M.Keypad, { mode: 'qty', value: v[0], onChange: v[1], label: 'Dough balls', quick: [10, 20, 30] })),
+        h('div', { className: 'sheet-foot dough-actions' },
+          h(M.Button, { variant: 'send', size: 'lg', disabled: !n, onClick: function () { var a = {}; a[props.size] = n; changeDough(a); toast('Added ' + n + ' ' + props.size + ' dough'); props.onClose(); } }, 'Add ' + (n || '') + ' to stock'),
+          h(M.Button, { size: 'lg', disabled: v[0] === '', onClick: function () { setDough(props.size, n); toast(props.size + ' dough set to ' + n); props.onClose(); } }, 'Set stock to ' + (v[0] === '' ? '…' : n)))));
+  }
+  // Sound for the alarm. Browsers only allow sound after the first tap, so the audio is unlocked on any tap.
+  var audioCtx = null;
+  function unlockAudio() { try { if (!audioCtx) { var C = window.AudioContext || window.webkitAudioContext; if (C) audioCtx = new C(); } if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); } catch (e) {} }
+  window.addEventListener('pointerdown', unlockAudio, { passive: true }); window.addEventListener('keydown', unlockAudio);
+  function beep() {
+    try {
+      if (!audioCtx) return; var t = audioCtx.currentTime;
+      [0, 0.28, 0.56].forEach(function (d, i) { var o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.type = 'square'; o.frequency.value = i === 1 ? 660 : 880;
+        g.gain.setValueAtTime(0.0001, t + d); g.gain.exponentialRampToValueAtTime(0.25, t + d + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + d + 0.22);
+        o.connect(g).connect(audioCtx.destination); o.start(t + d); o.stop(t + d + 0.25); });
+    } catch (e) {}
+  }
+  function DoughAlarm() {
+    var S = useStore(), ack = useState(lsGet('mg-pos-dough-ack', {})), add = useState(null);
+    var out = S.dough ? DOUGH_SIZES.filter(function (k) { return doughLeft(k) != null && doughLeft(k) <= 0; }) : [];
+    // A size that is back in stock can alarm again next time it runs out.
+    useEffect(function () { if (!S.dough) return; var a = Object.assign({}, ack[0]), ch = false; Object.keys(a).forEach(function (k) { if (out.indexOf(k) < 0) { delete a[k]; ch = true; } }); if (ch) { ack[1](a); lsSet('mg-pos-dough-ack', a); } }, [out.join(), !!S.dough]);
+    var showing = S.payOpen > 0 ? [] : out.filter(function (k) { return !ack[0][k]; });
+    useEffect(function () {
+      if (!showing.length || add[0]) return;
+      beep(); var id = setInterval(beep, 2500); try { if (navigator.vibrate) navigator.vibrate([300, 150, 300]); } catch (e) {}
+      return function () { clearInterval(id); };
+    }, [showing.join(), add[0]]);
+    function okAll() { var a = Object.assign({}, ack[0]); showing.forEach(function (k) { a[k] = true; }); ack[1](a); lsSet('mg-pos-dough-ack', a); }
+    if (add[0]) return h(DoughSheet, { size: add[0], onClose: function () { add[1](null); } });
+    if (!showing.length) return null;
+    return h('div', { className: 'scrim' }, h('div', { className: 'sheet ps-card dough-alarm', role: 'alertdialog', 'aria-modal': 'true', 'aria-labelledby': 'dough-alarm-title' },
+      h(M.Ribbon, { words: ['Out of dough'], repeat: 10 }),
+      h('div', { className: 'paid-body' },
+        h('h2', { id: 'dough-alarm-title', className: 'headline ps-pop', style: { margin: 0 } }, 'Out of dough'),
+        h('div', { className: 'title' }, showing.join(' · ') + ' dough ' + (showing.length > 1 ? 'are' : 'is') + ' at 0'),
+        h('div', { className: 'body', style: { color: 'var(--ink-muted)' } }, 'Make more dough, then add it to the stock. Stock now: ' + DOUGH_SIZES.map(function (k) { return k + ' ' + (doughLeft(k) == null ? '—' : doughLeft(k)); }).join(' · '))),
+      h('div', { className: 'sheet-foot dough-actions' },
+        h(M.Button, { variant: 'send', size: 'lg', onClick: function () { okAll(); add[1](showing[0]); } }, 'Add ' + showing[0] + ' dough'),
+        h(M.Button, { size: 'lg', onClick: okAll }, 'OK, got it'))));
   }
 
   /* ------------------------------------------------------------------ counter */
@@ -320,7 +414,7 @@
     }
     function charge() { if (!validate()) return; var o = buildOrder(false); if (!draft.id) set({ id: o.id }); pay[1](o); }
     function onPaid(res, d) {
-      var o = applyDiscount(buildOrder(true), d); o.paid = true; o.paidAt = Date.now(); o.payment = res;
+      var o = takeDough(applyDiscount(buildOrder(true), d)); o.paid = true; o.paidAt = Date.now(); o.payment = res;
       if (o.status === 'open') o.status = 'done';
       saveOrder(o);
     }
@@ -330,6 +424,7 @@
     var sel0 = selLine();
     return h('div', { className: 'counter' },
       h('section', { className: 'menu-side', 'aria-label': 'Menu' },
+        h(DoughBar),
         soldIds.length ? h('div', { className: 'sold-row' }, h('span', { className: 'sticker', style: { color: 'var(--ink-muted)' } }, 'SOLD OUT · TAP TO RESTORE'),
           soldIds.map(function (id) { return h('button', { key: id, className: 'chip ps-press', onClick: function () { setSoldOut(id, false); toast(BY_ID[id].name + ' is back on'); } }, h(M.Icon, { name: 'ban' }), BY_ID[id].name); })) : null,
         CATS.map(function (c) {
@@ -398,6 +493,7 @@
       h('div', { className: 'k-head' },
         h('h2', { className: 'headline ps-pop' }, 'On the fire'),
         h('div', { className: 'k-stats' }, h(M.StatusBadge, { status: 'firing' }, firing.length + ' firing'), h(M.StatusBadge, { status: 'ready' }, ready.length + ' ready'))),
+      h(DoughBar),
       firing.length ? h('div', { className: 'tickets' }, firing.map(function (o) { return ticket(o, false); })) :
         h('div', { className: 'k-empty' }, h('div', { className: 'note', style: { color: 'var(--gold)' } }, 'ovens are hot, no tickets yet'), h('div', { className: 'meta', style: { color: 'var(--ink-muted)' } }, 'Orders sent from the counter appear here, oldest first.')),
       ready.length ? h(React.Fragment, null, h(M.Ribbon, { words: ['Ready at the pass'], repeat: 10 }), h('div', { className: 'tickets' }, ready.map(function (o) { return ticket(o, true); }))) : null);
@@ -558,7 +654,7 @@
         h(React.Fragment, null, h('span', { className: 'body' }, 'Delete all ' + list.length + ' orders, from every month and every screen? This can\'t be undone.'), h(M.Button, { variant: 'danger', onClick: function () { deleteAll(); confirm[1](false); toast('All test orders cleared'); } }, 'Delete all'), h(M.Button, { variant: 'quiet', onClick: function () { confirm[1](false); } }, 'Keep them')) :
         list.length ? h('button', { className: 'link', onClick: function () { confirm[1](true); } }, 'Clear all test orders') : null),
       props.user ? h('div', { className: 'danger-zone' }, h('span', { className: 'meta', style: { color: 'var(--ink-muted)' } }, 'Signed in as ' + props.user), h('button', { className: 'link', onClick: props.onSignOut }, 'Sign out')) : null,
-      paying[0] ? h(PaySheet, { order: paying[0], orderId: paying[0].id, sourceText: source(paying[0]), sentNote: '', onPaid: function (res, d) { var n = applyDiscount(clone(paying[0]), d); n.paid = true; n.paidAt = Date.now(); n.payment = res; if (n.status === 'open') n.status = 'done'; saveOrder(n); }, onClose: function () { paying[1](null); } }) : null);
+      paying[0] ? h(PaySheet, { order: paying[0], orderId: paying[0].id, sourceText: source(paying[0]), sentNote: '', onPaid: function (res, d) { var n = takeDough(applyDiscount(clone(paying[0]), d)); n.paid = true; n.paidAt = Date.now(); n.payment = res; if (n.status === 'open') n.status = 'done'; saveOrder(n); }, onClose: function () { paying[1](null); } }) : null);
   }
 
   /* ------------------------------------------------------------------ app shell */
@@ -599,6 +695,7 @@
           h('div', { className: 'bar-right' }, h(M.StatusBadge, { status: mode[1] }, mode[0]), h('span', { className: 'time-chip price' }, clock(now[0]))))),
       h('main', { className: 'main' },
         view[0] === 'counter' ? h(Counter, { draft: draft[0], setDraft: draft[1] }) : view[0] === 'kitchen' ? h(Kitchen) : h(Orders, { openInCounter: openInCounter, user: props.user, onSignOut: props.onSignOut })),
+      h(DoughAlarm),
       h(Toast));
   }
 
@@ -650,7 +747,7 @@
       onAccessDenied = function () { msg[1]('This account isn’t allowed to use the POS. Use the staff login.'); FB.auth.signOut(); };
       return FB.auth.onAuthStateChanged(function (u) {
         if (u) { user[1](u.email); initStore(); st[1]('in'); }
-        else { stopStore(); Store.orders = {}; Store.live = {}; Store.older = {}; Store.soldOut = {}; Store.db = null; Store.mode = 'connecting'; st[1]('out'); }
+        else { stopStore(); Store.orders = {}; Store.live = {}; Store.older = {}; Store.soldOut = {}; Store.dough = null; Store.db = null; Store.mode = 'connecting'; st[1]('out'); }
       });
     }, []);
     if (st[0] === 'checking') return h(Shell);
