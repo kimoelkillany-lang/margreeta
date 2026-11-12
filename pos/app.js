@@ -283,8 +283,7 @@
     var draft = props.draft, setDraft = props.setDraft;
     var sheet = useState(null), sel = useState(null), pay = useState(null), err = useState(''), checked = useState(false);
     var railRef = useRef(null);
-    // Whole menu on one screen (no category tabs): pizzas in menu order, then drinks.
-    var pizzas = MENU.filter(function (m) { return !m.variants; }), drinks = MENU.filter(function (m) { return !!m.variants; });
+    // Whole menu on one screen (no category tabs): one row per country, then drinks.
     var qtyOf = {}; draft.lines.forEach(function (l) { if (l.state !== 'void') qtyOf[l.itemId] = (qtyOf[l.itemId] || 0) + l.qty; });
     var total = orderTotal(draft);
     var unsent = draft.lines.filter(function (l) { return l.state === 'new'; }).length;
@@ -333,9 +332,11 @@
       h('section', { className: 'menu-side', 'aria-label': 'Menu' },
         soldIds.length ? h('div', { className: 'sold-row' }, h('span', { className: 'sticker', style: { color: 'var(--ink-muted)' } }, 'SOLD OUT · TAP TO RESTORE'),
           soldIds.map(function (id) { return h('button', { key: id, className: 'chip ps-press', onClick: function () { setSoldOut(id, false); toast(BY_ID[id].name + ' is back on'); } }, h(M.Icon, { name: 'ban' }), BY_ID[id].name); })) : null,
-        h('div', { className: 'tile-grid', 'aria-label': 'Pizzas' }, pizzas.map(tile)),
-        h('div', { className: 'ps-col', style: { gap: '0' } }, h('span', { className: 'sticker sec-label' }, 'Drinks'),
-          h('div', { className: 'tile-grid', 'aria-label': 'Drinks' }, drinks.map(tile)))),
+        CATS.map(function (c) {
+          return h('section', { key: c.id, className: 'ps-col', style: { gap: '0' }, 'aria-label': c.label },
+            h('span', { className: 'sticker sec-label' }, (c.stop ? c.stop + ' · ' : '') + c.label),
+            h('div', { className: 'tile-grid' }, MENU.filter(function (m) { return m.cat === c.id; }).map(tile)));
+        })),
       h('aside', { className: 'rail ps-card', ref: railRef, 'aria-label': 'Current order' },
         h('div', { className: 'rail-head' },
           h('div', { className: 'rail-title' },
