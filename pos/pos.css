@@ -219,6 +219,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: none;
 .fields { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2); }
 .field { font-family: var(--font-sans); font-size: 15px; min-height: 40px; padding: 0 10px; box-sizing: border-box; width: 100%; background: var(--surface-raised); color: var(--ink); border: var(--edge-width) solid var(--edge); border-radius: var(--radius-sm); }
 .field::placeholder { color: var(--ink-muted); }
+.field[aria-invalid="true"] { border-color: var(--red-ink); box-shadow: 0 0 0 2px var(--red-ink); }
 .lines { overflow-y: auto; flex: 1; min-height: 120px; }
 .lines .ps-line { border-bottom: 1px solid var(--edge); }
 .empty { padding: var(--space-6) var(--space-4); display: flex; flex-direction: column; gap: var(--space-1); text-align: center; align-items: center; }

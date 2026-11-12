@@ -70,6 +70,10 @@
     if (o.promoCode && promoPct(o.promoCode) !== d.pct) o.promoCode = '';
     o.total = orderTotal(o); return o;
   }
+  // Customer details rules (Counter): full name = at least two names; phone = exactly 11 digits (e.g. 01012345678).
+  function nameOk(n) { return String(n || '').trim().split(/\s+/).filter(function (w) { return w.length >= 2; }).length >= 2; }
+  function cleanPhone(v) { return String(v || '').replace(/[\u0660-\u0669]/g, function (d) { return String(d.charCodeAt(0) - 0x0660); }).replace(/[\u06F0-\u06F9]/g, function (d) { return String(d.charCodeAt(0) - 0x06F0); }).replace(/\D/g, '').slice(0, 11); }
+  function phoneOk(p) { return /^[0-9]{11}$/.test(String(p || '')); }
   function chanLabel(id) { var c = CHANNELS.filter(function (x) { return x[0] === id; })[0]; return c ? c[1] : id; }
   function source(o) {
     if (o.channel === 'website' && o.fulfillment) return 'margreeta.com' + (o.customer ? ' · ' + o.customer : '') + (o.fulfillment === 'delivery' ? ' · Delivery ' + (o.compound ? o.compound.replace('Mountain View ', '') : '') : ' · Pickup' + (o.pickupTime ? ' ' + o.pickupTime : ''));
@@ -277,7 +281,7 @@
     var S = useStore();
     var cat = useState(lsGet('mg-pos-cat', 'italy'));
     var draft = props.draft, setDraft = props.setDraft;
-    var sheet = useState(null), sel = useState(null), pay = useState(null), err = useState('');
+    var sheet = useState(null), sel = useState(null), pay = useState(null), err = useState(''), checked = useState(false);
     var railRef = useRef(null);
     var items = MENU.filter(function (m) { return m.cat === cat[0]; });
     var qtyOf = {}; draft.lines.forEach(function (l) { if (l.state !== 'void') qtyOf[l.itemId] = (qtyOf[l.itemId] || 0) + l.qty; });
@@ -295,8 +299,10 @@
     function changeSel(fn) { set({ lines: draft.lines.map(function (l) { return l.key === sel[0] ? fn(Object.assign({}, l)) : l; }).filter(Boolean) }); }
     function validate() {
       if (!draft.lines.some(function (l) { return l.state !== 'void'; })) { err[1]('Add at least one item.'); return false; }
+      if (!nameOk(draft.customer)) { err[1]('Enter the customer\u2019s full name: at least two names.'); checked[1](true); return false; }
+      if (!phoneOk(draft.phone)) { err[1]('Enter an 11-digit phone number, e.g. 01012345678.'); checked[1](true); return false; }
       if (draft.channel === 'delivery' && !draft.compound) { err[1]('Pick the compound for this delivery.'); return false; }
-      err[1](''); return true;
+      err[1](''); checked[1](false); return true;
     }
     function buildOrder(sendNow) {
       var now = Date.now(), base = existing ? clone(existing) : { id: draft.id || ('MG-' + uid(6)), createdAt: now, status: 'open', paid: false };
@@ -336,8 +342,8 @@
             return h('button', { key: c[0], role: 'radio', 'aria-checked': draft.channel === c[0] ? 'true' : 'false', className: 'chan ps-press', onClick: function () { set({ channel: c[0] }); } }, c[1]);
           })),
           h('div', { className: 'fields' },
-            h('input', { id: 'cust-name', className: 'field', placeholder: 'Customer name', value: draft.customer, onChange: function (e) { set({ customer: e.target.value }); }, 'aria-label': 'Customer name' }),
-            h('input', { id: 'cust-phone', className: 'field', placeholder: 'Phone', inputMode: 'tel', value: draft.phone, onChange: function (e) { set({ phone: e.target.value }); }, 'aria-label': 'Phone' }),
+            h('input', { id: 'cust-name', className: 'field', placeholder: 'Customer full name', autoComplete: 'off', value: draft.customer, onChange: function (e) { set({ customer: e.target.value }); }, 'aria-label': 'Customer full name', 'aria-invalid': checked[0] && !nameOk(draft.customer) ? 'true' : undefined }),
+            h('input', { id: 'cust-phone', className: 'field', placeholder: 'Phone (11 digits)', inputMode: 'numeric', autoComplete: 'off', value: draft.phone, onChange: function (e) { set({ phone: cleanPhone(e.target.value) }); }, 'aria-label': 'Phone, 11 digits', 'aria-invalid': checked[0] && !phoneOk(draft.phone) ? 'true' : undefined }),
             draft.channel === 'delivery' ? h('select', { id: 'compound', className: 'field', value: draft.compound, onChange: function (e) { set({ compound: e.target.value }); }, 'aria-label': 'Compound' },
               h('option', { value: '' }, 'Compound…'), COMPOUNDS.map(function (c) { return h('option', { key: c, value: c }, c); })) : null,
             draft.channel === 'delivery' ? h('input', { id: 'unit', className: 'field', placeholder: 'Unit / building', value: draft.unit, onChange: function (e) { set({ unit: e.target.value }); }, 'aria-label': 'Unit' }) : null)),
@@ -359,7 +365,7 @@
             h(M.Button, { variant: 'send', size: 'lg', icon: 'send', disabled: !unsent, onClick: send }, unsent ? 'Send to kitchen' : 'Nothing to send'),
             existing && existing.paid ? h(M.Button, { size: 'lg', onClick: function () { setDraft(emptyDraft()); } }, 'Done') :
               h(M.Button, { variant: 'primary', size: 'lg', amount: egp(total), disabled: !total, onClick: charge }, 'Charge')),
-          draft.lines.length || draft.id ? h('button', { className: 'link', onClick: function () { setDraft(emptyDraft()); sel[1](null); err[1](''); } }, draft.id ? 'Close this order' : 'Clear order') : null)),
+          draft.lines.length || draft.id ? h('button', { className: 'link', onClick: function () { setDraft(emptyDraft()); sel[1](null); err[1](''); checked[1](false); } }, draft.id ? 'Close this order' : 'Clear order') : null)),
       total ? h('button', { className: 'jump ps-press', onClick: function () { railRef.current && railRef.current.scrollIntoView({ behavior: 'smooth' }); } }, h('span', null, draft.lines.length + ' items'), h('span', { className: 'price' }, egp(total))) : null,
       sheet[0] ? h(ItemSheet, { item: sheet[0].item, line: sheet[0].line, onAdd: addLine, onClose: function () { sheet[1](null); } }) : null,
       pay[0] ? h(PaySheet, { order: pay[0], orderId: pay[0].id, sourceText: source(pay[0]), sentNote: unsent ? 'Unsent items went to the kitchen.' : '', onPaid: onPaid, onClose: function () { var wasPaid = Store.orders[pay[0].id] && Store.orders[pay[0].id].paid; pay[1](null); if (wasPaid) { lsSet('mg-pos-draft-meta', { channel: draft.channel }); setDraft(emptyDraft()); } } }) : null);
