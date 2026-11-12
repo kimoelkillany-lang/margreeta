@@ -280,11 +280,11 @@
   function emptyDraft() { var d = lsGet('mg-pos-draft-meta', {}); return { id: null, channel: COUNTER_CHANNELS.indexOf(d.channel) >= 0 ? d.channel : 'clubhouse', customer: '', phone: '', compound: '', unit: '', lines: [] }; }
   function Counter(props) {
     var S = useStore();
-    var cat = useState(lsGet('mg-pos-cat', 'italy'));
     var draft = props.draft, setDraft = props.setDraft;
     var sheet = useState(null), sel = useState(null), pay = useState(null), err = useState(''), checked = useState(false);
     var railRef = useRef(null);
-    var items = MENU.filter(function (m) { return m.cat === cat[0]; });
+    // Whole menu on one screen (no category tabs): pizzas in menu order, then drinks.
+    var pizzas = MENU.filter(function (m) { return !m.variants; }), drinks = MENU.filter(function (m) { return !!m.variants; });
     var qtyOf = {}; draft.lines.forEach(function (l) { if (l.state !== 'void') qtyOf[l.itemId] = (qtyOf[l.itemId] || 0) + l.qty; });
     var total = orderTotal(draft);
     var unsent = draft.lines.filter(function (l) { return l.state === 'new'; }).length;
@@ -325,15 +325,17 @@
       if (o.status === 'open') o.status = 'done';
       saveOrder(o);
     }
+    function tile(m) {
+      return h(M.MenuItemTile, { key: m.id, name: m.name, nameAr: m.ar, price: m.variants ? m.price : fromPrice(m), fromLabel: m.variants ? (m.variants.length > 1 ? 'each' : false) : 'from', image: PHOTOS[m.id], tags: m.tags, qty: qtyOf[m.id] || 0, soldOut: !!S.soldOut[m.id], onClick: function () { sheet[1]({ item: m }); } });
+    }
     var sel0 = selLine();
     return h('div', { className: 'counter' },
       h('section', { className: 'menu-side', 'aria-label': 'Menu' },
-        h(M.CategoryTabs, { items: CATS, value: cat[0], onChange: function (v) { cat[1](v); lsSet('mg-pos-cat', v); } }),
         soldIds.length ? h('div', { className: 'sold-row' }, h('span', { className: 'sticker', style: { color: 'var(--ink-muted)' } }, 'SOLD OUT · TAP TO RESTORE'),
           soldIds.map(function (id) { return h('button', { key: id, className: 'chip ps-press', onClick: function () { setSoldOut(id, false); toast(BY_ID[id].name + ' is back on'); } }, h(M.Icon, { name: 'ban' }), BY_ID[id].name); })) : null,
-        h('div', { className: 'tile-grid' }, items.map(function (m) {
-          return h(M.MenuItemTile, { key: m.id, name: m.name, nameAr: m.ar, price: m.variants ? m.price : fromPrice(m), fromLabel: m.variants ? (m.variants.length > 1 ? 'each' : false) : 'from', image: PHOTOS[m.id], tags: m.tags, qty: qtyOf[m.id] || 0, soldOut: !!S.soldOut[m.id], onClick: function () { sheet[1]({ item: m }); } });
-        }))),
+        h('div', { className: 'tile-grid', 'aria-label': 'Pizzas' }, pizzas.map(tile)),
+        h('div', { className: 'ps-col', style: { gap: '0' } }, h('span', { className: 'sticker sec-label' }, 'Drinks'),
+          h('div', { className: 'tile-grid', 'aria-label': 'Drinks' }, drinks.map(tile)))),
       h('aside', { className: 'rail ps-card', ref: railRef, 'aria-label': 'Current order' },
         h('div', { className: 'rail-head' },
           h('div', { className: 'rail-title' },
