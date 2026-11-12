@@ -46,7 +46,8 @@
     { id: 'water', cat: 'drinks', name: 'Water', ar: 'مياه معدنية', price: 25, variants: ['Still'], desc: 'Mineral · 600ml' }
   ];
   var BY_ID = {}; MENU.forEach(function (m) { BY_ID[m.id] = m; });
-  var CHANNELS = [['pickup', 'Pickup'], ['delivery', 'Delivery'], ['website', 'margreeta.com'], ['talabat', 'Talabat'], ['clubhouse', 'Clubhouse']];
+  var CHANNELS = [['pickup', 'Pickup'], ['delivery', 'Delivery'], ['website', 'margreeta.com'], ['talabat', 'Talabat'], ['clubhouse', 'Clubhouse']]; // all channels, for labels and reports
+  var COUNTER_CHANNELS = ['clubhouse', 'pickup', 'delivery']; // the choices under New order, in this order
   var COMPOUNDS = ['Mountain View Chillout Park', 'Grand Heights', 'Green 5', 'NEOM October'];
 
   /* ------------------------------------------------------------------ helpers */
@@ -58,6 +59,22 @@
   function grossTotal(o) { return (o.lines || []).reduce(function (a, l) { return a + lineTotal(l); }, 0); }
   // Website promo codes (LOYAL10/LOYAL20) arrive as an order-level discount.
   function orderTotal(o) { return Math.max(0, grossTotal(o) - (Number(o.discount) || 0)); }
+  // Checkout discounts (Take payment): none, 10%, 15% or 20% of the items. Website promo codes (LOYAL10/LOYAL20) map onto the same choices.
+  var DISCOUNTS = [0, 10, 15, 20];
+  function promoPct(code) { var m = /(\d+)$/.exec(code || ''); return m ? Number(m[1]) : 0; }
+  function startPct(o) { var p = o.discountPct != null ? Number(o.discountPct) : promoPct(o.promoCode); return DISCOUNTS.indexOf(p) >= 0 ? p : 0; }
+  function discountFor(gross, pct) { return Math.round(gross * pct / 100); }
+  function discountLabel(o) { var p = o.discountPct != null ? Number(o.discountPct) : promoPct(o.promoCode); return (p ? 'Discount ' + p + '%' : 'Discount') + (o.promoCode && promoPct(o.promoCode) === p ? ' · ' + o.promoCode : ''); }
+  // Record the discount chosen at payment on the order.
+  function applyDiscount(o, d) {
+    o.discountPct = d.pct; o.discount = d.amount;
+    if (o.promoCode && promoPct(o.promoCode) !== d.pct) o.promoCode = '';
+    o.total = orderTotal(o); return o;
+  }
+  // Customer details rules (Counter): full name = at least two names; phone = exactly 11 digits (e.g. 01012345678).
+  function nameOk(n) { return String(n || '').trim().split(/\s+/).filter(function (w) { return w.length >= 2; }).length >= 2; }
+  function cleanPhone(v) { return String(v || '').replace(/[\u0660-\u0669]/g, function (d) { return String(d.charCodeAt(0) - 0x0660); }).replace(/[\u06F0-\u06F9]/g, function (d) { return String(d.charCodeAt(0) - 0x06F0); }).replace(/\D/g, '').slice(0, 11); }
+  function phoneOk(p) { return /^[0-9]{11}$/.test(String(p || '')); }
   function chanLabel(id) { var c = CHANNELS.filter(function (x) { return x[0] === id; })[0]; return c ? c[1] : id; }
   function source(o) {
     if (o.channel === 'website' && o.fulfillment) return 'margreeta.com' + (o.customer ? ' · ' + o.customer : '') + (o.fulfillment === 'delivery' ? ' · Delivery ' + (o.compound ? o.compound.replace('Mountain View ', '') : '') : ' · Pickup' + (o.pickupTime ? ' ' + o.pickupTime : ''));
@@ -90,10 +107,10 @@
 
   /* Live listener covers this month and last month (Today, Kitchen and the recent Month reports).
      Older months are fetched once when you open them in the Month report, so the app stays fast as orders pile up. */
-  var Store = { mode: 'connecting', orders: {}, soldOut: {}, db: null, subs: [], live: {}, older: {}, loaded: {}, since: 0, fromCache: true, unsub: [] };
+  var Store = { mode: 'connecting', orders: {}, soldOut: {}, dough: null, payOpen: 0, db: null, subs: [], live: {}, older: {}, loaded: {}, since: 0, fromCache: true, unsub: [] };
   function emit() { Store.subs.forEach(function (f) { f(); }); }
   function useStore() { var s = useState(0); useEffect(function () { var f = function () { s[1](function (x) { return x + 1; }); }; Store.subs.push(f); return function () { Store.subs = Store.subs.filter(function (g) { return g !== f; }); }; }, []); return Store; }
-  function loadLocal() { Store.orders = lsGet('mg-pos-orders', {}); Store.soldOut = lsGet('mg-pos-soldout', {}); }
+  function loadLocal() { Store.orders = lsGet('mg-pos-orders', {}); Store.soldOut = lsGet('mg-pos-soldout', {}); Store.dough = lsGet('mg-pos-dough', null); }
   function goLocal() { stopStore(); Store.db = null; Store.mode = 'local'; loadLocal(); emit(); }
   function mergeOrders() { Store.orders = Object.assign({}, Store.older, Store.live); }
   function updateMode() { if (!Store.db) return; Store.mode = navigator.onLine && !Store.fromCache ? 'live' : 'offline'; }
@@ -116,6 +133,8 @@
       Store.live = o; Store.fromCache = snap.metadata.fromCache; mergeOrders(); updateMode(); emit();
     }, storeError));
     Store.unsub.push(db.doc('menu/state').onSnapshot(function (s) { Store.soldOut = (s.exists && s.data().soldOut) || {}; emit(); }, function () {}));
+    Store.dough = null;
+    Store.unsub.push(db.doc('menu/dough').onSnapshot(function (s) { Store.dough = s.exists ? s.data() : null; emit(); }, function () {}));
   }
   /* Load an older month (before the live window) for the Month report. */
   function ensureMonth(ym) {
@@ -147,6 +166,31 @@
     }
     lsSet('mg-pos-orders', {}); return Promise.resolve();
   }
+  /* ------------------------------------------------------------------ dough stock (menu/dough: { Mini, Medium, Regular }) */
+  var DOUGH_SIZES = ['Mini', 'Medium', 'Regular'], DOUGH_LOW = 5;
+  function doughLeft(size) { return Store.dough && Store.dough[size] != null ? Number(Store.dough[size]) : null; }
+  // Pizzas in an order by dough size (voided lines and drinks don't use dough).
+  function doughOf(o) { var u = {}; (o.lines || []).forEach(function (l) { if (l.state === 'void' || !isPizza(l) || DOUGH_SIZES.indexOf(l.size) < 0) return; u[l.size] = (u[l.size] || 0) + l.qty; }); return u; }
+  // Change stock by a delta per size. Uses Firestore's atomic increment, so two tablets can't overwrite each other.
+  function changeDough(delta) {
+    var keys = Object.keys(delta).filter(function (k) { return delta[k]; }); if (!keys.length) return;
+    var d = Object.assign({ Mini: 0, Medium: 0, Regular: 0 }, Store.dough); keys.forEach(function (k) { d[k] = Number(d[k] || 0) + delta[k]; });
+    Store.dough = d; emit();
+    if (Store.db) { var patch = { updatedAt: Date.now() }; keys.forEach(function (k) { patch[k] = firebase.firestore.FieldValue.increment(delta[k]); }); Store.db.doc('menu/dough').set(patch, { merge: true }).catch(function () { toast('Could not update the dough stock.'); }); }
+    else lsSet('mg-pos-dough', d);
+  }
+  function setDough(size, n) {
+    var d = Object.assign({ Mini: 0, Medium: 0, Regular: 0 }, Store.dough); d[size] = n; Store.dough = d; emit();
+    if (Store.db) { var patch = { updatedAt: Date.now() }; patch[size] = n; Store.db.doc('menu/dough').set(patch, { merge: true }).catch(function () { toast('Could not update the dough stock.'); }); }
+    else lsSet('mg-pos-dough', d);
+  }
+  // Called when payment is taken: subtracts the order's dough once (the order remembers it in doughUsed).
+  function takeDough(o) {
+    if (o.doughUsed || !Store.dough) return o;
+    var u = doughOf(o), neg = {}; Object.keys(u).forEach(function (k) { neg[k] = -u[k]; });
+    o.doughUsed = u; changeDough(neg); return o;
+  }
+
   function setSoldOut(id, on) {
     var s = Object.assign({}, Store.soldOut); if (on) s[id] = true; else delete s[id]; Store.soldOut = s; emit();
     if (Store.db) Store.db.doc('menu/state').set({ soldOut: s }).catch(function () { toast('Could not update sold-out list.'); });
@@ -213,12 +257,16 @@
 
   /* ------------------------------------------------------------------ pay sheet */
   function PaySheet(props) {
-    var total = props.total;
+    var gross = grossTotal(props.order);
+    var pct = useState(startPct(props.order));
+    var discount = discountFor(gross, pct[0]), total = gross - discount;
     var method = useState('cash'), cash = useState(''), done = useState(null);
+    // While this payment screen is open, the out-of-dough alarm waits so it doesn't cover the change due.
+    useEffect(function () { Store.payOpen++; emit(); return function () { Store.payOpen--; emit(); }; }, []);
     var r50 = Math.ceil(total / 50) * 50, r100 = Math.ceil(total / 100) * 100, r200 = Math.ceil((total + 1) / 200) * 200;
     var quick = [total, r50 === total ? r50 + 50 : r50, r100 > r50 ? r100 : r100 + 100, r200].filter(function (v, i, a) { return a.indexOf(v) === i; }).slice(0, 3);
     var tendered = Number(cash[0] || 0);
-    function finish(m, t) { var res = { method: m, tendered: t, change: Math.max(0, t - total) }; done[1](res); props.onPaid(res); }
+    function finish(m, t) { var res = { method: m, tendered: t, change: Math.max(0, t - total) }; done[1](Object.assign({ total: total }, res)); props.onPaid(res, { pct: pct[0], amount: discount }); }
     useEffect(function () { var f = function (e) { if (e.key === 'Escape' && !done[0]) props.onClose(); }; window.addEventListener('keydown', f); return function () { window.removeEventListener('keydown', f); }; }, [done[0]]);
     if (done[0]) {
       return h('div', { className: 'scrim' }, h('div', { className: 'sheet ps-card paid', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Paid' },
@@ -228,8 +276,8 @@
           done[0].method === 'cash' ? h(React.Fragment, null,
             h('div', { className: 'sticker', style: { color: 'var(--ink-muted)' } }, 'CHANGE DUE'),
             h('div', { className: 'amount big-change' }, egp(done[0].change)),
-            h('div', { className: 'body', style: { color: 'var(--ink-muted)' } }, 'Received ' + egp(done[0].tendered) + ' for ' + egp(total))) :
-            h('div', { className: 'title' }, egp(total) + ' by ' + (done[0].method === 'card' ? 'card' : 'InstaPay')),
+            h('div', { className: 'body', style: { color: 'var(--ink-muted)' } }, 'Received ' + egp(done[0].tendered) + ' for ' + egp(done[0].total))) :
+            h('div', { className: 'title' }, egp(done[0].total) + ' by ' + (done[0].method === 'card' ? 'card' : 'InstaPay')),
           h('div', { className: 'body' }, props.sentNote)),
         h('div', { className: 'sheet-foot' }, h(M.Button, { variant: 'send', size: 'lg', block: true, onClick: props.onClose, icon: 'send' }, 'New order'))));
     }
@@ -240,7 +288,12 @@
           h('button', { className: 'close ps-press', onClick: props.onClose, 'aria-label': 'Close' }, h(M.Icon, { name: 'x', large: true }))),
         h('div', { className: 'pay-grid' },
           h('div', { className: 'ps-col', style: { gap: '16px' } },
-            h(M.OrderTotals, { subtotal: total, total: total }),
+            h('div', { className: 'ps-col', style: { gap: '6px' } },
+              h('span', { className: 'sticker sec-label' }, 'Discount'),
+              h('div', { className: 'ps-sizes', role: 'radiogroup', 'aria-label': 'Discount' }, DISCOUNTS.map(function (p) {
+                return h('button', { key: p, role: 'radio', 'aria-checked': pct[0] === p ? 'true' : 'false', className: 'ps-size ps-press', onClick: function () { pct[1](p); } }, h('span', { className: 'price' }, p ? p + '%' : 'None'));
+              }))),
+            h(M.OrderTotals, { subtotal: gross, discount: discount, discountLabel: discountLabel({ discountPct: pct[0], promoCode: props.order.promoCode }), total: total }),
             h('div', { className: 'ps-sizes', role: 'radiogroup', 'aria-label': 'Payment method' }, [['cash', 'Cash'], ['card', 'Card'], ['instapay', 'InstaPay']].map(function (m) {
               return h('button', { key: m[0], role: 'radio', 'aria-checked': method[0] === m[0] ? 'true' : 'false', className: 'ps-size ps-press', onClick: function () { method[1](m[0]); } }, h('span', { className: 'price' }, m[1]));
             })),
@@ -252,15 +305,79 @@
           method[0] === 'cash' ? h(M.Keypad, { value: cash[0], onChange: function (v) { cash[1](v.replace(/\..*/, '')); }, quick: quick, label: 'Cash received', submitLabel: 'Take cash', onSubmit: function () { if (tendered < total) { toast('Cash received is less than the total.'); return; } finish('cash', tendered); } }) : null)));
   }
 
+  /* ------------------------------------------------------------------ dough stock row, edit sheet and out-of-dough alarm */
+  function DoughBar() {
+    var S = useStore(), edit = useState(null);
+    return h('div', { className: 'dough-bar' },
+      h('span', { className: 'sticker sec-label' }, 'Dough in stock · tap to update'),
+      h('div', { className: 'dough-row' }, DOUGH_SIZES.map(function (size) {
+        var n = doughLeft(size), st = n == null ? '' : n <= 0 ? 'out' : n <= DOUGH_LOW ? 'low' : '';
+        return h('button', { key: size, type: 'button', className: 'dough ps-card ps-press' + (st ? ' dough-' + st : ''), onClick: function () { edit[1](size); }, 'aria-label': size + ' dough, ' + (n == null ? 'not set' : n + ' left') + '. Tap to update.' },
+          h('span', { className: 'sticker' }, size),
+          h('span', { className: 'amount dough-n' }, n == null ? '—' : n),
+          h('span', { className: 'meta' }, n == null ? 'tap to set' : n <= 0 ? 'out of stock' : n <= DOUGH_LOW ? 'running low' : 'left'));
+      })),
+      edit[0] ? h(DoughSheet, { size: edit[0], onClose: function () { edit[1](null); } }) : null);
+  }
+  function DoughSheet(props) {
+    var v = useState(''), n = Number(v[0] || 0), now = doughLeft(props.size);
+    useEffect(function () { var f = function (e) { if (e.key === 'Escape') props.onClose(); }; window.addEventListener('keydown', f); return function () { window.removeEventListener('keydown', f); }; }, []);
+    return h('div', { className: 'scrim', onClick: function (e) { if (e.target === e.currentTarget) props.onClose(); } },
+      h('div', { className: 'sheet ps-card dough-sheet', role: 'dialog', 'aria-modal': 'true', 'aria-label': props.size + ' dough' },
+        h('div', { className: 'sheet-head' },
+          h('div', { className: 'ps-col', style: { gap: '2px' } }, h('h2', { className: 'title ps-up', style: { margin: 0 } }, props.size + ' dough'),
+            h('span', { className: 'meta', style: { color: 'var(--ink-muted)' } }, 'In stock now: ' + (now == null ? 'not set yet' : now))),
+          h('button', { className: 'close ps-press', onClick: props.onClose, 'aria-label': 'Close' }, h(M.Icon, { name: 'x', large: true }))),
+        h('div', { className: 'sheet-sec' }, h(M.Keypad, { mode: 'qty', value: v[0], onChange: v[1], label: 'Dough balls', quick: [10, 20, 30] })),
+        h('div', { className: 'sheet-foot dough-actions' },
+          h(M.Button, { variant: 'send', size: 'lg', disabled: !n, onClick: function () { var a = {}; a[props.size] = n; changeDough(a); toast('Added ' + n + ' ' + props.size + ' dough'); props.onClose(); } }, 'Add ' + (n || '') + ' to stock'),
+          h(M.Button, { size: 'lg', disabled: v[0] === '', onClick: function () { setDough(props.size, n); toast(props.size + ' dough set to ' + n); props.onClose(); } }, 'Set stock to ' + (v[0] === '' ? '…' : n)))));
+  }
+  // Sound for the alarm. Browsers only allow sound after the first tap, so the audio is unlocked on any tap.
+  var audioCtx = null;
+  function unlockAudio() { try { if (!audioCtx) { var C = window.AudioContext || window.webkitAudioContext; if (C) audioCtx = new C(); } if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); } catch (e) {} }
+  window.addEventListener('pointerdown', unlockAudio, { passive: true }); window.addEventListener('keydown', unlockAudio);
+  function beep() {
+    try {
+      if (!audioCtx) return; var t = audioCtx.currentTime;
+      [0, 0.28, 0.56].forEach(function (d, i) { var o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.type = 'square'; o.frequency.value = i === 1 ? 660 : 880;
+        g.gain.setValueAtTime(0.0001, t + d); g.gain.exponentialRampToValueAtTime(0.25, t + d + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + d + 0.22);
+        o.connect(g).connect(audioCtx.destination); o.start(t + d); o.stop(t + d + 0.25); });
+    } catch (e) {}
+  }
+  function DoughAlarm() {
+    var S = useStore(), ack = useState(lsGet('mg-pos-dough-ack', {})), add = useState(null);
+    var out = S.dough ? DOUGH_SIZES.filter(function (k) { return doughLeft(k) != null && doughLeft(k) <= 0; }) : [];
+    // A size that is back in stock can alarm again next time it runs out.
+    useEffect(function () { if (!S.dough) return; var a = Object.assign({}, ack[0]), ch = false; Object.keys(a).forEach(function (k) { if (out.indexOf(k) < 0) { delete a[k]; ch = true; } }); if (ch) { ack[1](a); lsSet('mg-pos-dough-ack', a); } }, [out.join(), !!S.dough]);
+    var showing = S.payOpen > 0 ? [] : out.filter(function (k) { return !ack[0][k]; });
+    useEffect(function () {
+      if (!showing.length || add[0]) return;
+      beep(); var id = setInterval(beep, 2500); try { if (navigator.vibrate) navigator.vibrate([300, 150, 300]); } catch (e) {}
+      return function () { clearInterval(id); };
+    }, [showing.join(), add[0]]);
+    function okAll() { var a = Object.assign({}, ack[0]); showing.forEach(function (k) { a[k] = true; }); ack[1](a); lsSet('mg-pos-dough-ack', a); }
+    if (add[0]) return h(DoughSheet, { size: add[0], onClose: function () { add[1](null); } });
+    if (!showing.length) return null;
+    return h('div', { className: 'scrim' }, h('div', { className: 'sheet ps-card dough-alarm', role: 'alertdialog', 'aria-modal': 'true', 'aria-labelledby': 'dough-alarm-title' },
+      h(M.Ribbon, { words: ['Out of dough'], repeat: 10 }),
+      h('div', { className: 'paid-body' },
+        h('h2', { id: 'dough-alarm-title', className: 'headline ps-pop', style: { margin: 0 } }, 'Out of dough'),
+        h('div', { className: 'title' }, showing.join(' · ') + ' dough ' + (showing.length > 1 ? 'are' : 'is') + ' at 0'),
+        h('div', { className: 'body', style: { color: 'var(--ink-muted)' } }, 'Make more dough, then add it to the stock. Stock now: ' + DOUGH_SIZES.map(function (k) { return k + ' ' + (doughLeft(k) == null ? '—' : doughLeft(k)); }).join(' · '))),
+      h('div', { className: 'sheet-foot dough-actions' },
+        h(M.Button, { variant: 'send', size: 'lg', onClick: function () { okAll(); add[1](showing[0]); } }, 'Add ' + showing[0] + ' dough'),
+        h(M.Button, { size: 'lg', onClick: okAll }, 'OK, got it'))));
+  }
+
   /* ------------------------------------------------------------------ counter */
-  function emptyDraft() { var d = lsGet('mg-pos-draft-meta', {}); return { id: null, channel: d.channel || 'pickup', customer: '', phone: '', compound: '', unit: '', lines: [] }; }
+  function emptyDraft() { var d = lsGet('mg-pos-draft-meta', {}); return { id: null, channel: COUNTER_CHANNELS.indexOf(d.channel) >= 0 ? d.channel : 'clubhouse', customer: '', phone: '', compound: '', unit: '', lines: [] }; }
   function Counter(props) {
     var S = useStore();
-    var cat = useState(lsGet('mg-pos-cat', 'italy'));
     var draft = props.draft, setDraft = props.setDraft;
-    var sheet = useState(null), sel = useState(null), pay = useState(null), err = useState('');
+    var sheet = useState(null), sel = useState(null), pay = useState(null), err = useState(''), checked = useState(false);
     var railRef = useRef(null);
-    var items = MENU.filter(function (m) { return m.cat === cat[0]; });
+    // Whole menu on one screen (no category tabs): one row per country, then drinks.
     var qtyOf = {}; draft.lines.forEach(function (l) { if (l.state !== 'void') qtyOf[l.itemId] = (qtyOf[l.itemId] || 0) + l.qty; });
     var total = orderTotal(draft);
     var unsent = draft.lines.filter(function (l) { return l.state === 'new'; }).length;
@@ -276,8 +393,10 @@
     function changeSel(fn) { set({ lines: draft.lines.map(function (l) { return l.key === sel[0] ? fn(Object.assign({}, l)) : l; }).filter(Boolean) }); }
     function validate() {
       if (!draft.lines.some(function (l) { return l.state !== 'void'; })) { err[1]('Add at least one item.'); return false; }
+      if (!nameOk(draft.customer)) { err[1]('Enter the customer\u2019s full name: at least two names.'); checked[1](true); return false; }
+      if (!phoneOk(draft.phone)) { err[1]('Enter an 11-digit phone number, e.g. 01012345678.'); checked[1](true); return false; }
       if (draft.channel === 'delivery' && !draft.compound) { err[1]('Pick the compound for this delivery.'); return false; }
-      err[1](''); return true;
+      err[1](''); checked[1](false); return true;
     }
     function buildOrder(sendNow) {
       var now = Date.now(), base = existing ? clone(existing) : { id: draft.id || ('MG-' + uid(6)), createdAt: now, status: 'open', paid: false };
@@ -294,31 +413,36 @@
       toast(o.id + ' sent to the kitchen'); lsSet('mg-pos-draft-meta', { channel: draft.channel }); setDraft(emptyDraft()); sel[1](null);
     }
     function charge() { if (!validate()) return; var o = buildOrder(false); if (!draft.id) set({ id: o.id }); pay[1](o); }
-    function onPaid(res) {
-      var o = buildOrder(true); o.paid = true; o.paidAt = Date.now(); o.payment = res;
+    function onPaid(res, d) {
+      var o = takeDough(applyDiscount(buildOrder(true), d)); o.paid = true; o.paidAt = Date.now(); o.payment = res;
       if (o.status === 'open') o.status = 'done';
       saveOrder(o);
+    }
+    function tile(m) {
+      return h(M.MenuItemTile, { key: m.id, name: m.name, nameAr: m.ar, price: m.variants ? m.price : fromPrice(m), fromLabel: m.variants ? (m.variants.length > 1 ? 'each' : false) : 'from', image: PHOTOS[m.id], tags: m.tags, qty: qtyOf[m.id] || 0, soldOut: !!S.soldOut[m.id], onClick: function () { sheet[1]({ item: m }); } });
     }
     var sel0 = selLine();
     return h('div', { className: 'counter' },
       h('section', { className: 'menu-side', 'aria-label': 'Menu' },
-        h(M.CategoryTabs, { items: CATS, value: cat[0], onChange: function (v) { cat[1](v); lsSet('mg-pos-cat', v); } }),
+        h(DoughBar),
         soldIds.length ? h('div', { className: 'sold-row' }, h('span', { className: 'sticker', style: { color: 'var(--ink-muted)' } }, 'SOLD OUT · TAP TO RESTORE'),
           soldIds.map(function (id) { return h('button', { key: id, className: 'chip ps-press', onClick: function () { setSoldOut(id, false); toast(BY_ID[id].name + ' is back on'); } }, h(M.Icon, { name: 'ban' }), BY_ID[id].name); })) : null,
-        h('div', { className: 'tile-grid' }, items.map(function (m) {
-          return h(M.MenuItemTile, { key: m.id, name: m.name, nameAr: m.ar, price: m.variants ? m.price : fromPrice(m), fromLabel: m.variants ? (m.variants.length > 1 ? 'each' : false) : 'from', image: PHOTOS[m.id], tags: m.tags, qty: qtyOf[m.id] || 0, soldOut: !!S.soldOut[m.id], onClick: function () { sheet[1]({ item: m }); } });
-        }))),
+        CATS.map(function (c) {
+          return h('section', { key: c.id, className: 'ps-col', style: { gap: '0' }, 'aria-label': c.label },
+            h('span', { className: 'sticker sec-label' }, (c.stop ? c.stop + ' · ' : '') + c.label),
+            h('div', { className: 'tile-grid' }, MENU.filter(function (m) { return m.cat === c.id; }).map(tile)));
+        })),
       h('aside', { className: 'rail ps-card', ref: railRef, 'aria-label': 'Current order' },
         h('div', { className: 'rail-head' },
           h('div', { className: 'rail-title' },
             h('span', { className: 'title ps-up' }, draft.id ? draft.id : 'New order'),
             existing ? h(M.StatusBadge, { status: existing.paid ? 'paid' : existing.status === 'ready' ? 'ready' : existing.status === 'kitchen' ? 'firing' : 'neutral' }, existing.paid ? 'Paid' : existing.status === 'kitchen' ? 'In kitchen' : existing.status === 'ready' ? 'Ready' : 'Open') : null),
-          h('div', { className: 'chan-row', role: 'radiogroup', 'aria-label': 'Channel' }, CHANNELS.map(function (c) {
+          h('div', { className: 'chan-row', role: 'radiogroup', 'aria-label': 'Channel' }, CHANNELS.filter(function (c) { return COUNTER_CHANNELS.indexOf(c[0]) >= 0; }).sort(function (a, b) { return COUNTER_CHANNELS.indexOf(a[0]) - COUNTER_CHANNELS.indexOf(b[0]); }).map(function (c) {
             return h('button', { key: c[0], role: 'radio', 'aria-checked': draft.channel === c[0] ? 'true' : 'false', className: 'chan ps-press', onClick: function () { set({ channel: c[0] }); } }, c[1]);
           })),
           h('div', { className: 'fields' },
-            h('input', { id: 'cust-name', className: 'field', placeholder: 'Customer name', value: draft.customer, onChange: function (e) { set({ customer: e.target.value }); }, 'aria-label': 'Customer name' }),
-            h('input', { id: 'cust-phone', className: 'field', placeholder: 'Phone', inputMode: 'tel', value: draft.phone, onChange: function (e) { set({ phone: e.target.value }); }, 'aria-label': 'Phone' }),
+            h('input', { id: 'cust-name', className: 'field', placeholder: 'Customer full name', autoComplete: 'off', value: draft.customer, onChange: function (e) { set({ customer: e.target.value }); }, 'aria-label': 'Customer full name', 'aria-invalid': checked[0] && !nameOk(draft.customer) ? 'true' : undefined }),
+            h('input', { id: 'cust-phone', className: 'field', placeholder: 'Phone (11 digits)', inputMode: 'numeric', autoComplete: 'off', value: draft.phone, onChange: function (e) { set({ phone: cleanPhone(e.target.value) }); }, 'aria-label': 'Phone, 11 digits', 'aria-invalid': checked[0] && !phoneOk(draft.phone) ? 'true' : undefined }),
             draft.channel === 'delivery' ? h('select', { id: 'compound', className: 'field', value: draft.compound, onChange: function (e) { set({ compound: e.target.value }); }, 'aria-label': 'Compound' },
               h('option', { value: '' }, 'Compound…'), COMPOUNDS.map(function (c) { return h('option', { key: c, value: c }, c); })) : null,
             draft.channel === 'delivery' ? h('input', { id: 'unit', className: 'field', placeholder: 'Unit / building', value: draft.unit, onChange: function (e) { set({ unit: e.target.value }); }, 'aria-label': 'Unit' }) : null)),
@@ -334,16 +458,16 @@
           sel0.state === 'new' ? h(M.Button, { variant: 'danger', icon: 'x', onClick: function () { set({ lines: draft.lines.filter(function (l) { return l.key !== sel[0]; }) }); sel[1](null); } }, 'Remove') :
             sel0.state !== 'void' ? h(M.Button, { variant: 'danger', icon: 'x', onClick: function () { changeSel(function (l) { l.state = 'void'; return l; }); sel[1](null); toast(sel0.name + ' voided'); } }, 'Void') : null) : null,
         h('div', { className: 'rail-foot' },
-          h(M.OrderTotals, { subtotal: grossTotal(draft), discount: draft.discount || 0, discountLabel: draft.promoCode ? 'Promo ' + draft.promoCode : 'Discount', total: total }),
+          h(M.OrderTotals, { subtotal: grossTotal(draft), discount: draft.discount || 0, discountLabel: discountLabel(draft), total: total }),
           err[0] ? h('div', { className: 'meta', role: 'alert', style: { color: 'var(--red-ink)' } }, err[0]) : null,
           h('div', { className: 'foot-btns' },
-            h(M.Button, { variant: 'send', size: 'lg', icon: 'send', disabled: !unsent, onClick: send }, unsent ? 'Send to kitchen' : 'Nothing to send'),
             existing && existing.paid ? h(M.Button, { size: 'lg', onClick: function () { setDraft(emptyDraft()); } }, 'Done') :
-              h(M.Button, { variant: 'primary', size: 'lg', amount: egp(total), disabled: !total, onClick: charge }, 'Charge')),
-          draft.lines.length || draft.id ? h('button', { className: 'link', onClick: function () { setDraft(emptyDraft()); sel[1](null); err[1](''); } }, draft.id ? 'Close this order' : 'Clear order') : null)),
+              h(M.Button, { variant: 'primary', size: 'lg', amount: egp(total), disabled: !total, onClick: charge }, 'Charge'),
+            h(M.Button, { variant: 'send', size: 'lg', icon: 'send', disabled: !unsent, onClick: send }, unsent ? 'Send to kitchen' : 'Nothing to send')),
+          draft.lines.length || draft.id ? h('button', { className: 'link', onClick: function () { setDraft(emptyDraft()); sel[1](null); err[1](''); checked[1](false); } }, draft.id ? 'Close this order' : 'Clear order') : null)),
       total ? h('button', { className: 'jump ps-press', onClick: function () { railRef.current && railRef.current.scrollIntoView({ behavior: 'smooth' }); } }, h('span', null, draft.lines.length + ' items'), h('span', { className: 'price' }, egp(total))) : null,
       sheet[0] ? h(ItemSheet, { item: sheet[0].item, line: sheet[0].line, onAdd: addLine, onClose: function () { sheet[1](null); } }) : null,
-      pay[0] ? h(PaySheet, { total: orderTotal(pay[0]), orderId: pay[0].id, sourceText: source(pay[0]), sentNote: unsent ? 'Unsent items went to the kitchen.' : '', onPaid: onPaid, onClose: function () { var wasPaid = Store.orders[pay[0].id] && Store.orders[pay[0].id].paid; pay[1](null); if (wasPaid) { lsSet('mg-pos-draft-meta', { channel: draft.channel }); setDraft(emptyDraft()); } } }) : null);
+      pay[0] ? h(PaySheet, { order: pay[0], orderId: pay[0].id, sourceText: source(pay[0]), sentNote: unsent ? 'Unsent items went to the kitchen.' : '', onPaid: onPaid, onClose: function () { var wasPaid = Store.orders[pay[0].id] && Store.orders[pay[0].id].paid; pay[1](null); if (wasPaid) { lsSet('mg-pos-draft-meta', { channel: draft.channel }); setDraft(emptyDraft()); } } }) : null);
   }
 
   /* ------------------------------------------------------------------ kitchen */
@@ -369,6 +493,7 @@
       h('div', { className: 'k-head' },
         h('h2', { className: 'headline ps-pop' }, 'On the fire'),
         h('div', { className: 'k-stats' }, h(M.StatusBadge, { status: 'firing' }, firing.length + ' firing'), h(M.StatusBadge, { status: 'ready' }, ready.length + ' ready'))),
+      h(DoughBar),
       firing.length ? h('div', { className: 'tickets' }, firing.map(function (o) { return ticket(o, false); })) :
         h('div', { className: 'k-empty' }, h('div', { className: 'note', style: { color: 'var(--gold)' } }, 'ovens are hot, no tickets yet'), h('div', { className: 'meta', style: { color: 'var(--ink-muted)' } }, 'Orders sent from the counter appear here, oldest first.')),
       ready.length ? h(React.Fragment, null, h(M.Ribbon, { words: ['Ready at the pass'], repeat: 10 }), h('div', { className: 'tickets' }, ready.map(function (o) { return ticket(o, true); }))) : null);
@@ -456,12 +581,12 @@
   }
   function csvFor(list) {
     var esc = function (v) { v = v == null ? '' : String(v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
-    var rows = [['Date', 'Time', 'Order ID', 'Channel', 'Customer', 'Phone', 'Compound', 'Unit', 'Order status', 'Paid', 'Payment method', 'Item', 'Size / flavour', 'Extras', 'Note', 'Qty', 'Unit price (EGP)', 'Line total (EGP)', 'Line voided', 'Order total (EGP)']];
+    var rows = [['Date', 'Time', 'Order ID', 'Channel', 'Customer', 'Phone', 'Compound', 'Unit', 'Order status', 'Paid', 'Payment method', 'Item', 'Size / flavour', 'Extras', 'Note', 'Qty', 'Unit price (EGP)', 'Line total (EGP)', 'Line voided', 'Order total (EGP)', 'Order discount (EGP)']];
     list.slice().sort(function (a, b) { return a.createdAt - b.createdAt; }).forEach(function (o) {
       var d = new Date(o.createdAt), date = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
       (o.lines || []).forEach(function (l) {
         rows.push([date, clock(o.createdAt), o.id, chanLabel(o.channel), o.customer, o.phone, o.compound, o.unit, o.status === 'void' ? 'Void' : o.status === 'done' ? 'Done' : o.status === 'ready' ? 'Ready' : o.status === 'kitchen' ? 'In kitchen' : 'Open',
-          o.paid ? 'Yes' : 'No', o.paid ? PAY_LABEL[(o.payment && o.payment.method) || 'cash'] : '', l.name, l.size, l.extras.map(function (e) { return e[0] + ' +' + e[1]; }).join('; '), l.note, l.qty, l.unit, l.state === 'void' ? 0 : l.unit * l.qty, l.state === 'void' ? 'Yes' : 'No', orderTotal(o)]);
+          o.paid ? 'Yes' : 'No', o.paid ? PAY_LABEL[(o.payment && o.payment.method) || 'cash'] : '', l.name, l.size, l.extras.map(function (e) { return e[0] + ' +' + e[1]; }).join('; '), l.note, l.qty, l.unit, l.state === 'void' ? 0 : l.unit * l.qty, l.state === 'void' ? 'Yes' : 'No', orderTotal(o), Number(o.discount) || 0]);
       });
     });
     return '﻿' + rows.map(function (r) { return r.map(esc).join(','); }).join('\r\n');
@@ -518,7 +643,8 @@
           isOpen ? h('div', { className: 'orow-detail' },
             h('ul', { className: 'body o-lines' }, (o.lines || []).map(function (l) { return h('li', { key: l.key, style: l.state === 'void' ? { textDecoration: 'line-through', color: 'var(--ink-muted)' } : null }, l.qty + '× ' + l.name + ' · ' + l.size + (l.extras.length ? ' · ' + l.extras.map(function (e) { return e[0]; }).join(', ') : '') + (l.note ? ' — “' + l.note + '”' : '') + '  ' + fmt(l.unit * l.qty)); })),
             o.phone ? h('div', { className: 'meta' }, 'Phone: ' + o.phone) : null,
-            o.channel === 'website' && o.fulfillment ? h('div', { className: 'meta' }, 'Website order · ' + (o.fulfillment === 'delivery' ? 'Delivery to ' + [o.unit, o.compound].filter(Boolean).join(', ') : 'Pickup' + (o.pickupTime ? ' at ' + o.pickupTime : '')) + ' · Customer pays ' + (o.websitePayment === 'instapay' ? 'by InstaPay' : 'cash') + (o.discount ? ' · Promo ' + (o.promoCode || '') + ' −' + fmt(o.discount) : '') + (o.notes ? ' · Note: ' + o.notes : '')) : null,
+            o.discount ? h('div', { className: 'meta', style: { color: 'var(--basil)' } }, discountLabel(o) + ' · −' + egp(o.discount) + ' (items ' + egp(grossTotal(o)) + ')') : null,
+            o.channel === 'website' && o.fulfillment ? h('div', { className: 'meta' }, 'Website order · ' + (o.fulfillment === 'delivery' ? 'Delivery to ' + [o.unit, o.compound].filter(Boolean).join(', ') : 'Pickup' + (o.pickupTime ? ' at ' + o.pickupTime : '')) + ' · Customer pays ' + (o.websitePayment === 'instapay' ? 'by InstaPay' : 'cash') + (o.notes ? ' · Note: ' + o.notes : '')) : null,
             h('div', { className: 'o-actions' },
               !o.paid && o.status !== 'void' ? h(M.Button, { onClick: function () { props.openInCounter(o); } }, 'Open in counter') : null,
               !o.paid && o.status !== 'void' ? h(M.Button, { variant: 'primary', onClick: function () { paying[1](o); } }, 'Take payment') : null,
@@ -528,7 +654,7 @@
         h(React.Fragment, null, h('span', { className: 'body' }, 'Delete all ' + list.length + ' orders, from every month and every screen? This can\'t be undone.'), h(M.Button, { variant: 'danger', onClick: function () { deleteAll(); confirm[1](false); toast('All test orders cleared'); } }, 'Delete all'), h(M.Button, { variant: 'quiet', onClick: function () { confirm[1](false); } }, 'Keep them')) :
         list.length ? h('button', { className: 'link', onClick: function () { confirm[1](true); } }, 'Clear all test orders') : null),
       props.user ? h('div', { className: 'danger-zone' }, h('span', { className: 'meta', style: { color: 'var(--ink-muted)' } }, 'Signed in as ' + props.user), h('button', { className: 'link', onClick: props.onSignOut }, 'Sign out')) : null,
-      paying[0] ? h(PaySheet, { total: orderTotal(paying[0]), orderId: paying[0].id, sourceText: source(paying[0]), sentNote: '', onPaid: function (res) { var n = clone(paying[0]); n.paid = true; n.paidAt = Date.now(); n.payment = res; if (n.status === 'open') n.status = 'done'; saveOrder(n); }, onClose: function () { paying[1](null); } }) : null);
+      paying[0] ? h(PaySheet, { order: paying[0], orderId: paying[0].id, sourceText: source(paying[0]), sentNote: '', onPaid: function (res, d) { var n = takeDough(applyDiscount(clone(paying[0]), d)); n.paid = true; n.paidAt = Date.now(); n.payment = res; if (n.status === 'open') n.status = 'done'; saveOrder(n); }, onClose: function () { paying[1](null); } }) : null);
   }
 
   /* ------------------------------------------------------------------ app shell */
@@ -556,7 +682,7 @@
     function go(v) { view[1](v); try { history.replaceState(null, '', '#' + v); } catch (e) {} window.scrollTo(0, 0); }
     var firing = Object.keys(S.orders).filter(function (k) { return S.orders[k].status === 'kitchen'; }).length;
     var ready = Object.keys(S.orders).filter(function (k) { return S.orders[k].status === 'ready'; }).length;
-    function openInCounter(o) { draft[1]({ id: o.id, channel: o.channel, customer: o.customer || '', phone: o.phone || '', compound: o.compound || '', unit: o.unit || '', discount: o.discount || 0, promoCode: o.promoCode || '', lines: clone(o.lines || []) }); go('counter'); }
+    function openInCounter(o) { draft[1]({ id: o.id, channel: o.channel, customer: o.customer || '', phone: o.phone || '', compound: o.compound || '', unit: o.unit || '', discount: o.discount || 0, discountPct: o.discountPct, promoCode: o.promoCode || '', lines: clone(o.lines || []) }); go('counter'); }
     var mode = S.mode === 'live' ? ['Live · synced', 'ready'] : S.mode === 'offline' ? ['Offline · will sync', 'held'] : S.mode === 'local' ? ['This device only', 'held'] : ['Connecting…', 'neutral'];
     return h('div', { className: 'app', 'data-theme': view[0] === 'kitchen' ? 'dark' : 'light' },
       h('header', { className: 'bar' },
@@ -569,6 +695,7 @@
           h('div', { className: 'bar-right' }, h(M.StatusBadge, { status: mode[1] }, mode[0]), h('span', { className: 'time-chip price' }, clock(now[0]))))),
       h('main', { className: 'main' },
         view[0] === 'counter' ? h(Counter, { draft: draft[0], setDraft: draft[1] }) : view[0] === 'kitchen' ? h(Kitchen) : h(Orders, { openInCounter: openInCounter, user: props.user, onSignOut: props.onSignOut })),
+      h(DoughAlarm),
       h(Toast));
   }
 
@@ -620,7 +747,7 @@
       onAccessDenied = function () { msg[1]('This account isn’t allowed to use the POS. Use the staff login.'); FB.auth.signOut(); };
       return FB.auth.onAuthStateChanged(function (u) {
         if (u) { user[1](u.email); initStore(); st[1]('in'); }
-        else { stopStore(); Store.orders = {}; Store.live = {}; Store.older = {}; Store.soldOut = {}; Store.db = null; Store.mode = 'connecting'; st[1]('out'); }
+        else { stopStore(); Store.orders = {}; Store.live = {}; Store.older = {}; Store.soldOut = {}; Store.dough = null; Store.db = null; Store.mode = 'connecting'; st[1]('out'); }
       });
     }, []);
     if (st[0] === 'checking') return h(Shell);

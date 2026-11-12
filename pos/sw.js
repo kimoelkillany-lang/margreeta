@@ -2,7 +2,7 @@
    Orders are NOT handled here. Firestore keeps its own offline copy and syncs when the connection is back.
    App files: network first (so updates show up right away), cached copy if the network is down or slow.
    Google Fonts: cached copy first, refreshed in the background. */
-var CACHE = 'margreeta-pos-v3';
+var CACHE = 'margreeta-pos-v5';
 var SHELL = [
   './', 'index.html', 'pos.css', 'components.js', 'app.js', 'firebase-config.js', 'manifest.webmanifest',
   'vendor/react.production.min.js', 'vendor/react-dom.production.min.js',
