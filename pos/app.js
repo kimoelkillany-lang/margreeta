@@ -46,7 +46,8 @@
     { id: 'water', cat: 'drinks', name: 'Water', ar: 'مياه معدنية', price: 25, variants: ['Still'], desc: 'Mineral · 600ml' }
   ];
   var BY_ID = {}; MENU.forEach(function (m) { BY_ID[m.id] = m; });
-  var CHANNELS = [['pickup', 'Pickup'], ['delivery', 'Delivery'], ['website', 'margreeta.com'], ['talabat', 'Talabat'], ['clubhouse', 'Clubhouse']];
+  var CHANNELS = [['pickup', 'Pickup'], ['delivery', 'Delivery'], ['website', 'margreeta.com'], ['talabat', 'Talabat'], ['clubhouse', 'Clubhouse']]; // all channels, for labels and reports
+  var COUNTER_CHANNELS = ['clubhouse', 'pickup', 'delivery']; // the choices under New order, in this order
   var COMPOUNDS = ['Mountain View Chillout Park', 'Grand Heights', 'Green 5', 'NEOM October'];
 
   /* ------------------------------------------------------------------ helpers */
@@ -276,7 +277,7 @@
   }
 
   /* ------------------------------------------------------------------ counter */
-  function emptyDraft() { var d = lsGet('mg-pos-draft-meta', {}); return { id: null, channel: d.channel || 'pickup', customer: '', phone: '', compound: '', unit: '', lines: [] }; }
+  function emptyDraft() { var d = lsGet('mg-pos-draft-meta', {}); return { id: null, channel: COUNTER_CHANNELS.indexOf(d.channel) >= 0 ? d.channel : 'clubhouse', customer: '', phone: '', compound: '', unit: '', lines: [] }; }
   function Counter(props) {
     var S = useStore();
     var cat = useState(lsGet('mg-pos-cat', 'italy'));
@@ -338,7 +339,7 @@
           h('div', { className: 'rail-title' },
             h('span', { className: 'title ps-up' }, draft.id ? draft.id : 'New order'),
             existing ? h(M.StatusBadge, { status: existing.paid ? 'paid' : existing.status === 'ready' ? 'ready' : existing.status === 'kitchen' ? 'firing' : 'neutral' }, existing.paid ? 'Paid' : existing.status === 'kitchen' ? 'In kitchen' : existing.status === 'ready' ? 'Ready' : 'Open') : null),
-          h('div', { className: 'chan-row', role: 'radiogroup', 'aria-label': 'Channel' }, CHANNELS.map(function (c) {
+          h('div', { className: 'chan-row', role: 'radiogroup', 'aria-label': 'Channel' }, CHANNELS.filter(function (c) { return COUNTER_CHANNELS.indexOf(c[0]) >= 0; }).sort(function (a, b) { return COUNTER_CHANNELS.indexOf(a[0]) - COUNTER_CHANNELS.indexOf(b[0]); }).map(function (c) {
             return h('button', { key: c[0], role: 'radio', 'aria-checked': draft.channel === c[0] ? 'true' : 'false', className: 'chan ps-press', onClick: function () { set({ channel: c[0] }); } }, c[1]);
           })),
           h('div', { className: 'fields' },
@@ -362,9 +363,9 @@
           h(M.OrderTotals, { subtotal: grossTotal(draft), discount: draft.discount || 0, discountLabel: discountLabel(draft), total: total }),
           err[0] ? h('div', { className: 'meta', role: 'alert', style: { color: 'var(--red-ink)' } }, err[0]) : null,
           h('div', { className: 'foot-btns' },
-            h(M.Button, { variant: 'send', size: 'lg', icon: 'send', disabled: !unsent, onClick: send }, unsent ? 'Send to kitchen' : 'Nothing to send'),
             existing && existing.paid ? h(M.Button, { size: 'lg', onClick: function () { setDraft(emptyDraft()); } }, 'Done') :
-              h(M.Button, { variant: 'primary', size: 'lg', amount: egp(total), disabled: !total, onClick: charge }, 'Charge')),
+              h(M.Button, { variant: 'primary', size: 'lg', amount: egp(total), disabled: !total, onClick: charge }, 'Charge'),
+            h(M.Button, { variant: 'send', size: 'lg', icon: 'send', disabled: !unsent, onClick: send }, unsent ? 'Send to kitchen' : 'Nothing to send')),
           draft.lines.length || draft.id ? h('button', { className: 'link', onClick: function () { setDraft(emptyDraft()); sel[1](null); err[1](''); checked[1](false); } }, draft.id ? 'Close this order' : 'Clear order') : null)),
       total ? h('button', { className: 'jump ps-press', onClick: function () { railRef.current && railRef.current.scrollIntoView({ behavior: 'smooth' }); } }, h('span', null, draft.lines.length + ' items'), h('span', { className: 'price' }, egp(total))) : null,
       sheet[0] ? h(ItemSheet, { item: sheet[0].item, line: sheet[0].line, onAdd: addLine, onClose: function () { sheet[1](null); } }) : null,
