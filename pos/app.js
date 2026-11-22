@@ -6,6 +6,8 @@
   var LOGO = 'img/logo.png';
   var PHOTOS = {};
   ['margherita', 'diavola', 'veggi', 'funghi', 'marinara', 'hot-honey-pepperoni', 'cheese-lovers', 'pastrami', 'nutella-star'].forEach(function (id) { PHOTOS[id] = 'img/' + id + '.jpg'; });
+  PHOTOS['funghi-red'] = 'img/funghi.jpg'; // no Red Funghi photo yet: uses the Funghi photo. Add img/funghi-red.jpg and change this line to use it.
+  function photoOf(m) { return PHOTOS[m.photo || m.id]; }
 
   /* ------------------------------------------------------------------ firebase (config comes from firebase-config.js) */
   var CFG = window.MARGREETA_FIREBASE || {};
@@ -34,7 +36,10 @@
     { id: 'margherita', cat: 'italy', name: 'Margherita', ar: 'مارجريتا', prices: [60, 160, 260], extra: ['Extra basil', 15], desc: 'Tomato sauce · Parmesan · Buffalo mozzarella · Fresh basil · Extra virgin olive oil' },
     { id: 'diavola', cat: 'italy', name: 'Diavola', ar: 'ديابولا', prices: [80, 220, 360], extra: ['Extra spicy salami', 35], tags: ['spicy'], desc: 'Tomato sauce · Parmesan · Buffalo mozzarella · Spicy salami · Olive oil' },
     { id: 'veggi', cat: 'italy', name: 'Veggi', ar: 'فيجي', prices: [65, 180, 290], extra: ['Extra arugula', 20], desc: 'Tomato sauce · Parmesan · Buffalo mozzarella · Fresh basil · Olive oil · Onion · Green pepper · Arugula' },
-    { id: 'funghi', cat: 'italy', name: 'Funghi', ar: 'فونجي', prices: [75, 210, 340], tags: ['chefs'], desc: 'Tomato sauce · Parmesan · Buffalo mozzarella · Fresh basil · Extra virgin olive oil · Fresh mushroom' },
+    { id: 'funghi-red', cat: 'italy', name: 'Red Funghi', ar: 'فونجي أحمر', photo: 'funghi-red', prices: [75, 210, 340], tags: ['chefs'], desc: 'Tomato sauce · Parmesan · Buffalo mozzarella · Fresh basil · Extra virgin olive oil · Fresh mushroom' },
+    { id: 'funghi-white', cat: 'italy', name: 'White Funghi', ar: 'فونجي أبيض', photo: 'funghi', prices: [80, 220, 355], tags: ['chefs'], desc: 'Fresh cream base · Parmesan · Buffalo mozzarella · Fresh basil · Extra virgin olive oil · Fresh mushroom' },
+    // Old single Funghi: no longer on sale (hidden), kept so past orders still count as pizzas in reports.
+    { id: 'funghi', cat: 'italy', name: 'Funghi', ar: 'فونجي', hidden: true, prices: [75, 210, 340], desc: 'Tomato sauce · Parmesan · Buffalo mozzarella · Fresh basil · Extra virgin olive oil · Fresh mushroom' },
     { id: 'marinara', cat: 'italy', name: 'Marinara', ar: 'مارينارا', prices: [50, 135, 215], extra: ['Extra garlic', 15], desc: 'Tomato sauce · Parmesan · Fresh basil · Extra virgin olive oil · Garlic' },
     { id: 'hot-honey-pepperoni', cat: 'america', name: 'Hot Honey Pepperoni', short: 'Hot Honey Pep', ar: 'بيبروني بالعسل الحار', prices: [85, 240, 390], extra: ['Extra pepperoni', 30], tags: ['chefs', 'spicy'], desc: 'Tomato sauce · Parmesan · Buffalo mozzarella · Pepperoni · Hot honey sauce' },
     { id: 'cheese-lovers', cat: 'america', name: 'Cheese Lovers', ar: 'عشاق الجبنة', prices: [80, 215, 350], extra: ['Extra blue cheese', 35], desc: 'Tomato sauce · Mozzarella · Parmesan · Blue cheese' },
@@ -226,7 +231,7 @@
     return h('div', { className: 'scrim', onClick: function (e) { if (e.target === e.currentTarget) props.onClose(); } },
       h('div', { className: 'sheet ps-card', role: 'dialog', 'aria-modal': 'true', 'aria-label': item.name },
         h('div', { className: 'sheet-head' },
-          PHOTOS[item.id] ? h('img', { className: 'ps-tile-photo sheet-photo', src: PHOTOS[item.id], alt: '' }) : null,
+          photoOf(item) ? h('img', { className: 'ps-tile-photo sheet-photo', src: photoOf(item), alt: '' }) : null,
           h('div', { className: 'ps-col', style: { gap: '2px', minWidth: 0 } },
             h('h2', { className: 'title ps-up', style: { margin: 0 } }, item.name),
             h('span', { className: 'item-ar', style: { color: 'var(--arabic-ink)' }, lang: 'ar', dir: 'rtl' }, item.ar),
@@ -419,7 +424,7 @@
       saveOrder(o);
     }
     function tile(m) {
-      return h(M.MenuItemTile, { key: m.id, name: m.name, nameAr: m.ar, price: m.variants ? m.price : fromPrice(m), fromLabel: m.variants ? (m.variants.length > 1 ? 'each' : false) : 'from', image: PHOTOS[m.id], tags: m.tags, qty: qtyOf[m.id] || 0, soldOut: !!S.soldOut[m.id], onClick: function () { sheet[1]({ item: m }); } });
+      return h(M.MenuItemTile, { key: m.id, name: m.name, nameAr: m.ar, price: m.variants ? m.price : fromPrice(m), fromLabel: m.variants ? (m.variants.length > 1 ? 'each' : false) : 'from', image: photoOf(m), tags: m.tags, qty: qtyOf[m.id] || 0, soldOut: !!S.soldOut[m.id], onClick: function () { sheet[1]({ item: m }); } });
     }
     var sel0 = selLine();
     return h('div', { className: 'counter' },
@@ -430,7 +435,7 @@
         CATS.map(function (c) {
           return h('section', { key: c.id, className: 'ps-col', style: { gap: '0' }, 'aria-label': c.label },
             h('span', { className: 'sticker sec-label' }, (c.stop ? c.stop + ' · ' : '') + c.label),
-            h('div', { className: 'tile-grid' }, MENU.filter(function (m) { return m.cat === c.id; }).map(tile)));
+            h('div', { className: 'tile-grid' }, MENU.filter(function (m) { return m.cat === c.id && !m.hidden; }).map(tile)));
         })),
       h('aside', { className: 'rail ps-card', ref: railRef, 'aria-label': 'Current order' },
         h('div', { className: 'rail-head' },

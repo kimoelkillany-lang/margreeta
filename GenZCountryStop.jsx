@@ -13,6 +13,7 @@ const TAGS = {
   greenPepper: TAG('pepper', 'Green pepper', 'فلفل أخضر'),
   arugula: TAG('arugula', 'Fresh arugula', 'جرجير طازج'),
   mushroom: TAG('mushroom', 'Fresh mushroom', 'فطر طازج'),
+  cream: TAG('cream', 'Fresh cream base', 'قاعدة كريمة طازجة'),
   pepperoni: TAG('pepperoni', 'Pepperoni', 'بيبروني'),
   hotHoney: TAG('honey', 'Hot honey sauce', 'صلصة العسل الحار'),
   mozzarella: TAG('mozzarella', 'Mozzarella', 'موتزاريلا'),
@@ -78,7 +79,9 @@ const DATA = {
     { slot: 'italy-1', image: 'italy-1.jpg', name: { en: 'Margherita', ar: 'مارجريتا' }, price: 260, tags: [TAGS.tomato, TAGS.parmesan, TAGS.buffaloMozz, TAGS.basil, TAGS.oliveOilExtra], extras: [{ key: 'dishBasil', icon: 'basil', en: 'Extra basil', ar: 'ريحان إضافي', price: 15 }] },
     { slot: 'italy-2', image: 'italy-2.jpg', name: { en: 'Diavola', ar: 'ديابولا' }, price: 360, tags: [TAGS.tomato, TAGS.parmesan, TAGS.buffaloMozz, TAGS.spicySalami, TAGS.oliveOil], extras: [{ key: 'dishSalami', icon: 'salami', en: 'Extra spicy salami', ar: 'سلامي حار إضافي', price: 35 }] },
     { slot: 'italy-3', image: 'italy-3.jpg', name: { en: 'Veggi', ar: 'فيجي' }, price: 290, tags: [TAGS.tomato, TAGS.parmesan, TAGS.buffaloMozz, TAGS.basil, TAGS.oliveOilExtra, TAGS.onion, TAGS.greenPepper, TAGS.arugula], extras: [{ key: 'dishArugula', icon: 'arugula', en: 'Extra arugula', ar: 'جرجير إضافي', price: 20 }] },
-    { slot: 'italy-4', image: 'italy-4.jpg', name: { en: 'funghi', ar: 'فونجي' }, price: 340, recommended: true, tags: [TAGS.tomato, TAGS.parmesan, TAGS.buffaloMozz, TAGS.basil, TAGS.oliveOilExtra, TAGS.mushroom] },
+    // Red Funghi uses the Funghi photo until a Red Funghi photo is added (uploads/italy-4.jpg shows the white one).
+    { slot: 'italy-4', image: 'italy-4.jpg', name: { en: 'Red Funghi', ar: 'فونجي أحمر' }, price: 340, recommended: true, tags: [TAGS.tomato, TAGS.parmesan, TAGS.buffaloMozz, TAGS.basil, TAGS.oliveOilExtra, TAGS.mushroom] },
+    { slot: 'italy-6', image: 'italy-4.jpg', name: { en: 'White Funghi', ar: 'فونجي أبيض' }, price: 355, recommended: true, tags: [TAGS.cream, TAGS.parmesan, TAGS.buffaloMozz, TAGS.basil, TAGS.oliveOilExtra, TAGS.mushroom] },
     { slot: 'italy-5', image: 'italy-5.jpg', name: { en: 'Marinara', ar: 'مارينارا' }, price: 215, tags: [TAGS.tomato, TAGS.parmesan, TAGS.basil, TAGS.oliveOilExtra, TAGS.garlic], extras: [{ key: 'dishGarlic', icon: 'garlic', en: 'Extra garlic', ar: 'ثوم إضافي', price: 15 }] }
   ]},
   america: { number: '02', accent: 'america', dishes: [
