@@ -88,7 +88,10 @@
     return chanLabel(o.channel) + (o.customer ? ' · ' + o.customer : '');
   }
   function clock(ts) { var d = new Date(ts); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
-  function sizeShort(s) { return s === 'Medium' ? 'Med' : s === 'Regular' ? 'Reg' : s; }
+  // The middle size is saved as 'Medium' (so past orders and dough stock stay correct) but shown to staff as 'Small'.
+  var SIZE_LABEL = { Medium: 'Small' };
+  function sizeName(s) { return SIZE_LABEL[s] || s; }
+  function sizeShort(s) { return s === 'Regular' ? 'Reg' : sizeName(s); }
   function fromPrice(m) { return m.prices.filter(function (p) { return p != null; })[0]; }
   function isToday(ts) { var a = new Date(ts), b = new Date(); return a.toDateString() === b.toDateString(); }
   function lsGet(k, d) { try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }
@@ -227,7 +230,7 @@
       props.onAdd({ key: editing ? editing.key : uid(8), itemId: item.id, name: item.name, short: item.short || item.name, size: sz[0], extras: chosen, note: note[0].trim(), qty: qty[0], unit: unit, state: editing ? editing.state : 'new' });
     }
     useEffect(function () { var f = function (e) { if (e.key === 'Escape') props.onClose(); }; window.addEventListener('keydown', f); return function () { window.removeEventListener('keydown', f); }; }, []);
-    var sizes = isDrink ? item.variants.map(function (v) { return { id: v, label: v, price: item.price }; }) : SIZES.map(function (s, i) { return { id: s, label: s, price: item.prices[i] }; }).filter(function (s) { return s.price != null; });
+    var sizes = isDrink ? item.variants.map(function (v) { return { id: v, label: v, price: item.price }; }) : SIZES.map(function (s, i) { return { id: s, label: sizeName(s), price: item.prices[i] }; }).filter(function (s) { return s.price != null; });
     return h('div', { className: 'scrim', onClick: function (e) { if (e.target === e.currentTarget) props.onClose(); } },
       h('div', { className: 'sheet ps-card', role: 'dialog', 'aria-modal': 'true', 'aria-label': item.name },
         h('div', { className: 'sheet-head' },
@@ -317,8 +320,8 @@
       h('span', { className: 'sticker sec-label' }, 'Dough in stock · tap to update'),
       h('div', { className: 'dough-row' }, DOUGH_SIZES.map(function (size) {
         var n = doughLeft(size), st = n == null ? '' : n <= 0 ? 'out' : n <= DOUGH_LOW ? 'low' : '';
-        return h('button', { key: size, type: 'button', className: 'dough ps-card ps-press' + (st ? ' dough-' + st : ''), onClick: function () { edit[1](size); }, 'aria-label': size + ' dough, ' + (n == null ? 'not set' : n + ' left') + '. Tap to update.' },
-          h('span', { className: 'sticker' }, size),
+        return h('button', { key: size, type: 'button', className: 'dough ps-card ps-press' + (st ? ' dough-' + st : ''), onClick: function () { edit[1](size); }, 'aria-label': sizeName(size) + ' dough, ' + (n == null ? 'not set' : n + ' left') + '. Tap to update.' },
+          h('span', { className: 'sticker' }, sizeName(size)),
           h('span', { className: 'amount dough-n' }, n == null ? '—' : n),
           h('span', { className: 'meta' }, n == null ? 'tap to set' : n <= 0 ? 'out of stock' : n <= DOUGH_LOW ? 'running low' : 'left'));
       })),
@@ -328,15 +331,15 @@
     var v = useState(''), n = Number(v[0] || 0), now = doughLeft(props.size);
     useEffect(function () { var f = function (e) { if (e.key === 'Escape') props.onClose(); }; window.addEventListener('keydown', f); return function () { window.removeEventListener('keydown', f); }; }, []);
     return h('div', { className: 'scrim', onClick: function (e) { if (e.target === e.currentTarget) props.onClose(); } },
-      h('div', { className: 'sheet ps-card dough-sheet', role: 'dialog', 'aria-modal': 'true', 'aria-label': props.size + ' dough' },
+      h('div', { className: 'sheet ps-card dough-sheet', role: 'dialog', 'aria-modal': 'true', 'aria-label': sizeName(props.size) + ' dough' },
         h('div', { className: 'sheet-head' },
-          h('div', { className: 'ps-col', style: { gap: '2px' } }, h('h2', { className: 'title ps-up', style: { margin: 0 } }, props.size + ' dough'),
+          h('div', { className: 'ps-col', style: { gap: '2px' } }, h('h2', { className: 'title ps-up', style: { margin: 0 } }, sizeName(props.size) + ' dough'),
             h('span', { className: 'meta', style: { color: 'var(--ink-muted)' } }, 'In stock now: ' + (now == null ? 'not set yet' : now))),
           h('button', { className: 'close ps-press', onClick: props.onClose, 'aria-label': 'Close' }, h(M.Icon, { name: 'x', large: true }))),
         h('div', { className: 'sheet-sec' }, h(M.Keypad, { mode: 'qty', value: v[0], onChange: v[1], label: 'Dough balls', quick: [10, 20, 30] })),
         h('div', { className: 'sheet-foot dough-actions' },
-          h(M.Button, { variant: 'send', size: 'lg', disabled: !n, onClick: function () { var a = {}; a[props.size] = n; changeDough(a); toast('Added ' + n + ' ' + props.size + ' dough'); props.onClose(); } }, 'Add ' + (n || '') + ' to stock'),
-          h(M.Button, { size: 'lg', disabled: v[0] === '', onClick: function () { setDough(props.size, n); toast(props.size + ' dough set to ' + n); props.onClose(); } }, 'Set stock to ' + (v[0] === '' ? '…' : n)))));
+          h(M.Button, { variant: 'send', size: 'lg', disabled: !n, onClick: function () { var a = {}; a[props.size] = n; changeDough(a); toast('Added ' + n + ' ' + sizeName(props.size) + ' dough'); props.onClose(); } }, 'Add ' + (n || '') + ' to stock'),
+          h(M.Button, { size: 'lg', disabled: v[0] === '', onClick: function () { setDough(props.size, n); toast(sizeName(props.size) + ' dough set to ' + n); props.onClose(); } }, 'Set stock to ' + (v[0] === '' ? '…' : n)))));
   }
   // Sound for the alarm. Browsers only allow sound after the first tap, so the audio is unlocked on any tap.
   var audioCtx = null;
@@ -368,10 +371,10 @@
       h(M.Ribbon, { words: ['Out of dough'], repeat: 10 }),
       h('div', { className: 'paid-body' },
         h('h2', { id: 'dough-alarm-title', className: 'headline ps-pop', style: { margin: 0 } }, 'Out of dough'),
-        h('div', { className: 'title' }, showing.join(' · ') + ' dough ' + (showing.length > 1 ? 'are' : 'is') + ' at 0'),
-        h('div', { className: 'body', style: { color: 'var(--ink-muted)' } }, 'Make more dough, then add it to the stock. Stock now: ' + DOUGH_SIZES.map(function (k) { return k + ' ' + (doughLeft(k) == null ? '—' : doughLeft(k)); }).join(' · '))),
+        h('div', { className: 'title' }, showing.map(sizeName).join(' · ') + ' dough ' + (showing.length > 1 ? 'are' : 'is') + ' at 0'),
+        h('div', { className: 'body', style: { color: 'var(--ink-muted)' } }, 'Make more dough, then add it to the stock. Stock now: ' + DOUGH_SIZES.map(function (k) { return sizeName(k) + ' ' + (doughLeft(k) == null ? '—' : doughLeft(k)); }).join(' · '))),
       h('div', { className: 'sheet-foot dough-actions' },
-        h(M.Button, { variant: 'send', size: 'lg', onClick: function () { okAll(); add[1](showing[0]); } }, 'Add ' + showing[0] + ' dough'),
+        h(M.Button, { variant: 'send', size: 'lg', onClick: function () { okAll(); add[1](showing[0]); } }, 'Add ' + sizeName(showing[0]) + ' dough'),
         h(M.Button, { size: 'lg', onClick: okAll }, 'OK, got it'))));
   }
 
@@ -452,7 +455,7 @@
               h('option', { value: '' }, 'Compound…'), COMPOUNDS.map(function (c) { return h('option', { key: c, value: c }, c); })) : null,
             draft.channel === 'delivery' ? h('input', { id: 'unit', className: 'field', placeholder: 'Unit / building', value: draft.unit, onChange: function (e) { set({ unit: e.target.value }); }, 'aria-label': 'Unit' }) : null)),
         h('div', { className: 'lines' }, draft.lines.length ? draft.lines.map(function (l) {
-          var mods = [l.size].concat(l.extras.map(function (e) { return e[0]; }));
+          var mods = [sizeName(l.size)].concat(l.extras.map(function (e) { return e[0]; }));
           return h(M.OrderLine, { key: l.key, qty: l.qty, name: l.name, modifiers: mods, note: l.note, price: lineTotal(l) || l.unit * l.qty, state: l.state, selected: sel[0] === l.key, onClick: function () { sel[1](sel[0] === l.key ? null : l.key); } });
         }) : h('div', { className: 'empty' }, h('div', { className: 'note', style: { color: 'var(--brand-red)' } }, 'first stop: pick a pizza'), h('div', { className: 'meta', style: { color: 'var(--ink-muted)' } }, 'Tap a tile to choose size and extras.'))),
         sel0 ? h('div', { className: 'line-actions' },
@@ -568,7 +571,7 @@
       h(StatTiles, { tiles: [['Orders', ordersCount, unpaid.length ? unpaid.length + ' not paid yet' : 'all paid'], ['Paid revenue', egp(s.revenue)], ['Pizzas sold', s.pizzas, ordersCount ? (s.pizzas / ordersCount).toFixed(1) + ' per order' : ''], ['Average order', s.paid.length ? egp(s.avg) : '—', 'paid orders']] }),
       h(DayChart, { ym: ym, paid: s.paid }),
       h('div', { className: 'two-col' },
-        h(Breakdown, { title: 'Pizzas', note: 'by size, all non-void orders', cols: ['Pizza', 'Mini', 'Med', 'Reg', 'Total', 'EGP'],
+        h(Breakdown, { title: 'Pizzas', note: 'by size, all non-void orders', cols: ['Pizza', 'Mini', 'Small', 'Reg', 'Total', 'EGP'],
           rows: pizzaRows.map(function (r) { return { cells: [r.name, r.Mini || '–', r.Medium || '–', r.Regular || '–', r.qty, fmt(r.rev)] }; }).concat(pizzaRows.length ? [{ total: true, cells: ['Total', sum(pizzaRows, 'Mini'), sum(pizzaRows, 'Medium'), sum(pizzaRows, 'Regular'), sum(pizzaRows, 'qty'), fmt(sum(pizzaRows, 'rev'))] }] : []) }),
         h('div', { className: 'ps-col', style: { gap: '24px' } },
           h(Breakdown, { title: 'Money in', note: 'paid orders', cols: ['Method', 'Orders', 'EGP'],
@@ -591,7 +594,7 @@
       var d = new Date(o.createdAt), date = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
       (o.lines || []).forEach(function (l) {
         rows.push([date, clock(o.createdAt), o.id, chanLabel(o.channel), o.customer, o.phone, o.compound, o.unit, o.status === 'void' ? 'Void' : o.status === 'done' ? 'Done' : o.status === 'ready' ? 'Ready' : o.status === 'kitchen' ? 'In kitchen' : 'Open',
-          o.paid ? 'Yes' : 'No', o.paid ? PAY_LABEL[(o.payment && o.payment.method) || 'cash'] : '', l.name, l.size, l.extras.map(function (e) { return e[0] + ' +' + e[1]; }).join('; '), l.note, l.qty, l.unit, l.state === 'void' ? 0 : l.unit * l.qty, l.state === 'void' ? 'Yes' : 'No', orderTotal(o), Number(o.discount) || 0]);
+          o.paid ? 'Yes' : 'No', o.paid ? PAY_LABEL[(o.payment && o.payment.method) || 'cash'] : '', l.name, sizeName(l.size), l.extras.map(function (e) { return e[0] + ' +' + e[1]; }).join('; '), l.note, l.qty, l.unit, l.state === 'void' ? 0 : l.unit * l.qty, l.state === 'void' ? 'Yes' : 'No', orderTotal(o), Number(o.discount) || 0]);
       });
     });
     return '﻿' + rows.map(function (r) { return r.map(esc).join(','); }).join('\r\n');
@@ -646,7 +649,7 @@
             h('span', { className: 'o-tags' }, h(M.StatusBadge, { status: s[0] }, s[1]), o.status !== 'void' ? h(M.StatusBadge, { status: o.paid ? 'paid' : 'held', noIcon: !o.paid }, o.paid ? PAY_LABEL[(o.payment && o.payment.method) || 'cash'] : 'Unpaid') : null),
             h('span', { className: 'price o-tot' }, fmt(orderTotal(o)))),
           isOpen ? h('div', { className: 'orow-detail' },
-            h('ul', { className: 'body o-lines' }, (o.lines || []).map(function (l) { return h('li', { key: l.key, style: l.state === 'void' ? { textDecoration: 'line-through', color: 'var(--ink-muted)' } : null }, l.qty + '× ' + l.name + ' · ' + l.size + (l.extras.length ? ' · ' + l.extras.map(function (e) { return e[0]; }).join(', ') : '') + (l.note ? ' — “' + l.note + '”' : '') + '  ' + fmt(l.unit * l.qty)); })),
+            h('ul', { className: 'body o-lines' }, (o.lines || []).map(function (l) { return h('li', { key: l.key, style: l.state === 'void' ? { textDecoration: 'line-through', color: 'var(--ink-muted)' } : null }, l.qty + '× ' + l.name + ' · ' + sizeName(l.size) + (l.extras.length ? ' · ' + l.extras.map(function (e) { return e[0]; }).join(', ') : '') + (l.note ? ' — “' + l.note + '”' : '') + '  ' + fmt(l.unit * l.qty)); })),
             o.phone ? h('div', { className: 'meta' }, 'Phone: ' + o.phone) : null,
             o.discount ? h('div', { className: 'meta', style: { color: 'var(--basil)' } }, discountLabel(o) + ' · −' + egp(o.discount) + ' (items ' + egp(grossTotal(o)) + ')') : null,
             o.channel === 'website' && o.fulfillment ? h('div', { className: 'meta' }, 'Website order · ' + (o.fulfillment === 'delivery' ? 'Delivery to ' + [o.unit, o.compound].filter(Boolean).join(', ') : 'Pickup' + (o.pickupTime ? ' at ' + o.pickupTime : '')) + ' · Customer pays ' + (o.websitePayment === 'instapay' ? 'by InstaPay' : 'cash') + (o.notes ? ' · Note: ' + o.notes : '')) : null,
