@@ -14,7 +14,7 @@ const ORDER_LOG_ENDPOINT = 'https://script.google.com/macros/s/YOUR_DEPLOYMENT_I
 // Website dish slot -> POS menu item [itemId, name, short name for kitchen tickets]
 const POS_ITEMS = {
   'italy-1': ['margherita', 'Margherita'], 'italy-2': ['diavola', 'Diavola'], 'italy-3': ['veggi', 'Veggi'],
-  'italy-4': ['funghi', 'Funghi'], 'italy-5': ['marinara', 'Marinara'],
+  'italy-4': ['funghi-red', 'Red Funghi'], 'italy-6': ['funghi-white', 'White Funghi'], 'italy-5': ['marinara', 'Marinara'],
   'america-1': ['hot-honey-pepperoni', 'Hot Honey Pepperoni', 'Hot Honey Pep'], 'america-2': ['cheese-lovers', 'Cheese Lovers'],
   'egypt-1': ['pastrami', 'Pastrami'], 'nutella-1': ['nutella-star', 'Nutella Star'],
 };
