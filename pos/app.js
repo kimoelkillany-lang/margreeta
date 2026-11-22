@@ -6,7 +6,7 @@
   var LOGO = 'img/logo.png';
   var PHOTOS = {};
   ['margherita', 'diavola', 'veggi', 'funghi', 'marinara', 'hot-honey-pepperoni', 'cheese-lovers', 'pastrami', 'nutella-star'].forEach(function (id) { PHOTOS[id] = 'img/' + id + '.jpg'; });
-  PHOTOS['funghi-red'] = 'img/funghi.jpg'; // no Red Funghi photo yet: uses the Funghi photo. Add img/funghi-red.jpg and change this line to use it.
+  PHOTOS['funghi-red'] = 'img/funghi-red.jpg';
   function photoOf(m) { return PHOTOS[m.photo || m.id]; }
 
   /* ------------------------------------------------------------------ firebase (config comes from firebase-config.js) */
