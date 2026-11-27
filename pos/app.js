@@ -275,12 +275,18 @@
     var quick = [total, r50 === total ? r50 + 50 : r50, r100 > r50 ? r100 : r100 + 100, r200].filter(function (v, i, a) { return a.indexOf(v) === i; }).slice(0, 3);
     var tendered = Number(cash[0] || 0);
     function finish(m, t) { var res = { method: m, tendered: t, change: Math.max(0, t - total) }; done[1](Object.assign({ total: total }, res)); props.onPaid(res, { pct: pct[0], amount: discount }); }
+    // Pay later: the order goes to the kitchen and is saved as owed; payment is taken later from Orders.
+    function later() { done[1]({ method: 'later', total: total }); props.onPayLater({ pct: pct[0], amount: discount }); }
     useEffect(function () { var f = function (e) { if (e.key === 'Escape' && !done[0]) props.onClose(); }; window.addEventListener('keydown', f); return function () { window.removeEventListener('keydown', f); }; }, [done[0]]);
     if (done[0]) {
       return h('div', { className: 'scrim' }, h('div', { className: 'sheet ps-card paid', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Paid' },
-        h(M.Ribbon, { words: ['Paid', 'Grazie'], repeat: 8 }),
+        h(M.Ribbon, { words: done[0].method === 'later' ? ['Pay later'] : ['Paid', 'Grazie'], repeat: 8 }),
         h('div', { className: 'paid-body' },
           h('div', { className: 'order-no' }, props.orderId),
+          done[0].method === 'later' ? h(React.Fragment, null,
+            h('div', { className: 'sticker', style: { color: 'var(--ink-muted)' } }, 'TO PAY LATER'),
+            h('div', { className: 'amount big-change' }, egp(done[0].total)),
+            h('div', { className: 'body', style: { color: 'var(--ink-muted)' } }, (props.order.customer || '') + (props.order.phone ? ' · ' + props.order.phone : '') + ' · take payment in Orders when it comes in.')) :
           done[0].method === 'cash' ? h(React.Fragment, null,
             h('div', { className: 'sticker', style: { color: 'var(--ink-muted)' } }, 'CHANGE DUE'),
             h('div', { className: 'amount big-change' }, egp(done[0].change)),
@@ -302,13 +308,14 @@
                 return h('button', { key: p, role: 'radio', 'aria-checked': pct[0] === p ? 'true' : 'false', className: 'ps-size ps-press', onClick: function () { pct[1](p); } }, h('span', { className: 'price' }, p ? p + '%' : 'None'));
               }))),
             h(M.OrderTotals, { subtotal: gross, discount: discount, discountLabel: discountLabel({ discountPct: pct[0], promoCode: props.order.promoCode }), total: total }),
-            h('div', { className: 'ps-sizes', role: 'radiogroup', 'aria-label': 'Payment method' }, [['cash', 'Cash'], ['card', 'Card'], ['instapay', 'InstaPay']].map(function (m) {
+            h('div', { className: 'ps-sizes', role: 'radiogroup', 'aria-label': 'Payment method' }, [['cash', 'Cash'], ['card', 'Card'], ['instapay', 'InstaPay']].concat(props.onPayLater ? [['later', 'Pay later']] : []).map(function (m) {
               return h('button', { key: m[0], role: 'radio', 'aria-checked': method[0] === m[0] ? 'true' : 'false', className: 'ps-size ps-press', onClick: function () { method[1](m[0]); } }, h('span', { className: 'price' }, m[1]));
             })),
             method[0] === 'cash' ? h('div', { className: 'ps-col', style: { gap: '2px' } },
               h('span', { className: 'sticker', style: { color: 'var(--ink-muted)' } }, 'CHANGE'),
               h('span', { className: 'amount' }, tendered >= total ? fmt(tendered - total) : '—'),
               tendered > 0 && tendered < total ? h('span', { className: 'meta', style: { color: 'var(--red-ink)' } }, 'Short by ' + egp(total - tendered)) : null) :
+              method[0] === 'later' ? h(M.Button, { variant: 'send', size: 'lg', block: true, onClick: later }, 'Confirm pay later · ' + egp(total)) :
               h(M.Button, { variant: 'primary', size: 'lg', block: true, onClick: function () { finish(method[0], total); } }, 'Confirm ' + (method[0] === 'card' ? 'card' : 'InstaPay') + ' paid')),
           method[0] === 'cash' ? h(M.Keypad, { value: cash[0], onChange: function (v) { cash[1](v.replace(/\..*/, '')); }, quick: quick, label: 'Cash received', submitLabel: 'Take cash', onSubmit: function () { if (tendered < total) { toast('Cash received is less than the total.'); return; } finish('cash', tendered); } }) : null)));
   }
@@ -421,6 +428,10 @@
       toast(o.id + ' sent to the kitchen'); lsSet('mg-pos-draft-meta', { channel: draft.channel }); setDraft(emptyDraft()); sel[1](null);
     }
     function charge() { if (!validate()) return; var o = buildOrder(false); if (!draft.id) set({ id: o.id }); pay[1](o); }
+    function onPayLater(d) {
+      var o = takeDough(applyDiscount(buildOrder(true), d)); // sent to the kitchen now, so the dough is used now
+      o.payLater = true; o.payLaterAt = Date.now(); saveOrder(o);
+    }
     function onPaid(res, d) {
       var o = takeDough(applyDiscount(buildOrder(true), d)); o.paid = true; o.paidAt = Date.now(); o.payment = res;
       if (o.status === 'open') o.status = 'done';
@@ -475,7 +486,7 @@
           draft.lines.length || draft.id ? h('button', { className: 'link', onClick: function () { setDraft(emptyDraft()); sel[1](null); err[1](''); checked[1](false); } }, draft.id ? 'Close this order' : 'Clear order') : null)),
       total ? h('button', { className: 'jump ps-press', onClick: function () { railRef.current && railRef.current.scrollIntoView({ behavior: 'smooth' }); } }, h('span', null, draft.lines.length + ' items'), h('span', { className: 'price' }, egp(total))) : null,
       sheet[0] ? h(ItemSheet, { item: sheet[0].item, line: sheet[0].line, onAdd: addLine, onClose: function () { sheet[1](null); } }) : null,
-      pay[0] ? h(PaySheet, { order: pay[0], orderId: pay[0].id, sourceText: source(pay[0]), sentNote: unsent ? 'Unsent items went to the kitchen.' : '', onPaid: onPaid, onClose: function () { var wasPaid = Store.orders[pay[0].id] && Store.orders[pay[0].id].paid; pay[1](null); if (wasPaid) { lsSet('mg-pos-draft-meta', { channel: draft.channel }); setDraft(emptyDraft()); } } }) : null);
+      pay[0] ? h(PaySheet, { order: pay[0], orderId: pay[0].id, sourceText: source(pay[0]), sentNote: unsent ? 'Unsent items went to the kitchen.' : '', onPaid: onPaid, onPayLater: onPayLater, onClose: function () { var cur = Store.orders[pay[0].id], wasPaid = cur && (cur.paid || cur.payLater); pay[1](null); if (wasPaid) { lsSet('mg-pos-draft-meta', { channel: draft.channel }); setDraft(emptyDraft()); } } }) : null);
   }
 
   /* ------------------------------------------------------------------ kitchen */
@@ -495,7 +506,7 @@
         h(M.KitchenTicket, { number: o.id, source: source(o), minutes: Math.floor(since / 60), seconds: Math.floor(since % 60), status: isReady ? 'ready' : newish ? 'new' : 'firing', items: items,
           onBump: function () { var n = clone(o); if (isReady) { n.status = 'kitchen'; delete n.readyAt; } else { n.status = 'ready'; n.readyAt = Date.now(); } saveOrder(n); } }),
         isReady ? h(M.Button, { variant: 'primary', block: true, onClick: function () { var n = clone(o); n.status = 'done'; n.doneAt = Date.now(); saveOrder(n); toast(o.id + (o.channel === 'delivery' ? ' out for delivery' : ' handed over')); } }, o.channel === 'delivery' ? 'Out for delivery' : 'Picked up') : null,
-        !o.paid ? h('div', { className: 'unpaid sticker' }, 'NOT PAID YET') : null);
+        !o.paid ? h('div', { className: 'unpaid sticker' }, o.payLater ? 'PAY LATER' : 'NOT PAID YET') : null);
     }
     return h('div', { className: 'kitchen' },
       h('div', { className: 'k-head' },
@@ -594,7 +605,7 @@
       var d = new Date(o.createdAt), date = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
       (o.lines || []).forEach(function (l) {
         rows.push([date, clock(o.createdAt), o.id, chanLabel(o.channel), o.customer, o.phone, o.compound, o.unit, o.status === 'void' ? 'Void' : o.status === 'done' ? 'Done' : o.status === 'ready' ? 'Ready' : o.status === 'kitchen' ? 'In kitchen' : 'Open',
-          o.paid ? 'Yes' : 'No', o.paid ? PAY_LABEL[(o.payment && o.payment.method) || 'cash'] : '', l.name, sizeName(l.size), l.extras.map(function (e) { return e[0] + ' +' + e[1]; }).join('; '), l.note, l.qty, l.unit, l.state === 'void' ? 0 : l.unit * l.qty, l.state === 'void' ? 'Yes' : 'No', orderTotal(o), Number(o.discount) || 0]);
+          o.paid ? 'Yes' : 'No', o.paid ? PAY_LABEL[(o.payment && o.payment.method) || 'cash'] : o.payLater ? 'Pay later' : '', l.name, sizeName(l.size), l.extras.map(function (e) { return e[0] + ' +' + e[1]; }).join('; '), l.note, l.qty, l.unit, l.state === 'void' ? 0 : l.unit * l.qty, l.state === 'void' ? 'Yes' : 'No', orderTotal(o), Number(o.discount) || 0]);
       });
     });
     return '﻿' + rows.map(function (r) { return r.map(esc).join(','); }).join('\r\n');
@@ -646,7 +657,7 @@
           h('button', { className: 'orow-main', onClick: function () { open[1](isOpen ? null : o.id); }, 'aria-expanded': isOpen },
             h('span', { className: 'order-no' }, o.id),
             h('span', { className: 'meta o-src' }, (range[0] === 'month' ? new Date(o.createdAt).getDate() + ' ' + MONTHS[new Date(o.createdAt).getMonth()].slice(0, 3) + ' ' : '') + clock(o.createdAt) + ' · ' + source(o)),
-            h('span', { className: 'o-tags' }, h(M.StatusBadge, { status: s[0] }, s[1]), o.status !== 'void' ? h(M.StatusBadge, { status: o.paid ? 'paid' : 'held', noIcon: !o.paid }, o.paid ? PAY_LABEL[(o.payment && o.payment.method) || 'cash'] : 'Unpaid') : null),
+            h('span', { className: 'o-tags' }, h(M.StatusBadge, { status: s[0] }, s[1]), o.status !== 'void' ? h(M.StatusBadge, { status: o.paid ? 'paid' : 'held', noIcon: !o.paid }, o.paid ? PAY_LABEL[(o.payment && o.payment.method) || 'cash'] : o.payLater ? 'Pay later' : 'Unpaid') : null),
             h('span', { className: 'price o-tot' }, fmt(orderTotal(o)))),
           isOpen ? h('div', { className: 'orow-detail' },
             h('ul', { className: 'body o-lines' }, (o.lines || []).map(function (l) { return h('li', { key: l.key, style: l.state === 'void' ? { textDecoration: 'line-through', color: 'var(--ink-muted)' } : null }, l.qty + '× ' + l.name + ' · ' + sizeName(l.size) + (l.extras.length ? ' · ' + l.extras.map(function (e) { return e[0]; }).join(', ') : '') + (l.note ? ' — “' + l.note + '”' : '') + '  ' + fmt(l.unit * l.qty)); })),
